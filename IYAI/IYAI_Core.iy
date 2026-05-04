@@ -20,6 +20,19 @@ return function(githubBaseUrl)
 
 	local Players = game:GetService("Players")
 	local LP      = Players.LocalPlayer
+	local SG      = game:GetService("StarterGui")
+
+	local function notify(text)
+		task.spawn(function()
+			for _ = 1, 5 do
+				local ok = pcall(function()
+					SG:SetCore("SendNotification", { Title = "IYAI", Text = text, Duration = 4 })
+				end)
+				if ok then break end
+				task.wait(1)
+			end
+		end)
+	end
 
 	-- ── HTTP GET ──────────────────────────────────────────────────────────────
 	local function httpGet(url)
@@ -78,6 +91,7 @@ return function(githubBaseUrl)
 
 	-- ── openGUI ───────────────────────────────────────────────────────────────
 	local function openGUI()
+		notify("Loading…")
 		local playerGui = LP:WaitForChild("PlayerGui", 10)
 		if not playerGui then
 			warn("[IYAI] PlayerGui not found.")
