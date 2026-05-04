@@ -1,0 +1,170 @@
+-- IYAI_Core.iy  |  Infinite Yield Plugin  —  Core
+-- Fetched by IYAI.iy. Do not run directly.
+--
+-- Signature: fn(githubBaseUrl) → Plugin table
+--   githubBaseUrl — raw GitHub folder base URL, or "" for local-only mode.
+--
+-- This file's only job:
+--   1. Fetch IYAI_GUI.lua (from GitHub or local filesystem).
+--   2. Run it when ;ai is typed, track the ScreenGui it creates, destroy it on close.
+--   3. Return the Infinite Yield Plugin table.
+
+return function(githubBaseUrl)
+
+	-- Normalise base URL (strip trailing slash)
+	githubBaseUrl = type(githubBaseUrl) == "string" and githubBaseUrl:gsub("/$", "") or ""
+	local useRemote = githubBaseUrl ~= ""
+
+	local GUI_REMOTE = useRemote and (githubBaseUrl .. "/IYAI_GUI.lua") or ""
+	local GUI_LOCAL  = "IYAI/IYAI_GUI.lua"
+
+	local Players = game:GetService("Players")
+	local LP      = Players.LocalPlayer
+
+	-- ── HTTP GET ──────────────────────────────────────────────────────────────
+	local function httpGet(url)
+		local p = { Url = url, Method = "GET" }
+		local ok, res
+		if syn and syn.request then
+			ok, res = pcall(syn.request, p)
+		elseif request then
+			ok, res = pcall(request, p)
+		else
+			return nil, "No HTTP function available"
+		end
+		if not ok                                    then return nil, "Request error: " .. tostring(res) end
+		if not res or not res.Body or res.Body == "" then return nil, "Empty response" end
+		if res.StatusCode and res.StatusCode ~= 200  then return nil, "HTTP " .. tostring(res.StatusCode) end
+		return res.Body, nil
+	end
+
+	-- ── Fetch GUI source (cached after first load) ────────────────────────────
+	local _cachedSrc = nil
+
+	local function fetchGUISrc()
+		if _cachedSrc then return _cachedSrc, nil end
+
+		local src, err
+
+		-- Try GitHub first
+		if useRemote then
+			src, err = httpGet(GUI_REMOTE)
+			if not src then
+				warn("[IYAI] Remote GUI fetch failed (" .. err .. "), trying local.")
+			end
+		end
+
+		-- Fall back to local
+		if not src then
+			if not readfile or not isfile then
+				return nil, "readfile not available and no remote source"
+			end
+			if not isfile(GUI_LOCAL) then
+				return nil, "Local file not found: " .. GUI_LOCAL
+			end
+			local ok, raw = pcall(readfile, GUI_LOCAL)
+			if not ok or not raw or raw == "" then
+				return nil, "Could not read: " .. GUI_LOCAL
+			end
+			src = raw
+		end
+
+		_cachedSrc = src
+		return src, nil
+	end
+
+	-- ── GUI state ─────────────────────────────────────────────────────────────
+	local _gui = nil   -- the ScreenGui created by IYAI_GUI.lua, or nil
+
+	-- ── openGUI ───────────────────────────────────────────────────────────────
+	local function openGUI()
+		local playerGui = LP:WaitForChild("PlayerGui", 10)
+		if not playerGui then
+			warn("[IYAI] PlayerGui not found.")
+			return
+		end
+
+		local src, err = fetchGUISrc()
+		if not src then
+			warn("[IYAI] " .. err)
+			return
+		end
+
+		local fn, ce = loadstring(src)
+		if not fn then
+			warn("[IYAI] GUI compile error: " .. tostring(ce))
+			_cachedSrc = nil   -- don't cache a broken version
+			return
+		end
+
+		-- Snapshot existing ScreenGuis so we can identify the new one
+		local snapshot = {}
+		for _, c in ipairs(playerGui:GetChildren()) do
+			if c:IsA("ScreenGui") then snapshot[c] = true end
+		end
+
+		-- Run IYAI_GUI.lua — it parents a new ScreenGui to PlayerGui as a side-effect
+		local ok, runErr = pcall(fn, githubBaseUrl)
+		if not ok then
+			warn("[IYAI] GUI runtime error: " .. tostring(runErr))
+			return
+		end
+
+		-- One heartbeat so synchronous parenting finishes
+		task.wait()
+
+		-- Find the newly added ScreenGui by diff
+		for _, c in ipairs(playerGui:GetChildren()) do
+			if c:IsA("ScreenGui") and not snapshot[c] then
+				_gui = c
+				return
+			end
+		end
+
+		-- Fallback: the ScreenGui in IYAI_GUI.lua is the default-named "ScreenGui"
+		-- (it is never given a custom Name in NewGui_Converted.lua)
+		_gui = playerGui:FindFirstChild("ScreenGui")
+		if not _gui then
+			warn("[IYAI] GUI ran but no new ScreenGui found in PlayerGui.")
+		end
+	end
+
+	-- ── closeGUI ─────────────────────────────────────────────────────────────
+	local function closeGUI()
+		if _gui and _gui.Parent then
+			_gui:Destroy()
+		end
+		_gui = nil
+	end
+
+	-- ── toggleGUI ────────────────────────────────────────────────────────────
+	local function toggleGUI()
+		if _gui then
+			if _gui.Parent then
+				closeGUI()    -- open → close
+			else
+				_gui = nil    -- stale ref (user closed via × button) → open fresh
+				openGUI()
+			end
+		else
+			openGUI()         -- closed → open
+		end
+	end
+
+	-- ── Plugin table returned to IYAI.iy ─────────────────────────────────────
+	return {
+		PluginName        = "IYAI",
+		PluginDescription = "inspect instances, run agent tasks.",
+		Commands = {
+			ai = {
+				ListName    = "ai",
+				Description = "Open / close the IYAI window",
+				Aliases     = { "iyai" },
+				Function    = function(args, speaker)
+					toggleGUI()
+				end,
+			},
+		},
+	}
+
+end
