@@ -117,8 +117,7 @@ local MaxStepBox             = G2L["8a"]
 
 -- ── Main logic ────────────────────────────────────────────────────────────────
 
-local VERSION           = ""
-pcall(function() VERSION = game.StarterGui.ScreenGui.Version.Value end)
+local VERSION           = G2L["da"] and G2L["da"].Value or ""
 local Tween             = TweenInfo.new(0.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut)
 local DefaultIYAISize   = UDim2.new(0, 600, 0, 400)
 local MinimizedIYAISize = UDim2.new(0, 100, 0, 25)
