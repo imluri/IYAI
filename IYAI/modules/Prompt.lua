@@ -79,6 +79,7 @@ return function(Http)
 			"- set_property() over run() for property changes. For relative changes, call get_value() first. For scripts, use write_code() — never paste code in chat.",
 			"- web_search() for live data (news, prices, time, recent updates). Phrase queries specifically ('current time in X right now'). Extract the answer from snippets — never send the user to a link.",
 			"- If props() misses a property, use get_value() directly.",
+			"- For tasks requiring many repetitive steps or iterations (bulk renames, modifying many instances, etc.), write a self-contained Lua script with run() to automate it rather than calling tools repeatedly. The script is your own tool.",
 		}
 		if Http.ENV == "syn" or Http.ENV == "executor" then
 			rules[#rules+1] = "- run() requires print() for any output — bare expressions return nothing."
