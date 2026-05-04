@@ -735,7 +735,7 @@ ModelBox.FocusLost:Connect(function()
 	closeDropdown()
 end)
 
-UIS.InputBegan:Connect(function(input)
+local _uisBegan = UIS.InputBegan:Connect(function(input)
 	if input.UserInputType ~= Enum.UserInputType.MouseButton1 then return end
 	if not dropdownOpen then return end
 	local mousePos = UIS:GetMouseLocation()
@@ -1017,6 +1017,9 @@ MinimizeButton.MouseButton1Click:Connect(function()
 end)
 
 CloseButton.MouseButton1Click:Connect(function()
+	_uisBegan:Disconnect()
+	_uisChanged:Disconnect()
+	_uisEnded:Disconnect()
 	TS:Create(IYAI, Tween, { GroupTransparency = 1 }):Play()
 	task.delay(0.5, function()
 		if ScreenGui and ScreenGui.Parent then ScreenGui:Destroy() end
@@ -1550,7 +1553,7 @@ TopBar.InputBegan:Connect(function(input)
 	end
 end)
 
-UIS.InputChanged:Connect(function(input)
+local _uisChanged = UIS.InputChanged:Connect(function(input)
 	if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
 		local delta   = input.Position - dragStart
 		IYAI.Position = UDim2.new(
@@ -1560,6 +1563,6 @@ UIS.InputChanged:Connect(function(input)
 	end
 end)
 
-UIS.InputEnded:Connect(function(input)
+local _uisEnded = UIS.InputEnded:Connect(function(input)
 	if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = false end
 end)
