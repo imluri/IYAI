@@ -52,9 +52,9 @@ local G2L = loadMod("modules/Layout.lua")
 -- Hide before any frame renders — fade-in tween reveals it later
 if G2L["e"] then G2L["e"].GroupTransparency = 1 end
 
--- Disable Studio-only LocalScripts — executors may try to run them
+-- Destroy Studio-only LocalScripts before executors can run them
 for _, key in ipairs({"2", "d"}) do
-	pcall(function() if G2L[key] then G2L[key].Disabled = true end end)
+	pcall(function() if G2L[key] then G2L[key]:Destroy() end end)
 end
 
 -- ── Named aliases ─────────────────────────────────────────────────────────────
@@ -1016,10 +1016,12 @@ MinimizeButton.MouseButton1Click:Connect(function()
 	end
 end)
 
+local _uisChanged, _uisEnded
+
 CloseButton.MouseButton1Click:Connect(function()
-	_uisBegan:Disconnect()
-	_uisChanged:Disconnect()
-	_uisEnded:Disconnect()
+	if _uisBegan  then _uisBegan:Disconnect()  end
+	if _uisChanged then _uisChanged:Disconnect() end
+	if _uisEnded   then _uisEnded:Disconnect()   end
 	TS:Create(IYAI, Tween, { GroupTransparency = 1 }):Play()
 	task.delay(0.5, function()
 		if ScreenGui and ScreenGui.Parent then ScreenGui:Destroy() end
