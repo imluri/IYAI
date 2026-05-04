@@ -1509,10 +1509,16 @@ local function onSend()
 	TextBoxInput.Text = ""
 	addChat(text)
 	task.spawn(function()
+		local ok, err
 		if CurrentPage.Value == "Code" then
-			runCodeAgent(text)
+			ok, err = pcall(runCodeAgent, text)
 		else
-			runAgentLoop(text)
+			ok, err = pcall(runAgentLoop, text)
+		end
+		if not ok then
+			setBusy(false)
+			Toast.show("Error", tostring(err), "err", 8)
+			warn("[IYAI] Agent error:", err)
 		end
 	end)
 end
