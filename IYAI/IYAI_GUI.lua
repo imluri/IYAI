@@ -49,6 +49,9 @@ local HS  = game:GetService("HttpService")
 
 local G2L = loadMod("modules/Layout.lua")
 
+-- Hide before any frame renders — fade-in tween reveals it later
+if G2L["e"] then G2L["e"].GroupTransparency = 1 end
+
 -- Disable Studio-only LocalScripts — executors may try to run them
 for _, key in ipairs({"2", "d"}) do
 	pcall(function() if G2L[key] then G2L[key].Disabled = true end end)
