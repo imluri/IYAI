@@ -103,6 +103,17 @@ local IntroFrame             = G2L["c9"]
 local IYAIToastContainer     = G2L["cc"]
 local ToastTemplate          = G2L["cd"]
 local CurrentPage            = G2L["d9"]
+local ModalFrame             = G2L["ba"]
+local ModalInner             = G2L["bc"]
+local ModalCloseButton       = G2L["be"]
+local SearchModelModal       = G2L["bf"]
+local ModalSearchBox         = G2L["c1"]
+local ModalSF                = G2L["c5"]
+local ExampleModelBtn        = G2L["c6"]
+local ModalSearchButton      = G2L["c4"]
+local ModalOpenButton        = G2L["7a"]
+local MaxStepFrame           = G2L["86"]
+local MaxStepBox             = G2L["8a"]
 
 -- ── Main logic ────────────────────────────────────────────────────────────────
 
@@ -141,8 +152,11 @@ end)
 
 -- ── Model fetch ───────────────────────────────────────────────────────────────
 
-local function fetchOpenRouterModels()
-	local res = Http.request("https://openrouter.ai/api/v1/models", "GET", {})
+local function fetchModelsFromOpenAIEndpoint(url, authKey)
+	local headers = authKey ~= ""
+		and { ["Authorization"] = "Bearer " .. authKey }
+		or  {}
+	local res = Http.request(url, "GET", headers)
 	if not res or res.StatusCode ~= 200 then return end
 	local ok, data = pcall(HS.JSONDecode, HS, res.Body)
 	if not ok or not data.data then return end
@@ -156,18 +170,23 @@ local function fetchOpenRouterModels()
 	end
 end
 
+local function fetchOpenRouterModels() fetchModelsFromOpenAIEndpoint("https://openrouter.ai/api/v1/models", "") end
+local function fetchMistralModels()    fetchModelsFromOpenAIEndpoint("https://api.mistral.ai/v1/models",    Config.apiKey) end
+
 local function autoTestOnStart()
 	task.spawn(function()
 		if Config.host == "Ollama" then
 			local res = Http.request(Config.ollamaUrl .. "/api/tags", "GET", {})
 			local ok, data = pcall(HS.JSONDecode, HS, res and res.Body or "")
 			if ok and data and data.models then modelList = data.models end
+		elseif Config.host == "Mistral" then
+			fetchMistralModels()
 		else
 			fetchOpenRouterModels()
 		end
 	end)
 	local key = Config.apiKey
-	if key == "" then
+	if key == "" and Config.host ~= "Ollama" then
 		Toast.show("No API Key", "Set your API key in Settings", "err", 5)
 		task.delay(1, function() CurrentPage.Value = "Settings" end)
 		return
@@ -178,6 +197,19 @@ local function autoTestOnStart()
 			Toast.show("Connected", "Ollama is reachable", "ok", 3)
 		else
 			Toast.show("Offline", "Cannot reach Ollama — check Settings", "err", 5)
+			task.delay(1, function() CurrentPage.Value = "Settings" end)
+		end
+	elseif Config.host == "Mistral" then
+		local res = Http.request("https://api.mistral.ai/v1/models", "GET", {
+			["Authorization"] = "Bearer " .. key,
+		})
+		if res and res.StatusCode == 200 then
+			Toast.show("Connected", "Mistral key is valid", "ok", 3)
+		elseif res and res.StatusCode == 401 then
+			Toast.show("Invalid Key", "Mistral key rejected — update in Settings", "err", 5)
+			task.delay(1, function() CurrentPage.Value = "Settings" end)
+		else
+			Toast.show("Connection Failed", "Could not reach Mistral", "err", 5)
 			task.delay(1, function() CurrentPage.Value = "Settings" end)
 		end
 	else
@@ -362,7 +394,7 @@ local function addResponse(rawText, usage)
 	if #segments == 1 and segments[1].type == "text" then
 		local elem = addElement("AssistantResponse", "", false)
 		local textLabel = elem:IsA("TextLabel") and elem or elem:FindFirstChildWhichIsA("TextLabel", true)
-		if textLabel then typewriteInto(textLabel, Prompt.stripMarkdown(segments[1].content) .. "\n") end
+		if textLabel then typewriteInto(textLabel, Prompt.stripMarkdown(segments[1].content) .. (usage and "\n" or "")) end
 		lastElem = elem
 	else
 		for _, seg in ipairs(segments) do
@@ -394,10 +426,16 @@ local function addResponse(rawText, usage)
 		end
 	end
 
-	if usage and lastElem then
+	if lastElem then
 		local tokenLabel = lastElem:FindFirstChild("TokenCount", true)
 		if tokenLabel then
-			tokenLabel.Text = "↑ " .. (usage.prompt_tokens or 0) .. "  ↓ " .. (usage.completion_tokens or 0)
+			if usage then
+				local prompt     = usage.prompt_tokens     or 0
+				local completion = usage.completion_tokens or 0
+				tokenLabel.Text  = Config.model .. "  ↑ " .. prompt .. "  ↓ " .. completion
+			else
+				tokenLabel:Destroy()
+			end
 		end
 	end
 end
@@ -588,6 +626,7 @@ APIKeyBox.Text             = Config.apiKey
 APIKeyBox.TextTransparency = 1
 APIKeyLabel.Text           = maskKey(Config.apiKey)
 ModelBox.Text              = Config.model
+MaxStepBox.Text            = tostring(Config.maxSteps)
 selectedHost               = Config.host
 
 for _, b in pairs(HostButtons) do
@@ -671,6 +710,11 @@ ModelBox:GetPropertyChangedSignal("Text"):Connect(function()
 	if #modelList > 0 then filterDropdown(ModelBox.Text) end
 end)
 
+MaxStepBox:GetPropertyChangedSignal("Text"):Connect(function()
+	if _loading then return end
+	UnsavedChanges.Visible = true
+end)
+
 DropdownButton.MouseButton1Click:Connect(function()
 	if dropdownOpen then closeDropdown() else filterDropdown(ModelBox.Text) end
 end)
@@ -714,6 +758,10 @@ ConnectionButton.MouseButton1Click:Connect(function()
 	local res
 	if selectedHost == "Ollama" then
 		res = Http.request(Config.ollamaUrl .. "/api/tags", "GET", {})
+	elseif selectedHost == "Mistral" then
+		res = Http.request("https://api.mistral.ai/v1/models", "GET", {
+			["Authorization"] = "Bearer " .. APIKeyBox.Text,
+		})
 	else
 		res = Http.request("https://openrouter.ai/api/v1/models", "GET", {
 			["Authorization"] = "Bearer " .. APIKeyBox.Text,
@@ -756,6 +804,20 @@ CredentialButton.MouseButton1Click:Connect(function()
 		else
 			Toast.show("Failed", "Could not reach Ollama", "err", 4)
 		end
+	elseif selectedHost == "Mistral" then
+		local res = Http.request("https://api.mistral.ai/v1/models", "GET", {
+			["Authorization"] = "Bearer " .. key,
+		})
+		CredentialButton.Text = "Credential"
+		if not res then
+			Toast.show("Failed", "No response from Mistral", "err", 4)
+		elseif res.StatusCode == 200 then
+			Toast.show("Valid Key", "Mistral key accepted", "ok", 3)
+		elseif res.StatusCode == 401 then
+			Toast.show("Invalid Key", "Mistral key rejected (401)", "err", 4)
+		else
+			Toast.show("Failed", "Status " .. res.StatusCode, "err", 4)
+		end
 	else
 		local res = Http.request("https://openrouter.ai/api/v1/auth/key", "GET", {
 			["Authorization"] = "Bearer " .. key,
@@ -785,9 +847,11 @@ CredentialButton.MouseButton1Click:Connect(function()
 end)
 
 local function saveSettings()
-	Config.apiKey = APIKeyBox.Text
-	Config.model  = ModelBox.Text
-	Config.host   = selectedHost
+	Config.apiKey   = APIKeyBox.Text
+	Config.model    = ModelBox.Text
+	Config.host     = selectedHost
+	Config.maxSteps = math.max(1, tonumber(MaxStepBox.Text) or 100)
+	MaxStepBox.Text = tostring(Config.maxSteps)
 	Config.save()
 	UnsavedChanges.Visible = false
 	Toast.show("Saved", "Settings saved successfully", "ok", 2)
@@ -799,6 +863,7 @@ local function revertSettings()
 	APIKeyBox.TextTransparency = 1
 	APIKeyLabel.Text           = maskKey(Config.apiKey)
 	ModelBox.Text              = Config.model
+	MaxStepBox.Text            = tostring(Config.maxSteps)
 	selectedHost               = Config.host
 	for _, b in pairs(HostButtons) do
 		if b:IsA("TextButton") then
@@ -811,6 +876,121 @@ end
 
 SaveButton.MouseButton1Click:Connect(saveSettings)
 RevertButton.MouseButton1Click:Connect(revertSettings)
+
+-- ── Model Select Modal ────────────────────────────────────────────────────────
+
+local MODAL_CHUNK    = 40
+local modalAllModels = {}
+local modalFiltered  = {}
+local modalRendered  = 0
+
+ModalFrame.Visible      = false
+ExampleModelBtn.Visible = false
+
+local function modalClearButtons()
+	for _, c in ipairs(ModalSF:GetChildren()) do
+		if c ~= ExampleModelBtn and not c:IsA("UIGridLayout") and not c:IsA("UIPadding") then
+			c:Destroy()
+		end
+	end
+end
+
+local function modalRenderChunk()
+	local startIdx = modalRendered + 1
+	local endIdx   = math.min(modalRendered + MODAL_CHUNK, #modalFiltered)
+	for i = startIdx, endIdx do
+		local m   = modalFiltered[i]
+		local btn = ExampleModelBtn:Clone()
+		btn.Text    = m.name
+		btn.Visible = true
+		btn.Parent  = ModalSF
+		btn.MouseButton1Click:Connect(function()
+			_loading = true; ModelBox.Text = m.name; _loading = false
+			UnsavedChanges.Visible = true
+			ModalFrame.Visible = false
+		end)
+	end
+	modalRendered = endIdx
+end
+
+local function modalApplyFilter(query)
+	query = (query or ""):lower()
+	modalFiltered = {}
+	for _, m in ipairs(modalAllModels) do
+		if query == "" or m.name:lower():find(query, 1, true) then
+			table.insert(modalFiltered, m)
+		end
+	end
+	modalRendered = 0
+	modalClearButtons()
+	modalRenderChunk()
+	ModalSF.CanvasPosition = Vector2.zero
+end
+
+ModalSF:GetPropertyChangedSignal("CanvasPosition"):Connect(function()
+	if modalRendered >= #modalFiltered then return end
+	local pos      = ModalSF.CanvasPosition.Y
+	local viewH    = ModalSF.AbsoluteSize.Y
+	local contentH = ModalSF.AbsoluteCanvasSize.Y
+	if pos + viewH >= contentH - 80 then
+		modalRenderChunk()
+	end
+end)
+
+local function modalFetch()
+	modalAllModels = {}
+	local host = selectedHost
+	if host == "Ollama" then
+		local res = Http.request(Config.ollamaUrl .. "/api/tags", "GET", {})
+		local ok, data = pcall(HS.JSONDecode, HS, res and res.Body or "")
+		if ok and data and data.models then
+			for _, m in ipairs(data.models) do
+				table.insert(modalAllModels, { name = m.name })
+			end
+		end
+	else
+		local url = host == "Mistral"
+			and "https://api.mistral.ai/v1/models"
+			or  "https://openrouter.ai/api/v1/models"
+		local res = Http.request(url, "GET", {
+			["Authorization"] = "Bearer " .. APIKeyBox.Text,
+		})
+		local ok, data = pcall(HS.JSONDecode, HS, res and res.Body or "")
+		if ok and data and data.data then
+			for _, m in ipairs(data.data) do
+				table.insert(modalAllModels, { name = m.id })
+			end
+			table.sort(modalAllModels, function(a, b) return a.name < b.name end)
+		end
+	end
+	modalFiltered = { table.unpack(modalAllModels) }
+	modalRendered = 0
+	modalClearButtons()
+	modalRenderChunk()
+end
+
+local function openModal()
+	ModalFrame.Visible = true
+	if ModalSearchBox then ModalSearchBox.Text = "" end
+	modalClearButtons()
+	task.spawn(modalFetch)
+end
+
+ModalOpenButton.MouseButton1Click:Connect(openModal)
+ModalCloseButton.MouseButton1Click:Connect(function()
+	ModalFrame.Visible = false
+end)
+
+if ModalSearchBox then
+	ModalSearchBox:GetPropertyChangedSignal("Text"):Connect(function()
+		modalApplyFilter(ModalSearchBox.Text)
+	end)
+end
+if ModalSearchButton then
+	ModalSearchButton.MouseButton1Click:Connect(function()
+		modalApplyFilter(ModalSearchBox and ModalSearchBox.Text or "")
+	end)
+end
 
 -- ── Window controls ───────────────────────────────────────────────────────────
 
@@ -841,9 +1021,9 @@ end)
 local conversationHistory = {}
 
 local function buildUrl()
-	return Config.host == "Ollama"
-		and Config.ollamaUrl .. "/api/chat"
-		or  "https://openrouter.ai/api/v1/chat/completions"
+	if Config.host == "Ollama"  then return Config.ollamaUrl .. "/api/chat" end
+	if Config.host == "Mistral" then return "https://api.mistral.ai/v1/chat/completions" end
+	return "https://openrouter.ai/api/v1/chat/completions"
 end
 
 local function buildHeaders()
@@ -852,6 +1032,22 @@ local function buildHeaders()
 		["Content-Type"]  = "application/json",
 		["Authorization"] = "Bearer " .. Config.apiKey,
 	}
+end
+
+local RETRY_ATTEMPTS = 3
+local RETRY_DELAY    = 4
+
+local function requestWithRetry(url, method, headers, body)
+	local res
+	for attempt = 1, RETRY_ATTEMPTS do
+		res = Http.request(url, method, headers, body)
+		if res and res.StatusCode ~= 429 then break end
+		if attempt < RETRY_ATTEMPTS then
+			Toast.show("Rate limited", "Retrying in " .. RETRY_DELAY .. "s… (" .. attempt .. "/" .. (RETRY_ATTEMPTS - 1) .. ")", "warn", RETRY_DELAY)
+			task.wait(RETRY_DELAY)
+		end
+	end
+	return res
 end
 
 local function trimHistory(history)
@@ -1028,8 +1224,7 @@ local CODE_SYSTEM = table.concat({
 	"Do not ask clarifying questions — make a reasonable attempt and explain your assumptions.",
 }, "\n")
 
-local codeHistory    = {}
-local MAX_CODE_STEPS = 15
+local codeHistory = {}
 
 local function runCodeAgent(userText)
 	StepCount    = 0
@@ -1037,11 +1232,13 @@ local function runCodeAgent(userText)
 	setBusy(true)
 	CurrentPage.Value = "Agent"
 
+	local maxSteps = Config.maxSteps
 	table.insert(codeHistory, { role = "user", content = userText })
 	local statusFrame = addCodeStatus("Agent is writing code...")
 	local stepsDone   = 0
+	local diffSummary = ""
 
-	while stepsDone < MAX_CODE_STEPS do
+	while stepsDone < maxSteps do
 		if agentAborted then
 			updateCodeStatus(statusFrame, "Stopped.", false)
 			addElement("AbortText", "Stopped by user.", true)
@@ -1065,10 +1262,10 @@ local function runCodeAgent(userText)
 			return j:gsub('"properties":%[%]', '"properties":{}')
 		end
 
-		local res = Http.request(buildUrl(), "POST", buildHeaders(), buildCodeBody(codeHistory))
+		local res = requestWithRetry(buildUrl(), "POST", buildHeaders(), buildCodeBody(codeHistory))
 		if isContextError(res) then
 			Toast.show("History trimmed", "Context too long — retrying with less history", "warn", 3)
-			res = Http.request(buildUrl(), "POST", buildHeaders(), buildCodeBody(trimHistory(codeHistory)))
+			res = requestWithRetry(buildUrl(), "POST", buildHeaders(), buildCodeBody(trimHistory(codeHistory)))
 		end
 		if not res or res.StatusCode ~= 200 then
 			updateCodeStatus(statusFrame, "Request failed (" .. (res and tostring(res.StatusCode) or "no response") .. ")", false)
@@ -1081,7 +1278,9 @@ local function runCodeAgent(userText)
 		local toolCalls = msg.tool_calls
 		if not toolCalls or #toolCalls == 0 then
 			local text = Prompt.stripMarkdown(msg.content or "")
-			updateCodeStatus(statusFrame, text, true)
+			updateCodeStatus(statusFrame,
+				(diffSummary ~= "" and diffSummary .. "  " or "") .. text,
+				true)
 			table.insert(codeHistory, { role = "assistant", content = text })
 			break
 		end
@@ -1099,6 +1298,12 @@ local function runCodeAgent(userText)
 			if fnName == "write_code" and statusLbl then statusLbl.Text = "Agent is writing code..." end
 			if fnName == "edit_code"  and statusLbl then statusLbl.Text = "Agent is editing code..."  end
 			local result = Tools.run(fnName, fnArgs)
+			if fnName == "edit_code" and result:match("^[%+%-]%d") then
+				local added   = tonumber(result:match("^%+(%d+)")) or 0
+				local removed = tonumber(result:match("^%-(%d+)")) or 0
+				if added   > 0 then diffSummary = diffSummary .. string.format('<font color="#4ec94e">+%d</font> ', added) end
+				if removed > 0 then diffSummary = diffSummary .. string.format('<font color="#e05252">-%d</font> ', removed) end
+			end
 			table.insert(codeHistory, {
 				role         = "tool",
 				tool_call_id = call.id or fnName,
@@ -1108,8 +1313,8 @@ local function runCodeAgent(userText)
 		end
 	end
 
-	if stepsDone >= MAX_CODE_STEPS then
-		updateCodeStatus(statusFrame, "Reached max steps.", false)
+	if stepsDone >= maxSteps then
+		updateCodeStatus(statusFrame, "Reached max steps (" .. maxSteps .. ").", false)
 	end
 
 	setBusy(false)
@@ -1118,13 +1323,12 @@ end
 
 -- ── Agent loop ────────────────────────────────────────────────────────────────
 
-local MAX_STEPS = 10
-
 local function runAgentLoop(userText)
 	StepCount    = 0
 	agentAborted = false
 	setBusy(true)
 
+	local MAX_STEPS = Config.maxSteps
 	table.insert(conversationHistory, { role = "user", content = userText })
 	local stepsDone  = 0
 	local agentDone  = false
@@ -1143,6 +1347,8 @@ local function runAgentLoop(userText)
 	local function showGenerating()
 		if not generatingFrame then
 			generatingFrame = addElement("AssistantResponse", "", false)
+			local tc = generatingFrame:FindFirstChild("TokenCount", true)
+			if tc then tc.Visible = false end
 		end
 		local lbl = genLabel()
 		if lbl then lbl.Text = "●" end
@@ -1161,10 +1367,10 @@ local function runAgentLoop(userText)
 
 		showGenerating()
 
-		local res = Http.request(buildUrl(), "POST", buildHeaders(), buildBody())
+		local res = requestWithRetry(buildUrl(), "POST", buildHeaders(), buildBody())
 		if isContextError(res) then
 			Toast.show("History trimmed", "Context too long — retrying with less history", "warn", 3)
-			res = Http.request(buildUrl(), "POST", buildHeaders(), buildBody(trimHistory(conversationHistory)))
+			res = requestWithRetry(buildUrl(), "POST", buildHeaders(), buildBody(trimHistory(conversationHistory)))
 		end
 		if not res or res.StatusCode ~= 200 then
 			if generatingFrame then generatingFrame:Destroy(); generatingFrame = nil end
@@ -1188,11 +1394,12 @@ local function runAgentLoop(userText)
 			local rawContent = msg.content or ""
 			local lbl = genLabel()
 			if lbl and rawContent ~= "" then
-				typewriteInto(lbl, Prompt.stripMarkdown(rawContent) .. "\n")
+				typewriteInto(lbl, Prompt.stripMarkdown(rawContent) .. (usage and "\n" or ""))
 				if usage then
 					local tokenLabel = generatingFrame:FindFirstChild("TokenCount", true)
 					if tokenLabel then
-						tokenLabel.Text = "↑ " .. (usage.prompt_tokens or 0) .. "  ↓ " .. (usage.completion_tokens or 0)
+						tokenLabel.Text    = Config.model .. "  ↑ " .. (usage.prompt_tokens or 0) .. "  ↓ " .. (usage.completion_tokens or 0)
+						tokenLabel.Visible = true
 					end
 				end
 			else
@@ -1216,7 +1423,7 @@ local function runAgentLoop(userText)
 			generatingFrame.LayoutOrder = TotalElements.Value + 100
 		end
 
-		addStep()
+		-- addStep()
 		table.insert(conversationHistory, msg)
 
 		agentDone = false
@@ -1246,11 +1453,12 @@ local function runAgentLoop(userText)
 					if lbl then
 						TotalElements.Value += 1
 						generatingFrame.LayoutOrder = TotalElements.Value
-						typewriteInto(lbl, Prompt.stripMarkdown(message) .. "\n")
+						typewriteInto(lbl, Prompt.stripMarkdown(message) .. (usage and "\n" or ""))
 						if usage then
 							local tokenLabel = generatingFrame:FindFirstChild("TokenCount", true)
 							if tokenLabel then
-								tokenLabel.Text = "↑ " .. (usage.prompt_tokens or 0) .. "  ↓ " .. (usage.completion_tokens or 0)
+								tokenLabel.Text    = Config.model .. "  ↑ " .. (usage.prompt_tokens or 0) .. "  ↓ " .. (usage.completion_tokens or 0)
+								tokenLabel.Visible = true
 							end
 						end
 						generatingFrame = nil
@@ -1287,7 +1495,7 @@ local function runAgentLoop(userText)
 
 	if generatingFrame then generatingFrame:Destroy(); generatingFrame = nil end
 	if stepsDone >= MAX_STEPS and not agentDone then
-		addResponse("Reached max steps (" .. MAX_STEPS .. ").")
+		addResponse("Reached max steps (" .. Config.maxSteps .. ").")
 	end
 
 	setBusy(false)
