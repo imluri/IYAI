@@ -1,0 +1,77 @@
+-- IYAI.iy  |  Infinite Yield Plugin  —  Main Loader
+-- Place this single file in your executor workspace.
+-- In-game: type  ;ai  to open / close the IYAI window.
+
+local GITHUB_BASE_URL = "https://raw.githubusercontent.com/imluri/IYAI/main/IYAI"
+
+-- ─────────────────────────────────────────────────────────────────────────────
+
+local CORE_REMOTE = GITHUB_BASE_URL ~= "" and (GITHUB_BASE_URL .. "/IYAI_Core.iy") or ""
+local CORE_LOCAL  = "IYAI/IYAI_Core.iy"
+
+-- Raw GET helper (tries syn → request in order)
+local function httpGet(url)
+	local p = { Url = url, Method = "GET" }
+	local ok, res
+	if syn and syn.request then
+		ok, res = pcall(syn.request, p)
+	elseif request then
+		ok, res = pcall(request, p)
+	else
+		return nil, "No HTTP function available"
+	end
+	if not ok                                    then return nil, "Request error: " .. tostring(res) end
+	if not res or not res.Body or res.Body == "" then return nil, "Empty response" end
+	if res.StatusCode and res.StatusCode ~= 200  then return nil, "HTTP " .. tostring(res.StatusCode) end
+	return res.Body, nil
+end
+
+-- Try to get source from GitHub
+local function tryRemote()
+	if CORE_REMOTE == "" then return nil, "No remote URL set" end
+	local src, err = httpGet(CORE_REMOTE)
+	if not src then return nil, err end
+	local fn, ce = loadstring(src)
+	if not fn then return nil, "Compile error: " .. tostring(ce) end
+	return fn, nil
+end
+
+-- Try to get source from local filesystem
+local function tryLocal()
+	if not readfile or not isfile then return nil, "readfile not available" end
+	if not isfile(CORE_LOCAL)     then return nil, "File not found: " .. CORE_LOCAL end
+	local ok, src = pcall(readfile, CORE_LOCAL)
+	if not ok or not src or src == "" then return nil, "Could not read: " .. CORE_LOCAL end
+	local fn, ce = loadstring(src)
+	if not fn then return nil, "Compile error: " .. tostring(ce) end
+	return fn, nil
+end
+
+-- Load Core (remote first, then local fallback)
+local fn, err
+if GITHUB_BASE_URL ~= "" then
+	fn, err = tryRemote()
+	if not fn then
+		warn("[IYAI] Remote failed (" .. err .. "), trying local.")
+		fn, err = tryLocal()
+	end
+else
+	fn, err = tryLocal()
+end
+
+if not fn then
+	error("[IYAI] Could not load IYAI_Core.iy: " .. tostring(err))
+end
+
+-- fn() executes the chunk → returns function(githubBaseUrl) → Plugin table
+local coreFn = fn()
+if type(coreFn) ~= "function" then
+	error("[IYAI] IYAI_Core.iy must return a function.")
+end
+local Plugin = coreFn(GITHUB_BASE_URL)
+
+if type(Plugin) ~= "table" then
+	error("[IYAI] Core did not return a Plugin table.")
+end
+
+return Plugin
