@@ -1,0 +1,1344 @@
+-- IYAI_GUI.lua
+-- Called by IYAI_Core.iy as: loadstring(src)(githubBaseUrl)
+
+local BASE = ...
+BASE = type(BASE) == "string" and BASE:gsub("/$", "") or ""
+
+local function loadMod(relPath)
+	local src
+	if BASE ~= "" then
+		local url = BASE .. "/" .. relPath
+		local p   = { Url = url, Method = "GET" }
+		local ok, res
+		if syn and syn.request then ok, res = pcall(syn.request, p)
+		elseif request          then ok, res = pcall(request, p) end
+		if ok and res and res.StatusCode == 200 and res.Body and res.Body ~= "" then
+			src = res.Body
+		else
+			warn("[IYAI] Remote module failed (" .. relPath .. "), trying local.")
+		end
+	end
+	if not src then
+		local localPath = "IYAI/" .. relPath
+		if readfile and isfile and isfile(localPath) then
+			local ok2, raw = pcall(readfile, localPath)
+			if ok2 and raw and raw ~= "" then src = raw end
+		end
+	end
+	if not src then error("[IYAI] Cannot load module: " .. relPath) end
+	local fn, ce = loadstring(src)
+	if not fn then error("[IYAI] Compile error in " .. relPath .. ": " .. tostring(ce)) end
+	return fn()
+end
+
+local Http   = loadMod("modules/Http.lua")
+local Config = loadMod("modules/Config.lua")
+local Toast  = loadMod("modules/Toast.lua")
+local Tools  = loadMod("modules/Tools.lua")
+loadMod("modules/tools/Explorer.lua")(Tools)
+loadMod("modules/tools/Script.lua")(Tools)
+loadMod("modules/tools/IY.lua")(Tools)
+loadMod("modules/tools/Web.lua")(Tools, Http)
+local Prompt = loadMod("modules/Prompt.lua")(Http)
+
+local TS  = game:GetService("TweenService")
+local UIS = game:GetService("UserInputService")
+local HS  = game:GetService("HttpService")
+
+-- ── Build GUI ─────────────────────────────────────────────────────────────────
+
+local G2L = loadMod("modules/Layout.lua")
+
+-- ── Named aliases ─────────────────────────────────────────────────────────────
+
+local ScreenGui              = G2L["1"]
+local IYAI                   = G2L["e"]
+local ContentPages           = G2L["11"]
+local AgentPage              = G2L["12"]
+local ScrollingFrameMainChat = G2L["13"]
+local ListLayout             = G2L["14"]
+local ElementTemplate        = G2L["16"]
+local TotalElements          = G2L["44"]
+local isAssistantBusy        = G2L["45"]
+local InputFrame             = G2L["4b"]
+local TextBoxInput           = G2L["4c"]
+local SendButton             = G2L["50"]
+local StopButton             = G2L["52"]
+local ActionsFrame           = G2L["54"]
+local ClearButton            = G2L["56"]
+local SettingsPage           = G2L["57"]
+local Settings_SF            = G2L["58"]
+local APIKeyFrame            = G2L["59"]
+local APIKeyLabel            = G2L["5c"]
+local APIKeyBox              = G2L["5d"]
+local HostSelectFrame        = G2L["60"]
+local HostFrame              = G2L["63"]
+local HostButtons            = HostFrame:GetChildren()
+local ModelSelectFrame       = G2L["73"]
+local ModelFrame             = G2L["76"]
+local ModelBox               = G2L["77"]
+local DropdownButton         = G2L["7a"]
+local DropdownList           = Instance.new("Frame")  -- dropdown disabled; detached dummy
+local TestFrame              = G2L["7d"]
+local ConnectionButton       = G2L["81"]
+local CredentialButton       = G2L["83"]
+local UnsavedChanges         = G2L["8d"]
+local TextLabel              = G2L["8f"]
+local SaveButton             = G2L["91"]
+local RevertButton           = G2L["93"]
+local CodePage               = G2L["96"]
+local CodeSF                 = G2L["97"]
+local LineLabel              = G2L["98"]
+local CodeBox                = G2L["9a"]
+local CodeActionsFrame       = G2L["9d"]
+local CodeClearButton        = G2L["9f"]
+local CodeCopyButton         = G2L["a0"]
+local RunButton              = G2L["a1"]
+local LeftSidebar            = G2L["a4"]
+local TopBar                 = G2L["b3"]
+local CloseButton            = G2L["b5"]
+local MinimizeButton         = G2L["b8"]
+local Highlight              = G2L["b9"]
+local IntroFrame             = G2L["c9"]
+local IYAIToastContainer     = G2L["cc"]
+local ToastTemplate          = G2L["cd"]
+local CurrentPage            = G2L["d9"]
+
+-- ── Main logic ────────────────────────────────────────────────────────────────
+
+local VERSION           = ""
+pcall(function() VERSION = game.StarterGui.ScreenGui.Version.Value end)
+local Tween             = TweenInfo.new(0.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut)
+local DefaultIYAISize   = UDim2.new(0, 600, 0, 400)
+local MinimizedIYAISize = UDim2.new(0, 100, 0, 25)
+local Minimized         = false
+local modelList         = {}
+local _loading          = false
+local ModelBox_ref      = ModelBox  -- forward ref used in fetchOpenRouterModels
+
+ToastTemplate.Visible = false
+Toast.init(ToastTemplate, IYAIToastContainer)
+
+-- Version display + update detection
+local versionLabel = TopBar:FindFirstChild("VersionLabel")
+if versionLabel then versionLabel.Text = "v" .. VERSION end
+
+local VERSION_FILE = "iyai_version.txt"
+local savedVersion = ""
+pcall(function()
+	if isfile and isfile(VERSION_FILE) then
+		savedVersion = readfile(VERSION_FILE) or ""
+	end
+end)
+if savedVersion ~= "" and savedVersion ~= VERSION then
+	task.delay(2, function()
+		Toast.show("Updated!", "IYAI updated to v" .. VERSION, "ok", 5)
+	end)
+end
+pcall(function()
+	if writefile then writefile(VERSION_FILE, VERSION) end
+end)
+
+-- ── Model fetch ───────────────────────────────────────────────────────────────
+
+local function fetchOpenRouterModels()
+	local res = Http.request("https://openrouter.ai/api/v1/models", "GET", {})
+	if not res or res.StatusCode ~= 200 then return end
+	local ok, data = pcall(HS.JSONDecode, HS, res.Body)
+	if not ok or not data.data then return end
+	modelList = {}
+	for _, m in ipairs(data.data) do
+		table.insert(modelList, { name = m.id })
+	end
+	table.sort(modelList, function(a, b) return a.name < b.name end)
+	if ModelBox.Text == "" and #modelList > 0 then
+		_loading = true; ModelBox.Text = modelList[1].name; _loading = false
+	end
+end
+
+local function autoTestOnStart()
+	task.spawn(function()
+		if Config.host == "Ollama" then
+			local res = Http.request(Config.ollamaUrl .. "/api/tags", "GET", {})
+			local ok, data = pcall(HS.JSONDecode, HS, res and res.Body or "")
+			if ok and data and data.models then modelList = data.models end
+		else
+			fetchOpenRouterModels()
+		end
+	end)
+	local key = Config.apiKey
+	if key == "" then
+		Toast.show("No API Key", "Set your API key in Settings", "err", 5)
+		task.delay(1, function() CurrentPage.Value = "Settings" end)
+		return
+	end
+	if Config.host == "Ollama" then
+		local res = Http.request(Config.ollamaUrl .. "/api/tags", "GET", {})
+		if res and res.StatusCode == 200 then
+			Toast.show("Connected", "Ollama is reachable", "ok", 3)
+		else
+			Toast.show("Offline", "Cannot reach Ollama — check Settings", "err", 5)
+			task.delay(1, function() CurrentPage.Value = "Settings" end)
+		end
+	else
+		local res = Http.request("https://openrouter.ai/api/v1/auth/key", "GET", {
+			["Authorization"] = "Bearer " .. key,
+		})
+		if res and res.StatusCode == 200 then
+			Toast.show("Connected", "OpenRouter key is valid", "ok", 3)
+		elseif res and res.StatusCode == 401 then
+			Toast.show("Invalid Key", "API key rejected — update in Settings", "err", 5)
+			task.delay(1, function() CurrentPage.Value = "Settings" end)
+		else
+			Toast.show("Connection Failed", "Could not reach OpenRouter", "err", 5)
+			task.delay(1, function() CurrentPage.Value = "Settings" end)
+		end
+	end
+end
+
+IYAI.GroupTransparency = 1
+local fadeTween = TS:Create(IYAI, Tween, { GroupTransparency = 0 })
+fadeTween.Completed:Connect(function() task.spawn(autoTestOnStart) end)
+fadeTween:Play()
+
+task.spawn(function()
+	IntroFrame.Visible           = true
+	IntroFrame.GroupTransparency = 0
+	task.wait(2)
+	TS:Create(IntroFrame, TweenInfo.new(1), { GroupTransparency = 1 }):Play()
+	task.wait(1)
+	IntroFrame.Visible = false
+end)
+
+-- ── Page routing ──────────────────────────────────────────────────────────────
+
+local function updatePage(page)
+	for _, v in pairs(ContentPages:GetChildren()) do
+		v.Visible = (v.Name == page .. "Page")
+	end
+end
+
+CurrentPage.Changed:Connect(function(page) updatePage(page) end)
+
+local SIDEBAR_OPEN   = UDim2.new(0, 150, 1, 0)
+local SIDEBAR_CLOSED = UDim2.new(0, 45,  1, 0)
+local sidebarTween   = TweenInfo.new(0.2, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
+
+LeftSidebar.MouseEnter:Connect(function()
+	TS:Create(LeftSidebar, sidebarTween, { Size = SIDEBAR_OPEN }):Play()
+end)
+LeftSidebar.MouseLeave:Connect(function()
+	TS:Create(LeftSidebar, sidebarTween, { Size = SIDEBAR_CLOSED }):Play()
+end)
+
+LeftSidebar.Size = SIDEBAR_CLOSED
+
+for _, v in pairs(LeftSidebar:GetChildren()) do
+	if not v:IsA("Frame") then continue end
+	local Hitbox = v:FindFirstChild("Hitbox")
+	if not Hitbox then continue end
+	local label   = v:FindFirstChild("TextLabel")
+	local tabName = label and label.Text or v.Name
+	Hitbox.MouseButton1Click:Connect(function() CurrentPage.Value = tabName end)
+end
+
+Highlight.Position = UDim2.new(0, 0, 0, 0)
+CurrentPage.Changed:Connect(function(page)
+	local target = LeftSidebar:FindFirstChild(page .. "ButtonFrame")
+	if not target then return end
+	TS:Create(Highlight, TweenInfo.new(0.1), {
+		Position = UDim2.new(0, 0, 0,
+			target.AbsolutePosition.Y - LeftSidebar.AbsolutePosition.Y)
+	}):Play()
+end)
+
+CurrentPage.Value = "Agent"
+
+-- ── Greet frame ───────────────────────────────────────────────────────────────
+
+local GreetFrame      = ScrollingFrameMainChat:FindFirstChild("GreetFrame")
+local SetApiKeyButton = GreetFrame and GreetFrame:FindFirstChild("SetApiKeyButton")
+
+if SetApiKeyButton then
+	SetApiKeyButton.MouseButton1Click:Connect(function()
+		CurrentPage.Value = "Settings"
+	end)
+end
+
+-- ── Agent page ────────────────────────────────────────────────────────────────
+
+ListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+	ScrollingFrameMainChat.CanvasSize = UDim2.new(0, 0, 0, ListLayout.AbsoluteContentSize.Y)
+end)
+
+local function scrollBottom()
+	task.defer(function()
+		local h = ListLayout.AbsoluteContentSize.Y
+		ScrollingFrameMainChat.CanvasSize     = UDim2.new(0, 0, 0, h)
+		ScrollingFrameMainChat.CanvasPosition = Vector2.new(0, h)
+	end)
+end
+
+local function addElement(templateName, text, isLabel)
+	local clone = ElementTemplate:FindFirstChild(templateName):Clone()
+	if isLabel then clone.Text = text end
+	TotalElements.Value += 1
+	clone.LayoutOrder = TotalElements.Value
+	clone.Visible     = true
+	clone.Parent      = ScrollingFrameMainChat
+	scrollBottom()
+	return clone
+end
+
+local function addChat(text)
+	if text == "" or isAssistantBusy.Value then return end
+	if GreetFrame then GreetFrame.Visible = false end
+	local clone = ElementTemplate:FindFirstChild("UserMessageFrame"):Clone()
+	clone.Frame.UserMessage.Text = text
+	TotalElements.Value += 1
+	clone.LayoutOrder = TotalElements.Value
+	clone.Visible     = true
+	clone.Parent      = ScrollingFrameMainChat
+	scrollBottom()
+end
+
+local function addTaskFrame(kind)
+	local name = kind == "busy"      and "AgentTaskFrame (Tool busy)"
+		or kind == "succeeded" and "AgentTaskFrame (Tool succeeded)"
+		or                          "AgentTaskFrame (Tool failed)"
+	return addElement(name, nil, false)
+end
+
+local StepCount = 0
+local function addStep()
+	StepCount += 1
+	addElement("StepN", "Step " .. StepCount, true)
+end
+
+local function addThinking(text) addElement("AssistantThinking", text, true) end
+
+local TYPEWRITER_SPEED = 3
+
+local function typewriteInto(element, text)
+	local len = string.len(text)
+	local i = 0
+	while i < len do
+		if not element or not element.Parent then break end
+		i = math.min(i + TYPEWRITER_SPEED, len)
+		element.Text = string.sub(text, 1, i)
+		scrollBottom()
+		task.wait()
+	end
+end
+
+local function splitCodeBlocks(text)
+	local segments = {}
+	local pos = 1
+	while true do
+		local fenceStart = text:find("```", pos, true)
+		if not fenceStart then break end
+		if fenceStart > pos then
+			table.insert(segments, { type = "text", content = text:sub(pos, fenceStart - 1) })
+		end
+		local nlPos = text:find("\n", fenceStart + 3, true)
+		if not nlPos then break end
+		local lang = text:sub(fenceStart + 3, nlPos - 1)
+		local closeStart = text:find("```", nlPos + 1, true)
+		if not closeStart then break end
+		local code = text:sub(nlPos + 1, closeStart - 1):match("^(.-)%s*$")
+		table.insert(segments, { type = "code", lang = lang, content = code })
+		pos = closeStart + 3
+	end
+	if pos <= #text then
+		table.insert(segments, { type = "text", content = text:sub(pos) })
+	end
+	return segments
+end
+
+local function addResponse(rawText, usage)
+	local segments = splitCodeBlocks(rawText)
+	local lastElem
+
+	if #segments == 1 and segments[1].type == "text" then
+		local elem = addElement("AssistantResponse", "", false)
+		local textLabel = elem:IsA("TextLabel") and elem or elem:FindFirstChildWhichIsA("TextLabel", true)
+		if textLabel then typewriteInto(textLabel, Prompt.stripMarkdown(segments[1].content) .. "\n") end
+		lastElem = elem
+	else
+		for _, seg in ipairs(segments) do
+			if seg.type == "text" then
+				local stripped = Prompt.stripMarkdown(seg.content):match("^%s*(.-)%s*$")
+				if stripped ~= "" then
+					local elem = addElement("AssistantResponse", "", false)
+					local textLabel = elem:IsA("TextLabel") and elem or elem:FindFirstChildWhichIsA("TextLabel", true)
+					if textLabel then textLabel.Text = stripped end
+					lastElem = elem
+				end
+			else
+				local frame = ElementTemplate:FindFirstChild("CodeblockFrame"):Clone()
+				local codeBox = frame:FindFirstChild("CodeBox", true)
+				if codeBox then codeBox.Text = seg.content end
+				local copyBtn = frame:FindFirstChild("CopyButton", true)
+				if copyBtn then
+					local capturedCode = seg.content
+					copyBtn.MouseButton1Click:Connect(function()
+						pcall(setclipboard, capturedCode)
+					end)
+				end
+				TotalElements.Value += 1
+				frame.LayoutOrder = TotalElements.Value
+				frame.Visible = true
+				frame.Parent = ScrollingFrameMainChat
+				lastElem = frame
+			end
+		end
+	end
+
+	if usage and lastElem then
+		local tokenLabel = lastElem:FindFirstChild("TokenCount", true)
+		if tokenLabel then
+			tokenLabel.Text = "↑ " .. (usage.prompt_tokens or 0) .. "  ↓ " .. (usage.completion_tokens or 0)
+		end
+	end
+end
+
+TextBoxInput:GetPropertyChangedSignal("Text"):Connect(function()
+	SendButton.ImageTransparency = TextBoxInput.Text == "" and 0.7 or 0
+end)
+
+-- ── Code page ─────────────────────────────────────────────────────────────────
+
+local function updateLineNumbers()
+	local lines = select(2, CodeBox.Text:gsub("\n", "\n")) + 1
+	local nums = table.create(lines)
+	for i = 1, lines do nums[i] = tostring(i) end
+	LineLabel.Text = table.concat(nums, "\n")
+end
+
+updateLineNumbers()
+CodeBox:GetPropertyChangedSignal("Text"):Connect(function()
+	updateLineNumbers()
+	CodeSF.CanvasPosition = Vector2.new(0, CodeSF.AbsoluteCanvasSize.Y)
+end)
+
+CodeClearButton.MouseButton1Click:Connect(function()
+	CodeBox.Text = ""
+end)
+
+CodeCopyButton.MouseButton1Click:Connect(function()
+	if CodeBox.Text == "" then return end
+	if type(setclipboard) == "function" then
+		setclipboard(CodeBox.Text)
+		Toast.show("Copied", "Code copied to clipboard", "info", 2)
+	end
+end)
+
+RunButton.MouseButton1Click:Connect(function()
+	local code = CodeBox.Text
+	if code == "" then return end
+	local fn, compErr = loadstring(code)
+	if not fn then
+		Toast.show("Syntax Error", compErr or "compile failed", "error", 5)
+		return
+	end
+	local ok, runErr = pcall(fn)
+	if not ok then
+		Toast.show("Runtime Error", tostring(runErr), "error", 5)
+	else
+		Toast.show("Done", "Code ran successfully", "ok", 2)
+	end
+end)
+
+-- Code tools registered here so they share CodeBox closure
+Tools.register({
+	definition = {
+		type = "function",
+		["function"] = {
+			name        = "write_code",
+			description = "Write or fully replace the code in the code editor.",
+			parameters  = { type = "object", properties = { code = { type = "string", description = "The full Lua code to write." } }, required = { "code" } }
+		}
+	},
+	handler = function(args)
+		CodeBox.Text = args.code or ""
+		return "Code written (" .. select(2, CodeBox.Text:gsub("\n", "\n")) + 1 .. " lines)"
+	end
+})
+
+Tools.register({
+	definition = {
+		type = "function",
+		["function"] = {
+			name        = "edit_code",
+			description = "Find-and-replace in the code editor.",
+			parameters  = { type = "object", properties = { search = { type = "string" }, replace = { type = "string" } }, required = { "search", "replace" } }
+		}
+	},
+	handler = function(args)
+		local current = CodeBox.Text
+		local escaped = args.search:gsub("([%(%)%.%%%+%-%*%?%[%^%$])", "%%%1")
+		if not current:find(escaped, 1, true) then return "Error: search text not found in code." end
+		local before = select(2, current:gsub("\n", "\n")) + 1
+		CodeBox.Text  = current:gsub(escaped, args.replace:gsub("%%", "%%%%"), 1)
+		local after   = select(2, CodeBox.Text:gsub("\n", "\n")) + 1
+		local diff    = after - before
+		return (diff >= 0 and "+" or "") .. diff .. " lines"
+	end
+})
+
+Tools.register({
+	definition = {
+		type = "function",
+		["function"] = {
+			name        = "read_code",
+			description = "Get total line count of the code editor.",
+			parameters  = { type = "object", properties = {} }
+		}
+	},
+	handler = function()
+		local code = CodeBox.Text
+		if code == "" then return "(editor is empty)" end
+		return tostring(select(2, code:gsub("\n", "\n")) + 1) .. " lines total"
+	end
+})
+
+Tools.register({
+	definition = {
+		type = "function",
+		["function"] = {
+			name        = "get_lines",
+			description = "Fetch a specific line range from the code editor.",
+			parameters  = { type = "object", properties = { start_line = { type = "number" }, end_line = { type = "number" } }, required = { "start_line", "end_line" } }
+		}
+	},
+	handler = function(args)
+		local lines = CodeBox.Text:split("\n")
+		local s = math.max(1, math.floor(args.start_line))
+		local e = math.min(#lines, math.floor(args.end_line))
+		if s > #lines then return "Error: start_line out of range (total " .. #lines .. " lines)" end
+		local result = {}
+		for i = s, e do result[#result+1] = i .. ": " .. lines[i] end
+		return table.concat(result, "\n")
+	end
+})
+
+Tools.register({
+	definition = {
+		type = "function",
+		["function"] = {
+			name        = "replace_lines",
+			description = "Replace a range of lines in the code editor by line number.",
+			parameters  = { type = "object", properties = { start_line = { type = "number" }, end_line = { type = "number" }, replacement = { type = "string" } }, required = { "start_line", "end_line", "replacement" } }
+		}
+	},
+	handler = function(args)
+		local lines = CodeBox.Text:split("\n")
+		local s = math.max(1, math.floor(args.start_line))
+		local e = math.min(#lines, math.floor(args.end_line))
+		if s > #lines then return "Error: start_line out of range (total " .. #lines .. " lines)" end
+		local before = #lines
+		local newLines = args.replacement:split("\n")
+		local result = {}
+		for i = 1, s - 1            do result[#result+1] = lines[i] end
+		for _, l in ipairs(newLines) do result[#result+1] = l end
+		for i = e + 1, #lines       do result[#result+1] = lines[i] end
+		CodeBox.Text = table.concat(result, "\n")
+		local diff = (select(2, CodeBox.Text:gsub("\n", "\n")) + 1) - before
+		return "Replaced lines " .. s .. "-" .. e .. " (" .. (diff >= 0 and "+" or "") .. diff .. " lines)"
+	end
+})
+
+Tools.register({
+	definition = {
+		type = "function",
+		["function"] = {
+			name        = "find_in_code",
+			description = "Search for a string in the code editor. Returns matching line numbers.",
+			parameters  = { type = "object", properties = { query = { type = "string", description = "Plain text to search for." } }, required = { "query" } }
+		}
+	},
+	handler = function(args)
+		local lines = CodeBox.Text:split("\n")
+		local matches = {}
+		for i, line in ipairs(lines) do
+			if line:find(args.query, 1, true) then matches[#matches+1] = i .. ": " .. line end
+		end
+		if #matches == 0 then return "No matches found." end
+		return #matches .. " match(es):\n" .. table.concat(matches, "\n")
+	end
+})
+
+-- ── Settings page ─────────────────────────────────────────────────────────────
+
+local selectedHost = Config.host
+local dropdownOpen = false
+
+UnsavedChanges.Visible = false
+DropdownList.Visible   = false
+
+local function maskKey(key)
+	if key == "" then return "" end
+	local visible = math.min(4, #key)
+	return string.rep("•", #key - visible) .. key:sub(-visible)
+end
+
+local _loadingKey = true
+
+APIKeyBox.Text             = Config.apiKey
+APIKeyBox.TextTransparency = 1
+APIKeyLabel.Text           = maskKey(Config.apiKey)
+ModelBox.Text              = Config.model
+selectedHost               = Config.host
+
+for _, b in pairs(HostButtons) do
+	if b:IsA("TextButton") then
+		b.BackgroundTransparency = b.Text == selectedHost and 0.7 or 1
+	end
+end
+
+_loading    = false
+_loadingKey = false
+
+local _apiKeyFocused = false
+
+APIKeyBox.Focused:Connect(function()
+	_apiKeyFocused   = true
+	APIKeyLabel.Text = string.rep("•", #APIKeyBox.Text)
+end)
+
+APIKeyBox.FocusLost:Connect(function()
+	_apiKeyFocused   = false
+	APIKeyLabel.Text = maskKey(APIKeyBox.Text)
+	if not _loadingKey then UnsavedChanges.Visible = true end
+end)
+
+APIKeyBox:GetPropertyChangedSignal("Text"):Connect(function()
+	if _loadingKey then return end
+	UnsavedChanges.Visible = true
+	if _apiKeyFocused then APIKeyLabel.Text = string.rep("•", #APIKeyBox.Text) end
+end)
+
+local filteredList = {}
+
+local function closeDropdown()
+	dropdownOpen         = false
+	DropdownList.Visible = false
+end
+
+local function populateDropdown(models)
+	for _, c in pairs(DropdownList:GetChildren()) do
+		if c:IsA("TextButton") then c:Destroy() end
+	end
+	if #models == 0 then closeDropdown() return end
+	for i, m in ipairs(models) do
+		local btn = Instance.new("TextButton")
+		btn.Text                   = m.name
+		btn.TextSize               = 12
+		btn.Font                   = Enum.Font.SourceSans
+		btn.TextColor3             = Color3.fromRGB(161, 161, 170)
+		btn.BackgroundColor3       = Color3.fromRGB(17, 17, 20)
+		btn.BackgroundTransparency = 0
+		btn.BorderSizePixel        = 0
+		btn.Size                   = UDim2.new(1, 0, 0, 28)
+		btn.LayoutOrder            = i
+		btn.TextXAlignment         = Enum.TextXAlignment.Left
+		btn.Parent                 = DropdownList
+		local pad = Instance.new("UIPadding", btn); pad.PaddingLeft = UDim.new(0, 10)
+		btn.MouseButton1Down:Connect(function()
+			ModelBox.Text          = m.name
+			UnsavedChanges.Visible = true
+			closeDropdown()
+		end)
+		btn.MouseEnter:Connect(function() btn.TextColor3 = Color3.fromRGB(250, 250, 250) end)
+		btn.MouseLeave:Connect(function() btn.TextColor3 = Color3.fromRGB(161, 161, 170) end)
+	end
+	dropdownOpen         = true
+	DropdownList.Visible = true
+end
+
+local function filterDropdown(query)
+	local q = query:lower()
+	filteredList = {}
+	for _, m in ipairs(modelList) do
+		if m.name:lower():find(q, 1, true) then table.insert(filteredList, m) end
+	end
+	populateDropdown(filteredList)
+end
+
+ModelBox:GetPropertyChangedSignal("Text"):Connect(function()
+	if _loading then return end
+	UnsavedChanges.Visible = true
+	if #modelList > 0 then filterDropdown(ModelBox.Text) end
+end)
+
+DropdownButton.MouseButton1Click:Connect(function()
+	if dropdownOpen then closeDropdown() else filterDropdown(ModelBox.Text) end
+end)
+
+ModelBox.Focused:Connect(function()
+	if #modelList > 0 then filterDropdown("") end
+end)
+
+ModelBox.FocusLost:Connect(function()
+	task.wait(0.15)
+	closeDropdown()
+end)
+
+UIS.InputBegan:Connect(function(input)
+	if input.UserInputType ~= Enum.UserInputType.MouseButton1 then return end
+	if not dropdownOpen then return end
+	local mousePos = UIS:GetMouseLocation()
+	local function inside(gui)
+		local pos = gui.AbsolutePosition; local size = gui.AbsoluteSize
+		return mousePos.X >= pos.X and mousePos.X <= pos.X + size.X
+			and mousePos.Y >= pos.Y and mousePos.Y <= pos.Y + size.Y
+	end
+	if not inside(DropdownList) and not inside(ModelFrame) then closeDropdown() end
+end)
+
+for _, btn in pairs(HostButtons) do
+	if not btn:IsA("TextButton") then continue end
+	btn.MouseButton1Click:Connect(function()
+		selectedHost = btn.Text
+		for _, b in pairs(HostButtons) do
+			if b:IsA("TextButton") then
+				b.BackgroundTransparency = b.Text == selectedHost and 0.7 or 1
+			end
+		end
+		UnsavedChanges.Visible = true
+	end)
+end
+
+ConnectionButton.MouseButton1Click:Connect(function()
+	ConnectionButton.Text = "Testing..."
+	local res
+	if selectedHost == "Ollama" then
+		res = Http.request(Config.ollamaUrl .. "/api/tags", "GET", {})
+	else
+		res = Http.request("https://openrouter.ai/api/v1/models", "GET", {
+			["Authorization"] = "Bearer " .. APIKeyBox.Text,
+		})
+	end
+	ConnectionButton.Text = "Connection"
+	if not res or res.StatusCode ~= 200 then
+		Toast.show("Failed", "Could not reach " .. selectedHost, "err", 4)
+		return
+	end
+	Toast.show("Connected", selectedHost .. " is reachable", "ok", 3)
+	local ok, data = pcall(HS.JSONDecode, HS, res.Body)
+	if not ok then return end
+	if selectedHost == "Ollama" and data.models then
+		modelList = data.models
+		populateDropdown(data.models)
+		if ModelBox.Text == "" and #data.models > 0 then
+			_loading = true; ModelBox.Text = data.models[1].name; _loading = false
+		end
+	elseif selectedHost ~= "Ollama" and data.data then
+		modelList = {}
+		for _, m in ipairs(data.data) do table.insert(modelList, { name = m.id }) end
+		table.sort(modelList, function(a, b) return a.name < b.name end)
+		populateDropdown(modelList)
+		if ModelBox.Text == "" and #modelList > 0 then
+			_loading = true; ModelBox.Text = modelList[1].name; _loading = false
+		end
+	end
+end)
+
+CredentialButton.MouseButton1Click:Connect(function()
+	local key = APIKeyBox.Text
+	if key == "" then Toast.show("No API Key", "Enter an API key first", "err", 3) return end
+	CredentialButton.Text = "Testing..."
+	if selectedHost == "Ollama" then
+		local res = Http.request(Config.ollamaUrl .. "/api/tags", "GET", {})
+		CredentialButton.Text = "Credential"
+		if res and res.StatusCode == 200 then
+			Toast.show("OK", "Ollama has no auth — connection is fine", "ok", 3)
+		else
+			Toast.show("Failed", "Could not reach Ollama", "err", 4)
+		end
+	else
+		local res = Http.request("https://openrouter.ai/api/v1/auth/key", "GET", {
+			["Authorization"] = "Bearer " .. key,
+		})
+		CredentialButton.Text = "Credential"
+		if not res then
+			Toast.show("Failed", "No response from server", "err", 4)
+		elseif res.StatusCode == 200 then
+			local ok, data = pcall(HS.JSONDecode, HS, res.Body)
+			if ok and data.data then
+				local label = data.data.label or "unknown"
+				local usage = data.data.usage or 0
+				local limit = data.data.limit
+				local info  = limit
+					and string.format("$%.4f / $%.2f limit", usage, limit)
+					or  string.format("$%.4f used (no limit)", usage)
+				Toast.show("Valid Key", label .. " — " .. info, "ok", 5)
+			else
+				Toast.show("Valid Key", "Credential accepted", "ok", 3)
+			end
+		elseif res.StatusCode == 401 then
+			Toast.show("Invalid Key", "API key rejected (401)", "err", 4)
+		else
+			Toast.show("Failed", "Status " .. res.StatusCode, "err", 4)
+		end
+	end
+end)
+
+local function saveSettings()
+	Config.apiKey = APIKeyBox.Text
+	Config.model  = ModelBox.Text
+	Config.host   = selectedHost
+	Config.save()
+	UnsavedChanges.Visible = false
+	Toast.show("Saved", "Settings saved successfully", "ok", 2)
+end
+
+local function revertSettings()
+	_loading = true; _loadingKey = true
+	APIKeyBox.Text             = Config.apiKey
+	APIKeyBox.TextTransparency = 1
+	APIKeyLabel.Text           = maskKey(Config.apiKey)
+	ModelBox.Text              = Config.model
+	selectedHost               = Config.host
+	for _, b in pairs(HostButtons) do
+		if b:IsA("TextButton") then
+			b.BackgroundTransparency = b.Text == selectedHost and 0.7 or 1
+		end
+	end
+	_loading = false; _loadingKey = false
+	UnsavedChanges.Visible = false
+end
+
+SaveButton.MouseButton1Click:Connect(saveSettings)
+RevertButton.MouseButton1Click:Connect(revertSettings)
+
+-- ── Window controls ───────────────────────────────────────────────────────────
+
+MinimizeButton.MouseButton1Click:Connect(function()
+	Minimized = not Minimized
+	local authorLabel = TopBar:FindFirstChild("AuthorLabel")
+	local versionLabel = TopBar:FindFirstChild("VersionLabel")
+	if Minimized then
+		TS:Create(IYAI, Tween, { Size = MinimizedIYAISize }):Play()
+		if authorLabel  then TS:Create(authorLabel,  Tween, { TextTransparency = 1 }):Play() end
+		if versionLabel then TS:Create(versionLabel, Tween, { TextTransparency = 1 }):Play() end
+	else
+		TS:Create(IYAI, Tween, { Size = DefaultIYAISize }):Play()
+		if authorLabel  then TS:Create(authorLabel,  Tween, { TextTransparency = 0.5 }):Play() end
+		if versionLabel then TS:Create(versionLabel, Tween, { TextTransparency = 0.5 }):Play() end
+	end
+end)
+
+CloseButton.MouseButton1Click:Connect(function()
+	TS:Create(IYAI, Tween, { GroupTransparency = 1 }):Play()
+	task.delay(0.5, function()
+		if ScreenGui and ScreenGui.Parent then ScreenGui:Destroy() end
+	end)
+end)
+
+-- ── AI core ───────────────────────────────────────────────────────────────────
+
+local conversationHistory = {}
+
+local function buildUrl()
+	return Config.host == "Ollama"
+		and Config.ollamaUrl .. "/api/chat"
+		or  "https://openrouter.ai/api/v1/chat/completions"
+end
+
+local function buildHeaders()
+	if Config.host == "Ollama" then return { ["Content-Type"] = "application/json" } end
+	return {
+		["Content-Type"]  = "application/json",
+		["Authorization"] = "Bearer " .. Config.apiKey,
+	}
+end
+
+local function trimHistory(history)
+	local keepLast = math.ceil(#history / 2)
+	local start = #history - keepLast + 1
+	while start <= #history and history[start].role ~= "user" do start += 1 end
+	local trimmed = {}
+	for i = start, #history do trimmed[#trimmed + 1] = history[i] end
+	return trimmed
+end
+
+local function isContextError(res)
+	if not res then return false end
+	if res.StatusCode == 400 or res.StatusCode == 413 then
+		local body = res.Body or ""
+		return body:find("context") or body:find("token") or body:find("length") or body:find("too long") or body:find("max_tokens")
+	end
+	return false
+end
+
+local function buildMessages(history)
+	local msgs = {{ role = "system", content = Prompt.build(true) }}
+	for _, m in ipairs(history or conversationHistory) do table.insert(msgs, m) end
+	return msgs
+end
+
+local function buildBody(history)
+	local body = {
+		model    = Config.model,
+		messages = buildMessages(history),
+		stream   = false,
+	}
+	local defs = Tools.getDefinitions()
+	if #defs > 0 then
+		body.tools       = defs
+		body.tool_choice = "auto"
+	end
+	local json = HS:JSONEncode(body)
+	json = json:gsub('"properties":%[%]', '"properties":{}')
+	return json
+end
+
+local function parseMessage(responseBody)
+	local ok, data = pcall(HS.JSONDecode, HS, responseBody)
+	if not ok then return nil, nil, "JSON decode failed: " .. tostring(data) end
+	local msg = Config.host == "Ollama"
+		and data.message
+		or  (data.choices and data.choices[1] and data.choices[1].message)
+	if not msg then return nil, nil, "Unexpected response shape: " .. responseBody end
+	return msg, data.usage, nil
+end
+
+-- ── UI helpers ────────────────────────────────────────────────────────────────
+
+local agentAborted = false
+
+local function setBusy(state)
+	isAssistantBusy.Value        = state
+	SendButton.Visible           = not state
+	SendButton.ImageTransparency = TextBoxInput.Text == "" and 0.7 or 0
+	StopButton.Visible           = state == true
+end
+
+StopButton.Visible = false
+StopButton.MouseButton1Click:Connect(function() agentAborted = true end)
+
+local function plural(n, word, suffix)
+	return n .. " " .. word .. (n == 1 and "" or (suffix or "s"))
+end
+
+local function formatToolName(name)
+	return (name:gsub("_(%a)", function(c) return " " .. c:upper() end):gsub("^%a", string.upper))
+end
+
+local function summarizeResult(toolName, result)
+	local label = formatToolName(toolName)
+	local function fmt(s) return label .. " - " .. s end
+	if result:find("^Tool error") or result:find("^Unknown tool") or result:find("^Error") then
+		local msg = result:match("^([^\n]+)") or result
+		return fmt(#msg > 80 and msg:sub(1, 77) .. "…" or msg)
+	end
+	if toolName == "write_code"    then return fmt(result) end
+	if toolName == "edit_code"     then return fmt(result) end
+	if toolName == "replace_lines" then return fmt(result) end
+	if toolName == "read_code"     then return fmt(result) end
+	if toolName == "get_lines" then
+		return fmt(plural(select(2, result:gsub("\n", "\n")) + 1, "line") .. " fetched")
+	end
+	if toolName == "find_in_code" then
+		local m = tonumber(result:match("^(%d+) match"))
+		return fmt(m and (plural(m, "match", "es") .. " found") or result)
+	end
+	if toolName == "iy_status" or toolName == "iy_cmd" then return fmt(result) end
+	if toolName == "run" then
+		return fmt(plural(select(2, result:gsub("\n", "\n")) + 1, "line") .. " of output")
+	end
+	return fmt(plural(select(2, result:gsub("\n", "\n")) + 1, "line") .. " of output")
+end
+
+local function updateTaskFrame(frame, kind, result, toolName)
+	local order = frame.LayoutOrder
+	frame:Destroy()
+	local new = addTaskFrame(kind)
+	new.LayoutOrder = order
+	if result then
+		local lbl = new:FindFirstChildWhichIsA("TextLabel", true)
+		if lbl then lbl.Text = summarizeResult(toolName or "", result) end
+	end
+	return new
+end
+
+local CODE_WRITE_TOOLS = { write_code = true, replace_lines = true, edit_code = true }
+
+local function addPostAction(label, callback)
+	local frame = addElement("PostActionFrame", nil, false)
+	local btn   = frame:FindFirstChild("PostActionButton", true)
+	if btn then
+		btn.Text = label
+		btn.MouseButton1Click:Connect(callback)
+	end
+	return frame
+end
+
+local function addCodeStatus(statusText)
+	local frame = addElement("CodeStatusFrame", nil, false)
+	local lbl   = frame:FindFirstChild("TextLabel", true)
+	local icon  = frame:FindFirstChild("IconColor", true)
+	if lbl  then lbl.Text = statusText end
+	if icon then icon.BackgroundColor3 = Color3.fromRGB(255, 200, 50) end
+	return frame
+end
+
+local function updateCodeStatus(frame, diffText, succeeded)
+	local lbl  = frame:FindFirstChild("TextLabel", true)
+	local icon = frame:FindFirstChild("IconColor", true)
+	if lbl  then lbl.Text = diffText end
+	if icon then
+		icon.BackgroundColor3 = succeeded
+			and Color3.fromRGB(78, 201, 78)
+			or  Color3.fromRGB(224, 82, 82)
+	end
+end
+
+-- ── Clear button ──────────────────────────────────────────────────────────────
+
+ClearButton.MouseButton1Click:Connect(function()
+	conversationHistory = {}
+	StepCount           = 0
+	TotalElements.Value = 0
+	for _, child in ipairs(ScrollingFrameMainChat:GetChildren()) do
+		if child:IsA("GuiObject") and child ~= ElementTemplate and child ~= GreetFrame then child:Destroy() end
+	end
+	if GreetFrame then GreetFrame.Visible = true end
+	ScrollingFrameMainChat.CanvasSize     = UDim2.new(0, 0, 0, 0)
+	ScrollingFrameMainChat.CanvasPosition = Vector2.new(0, 0)
+end)
+
+-- ── Code agent ────────────────────────────────────────────────────────────────
+
+local CODE_SYSTEM = table.concat({
+	"You are a Lua coding agent inside a Roblox plugin.",
+	"The user describes what they want built. You write or edit Lua code in the code editor.",
+	"",
+	"Workflow for edits on existing code:",
+	"1. Call read_code() to get the total line count.",
+	"2. Call find_in_code(query) to locate the relevant lines by keyword.",
+	"3. Call get_lines(start, end) to read that section in context.",
+	"4. Call replace_lines(start, end, replacement) to make the change.",
+	"Never read or rewrite the entire file if you only need to change a small section.",
+	"",
+	"Use write_code only for new scripts or complete rewrites.",
+	"Use any game inspection tools to gather context before coding.",
+	"After editing, briefly explain what you changed. Plain text only, no markdown.",
+	"Do not ask clarifying questions — make a reasonable attempt and explain your assumptions.",
+}, "\n")
+
+local codeHistory    = {}
+local MAX_CODE_STEPS = 15
+
+local function runCodeAgent(userText)
+	StepCount    = 0
+	agentAborted = false
+	setBusy(true)
+	CurrentPage.Value = "Agent"
+
+	table.insert(codeHistory, { role = "user", content = userText })
+	local statusFrame = addCodeStatus("Agent is writing code...")
+	local stepsDone   = 0
+
+	while stepsDone < MAX_CODE_STEPS do
+		if agentAborted then
+			updateCodeStatus(statusFrame, "Stopped.", false)
+			addElement("AbortText", "Stopped by user.", true)
+			break
+		end
+		stepsDone += 1
+
+		local function buildCodeBody(hist)
+			local body = {
+				model    = Config.model,
+				messages = (function()
+					local msgs = {{ role = "system", content = CODE_SYSTEM }}
+					for _, m in ipairs(hist) do msgs[#msgs+1] = m end
+					return msgs
+				end)(),
+				tools       = Tools.getDefinitions(),
+				tool_choice = "auto",
+				stream      = false,
+			}
+			local j = HS:JSONEncode(body)
+			return j:gsub('"properties":%[%]', '"properties":{}')
+		end
+
+		local res = Http.request(buildUrl(), "POST", buildHeaders(), buildCodeBody(codeHistory))
+		if isContextError(res) then
+			Toast.show("History trimmed", "Context too long — retrying with less history", "warn", 3)
+			res = Http.request(buildUrl(), "POST", buildHeaders(), buildCodeBody(trimHistory(codeHistory)))
+		end
+		if not res or res.StatusCode ~= 200 then
+			updateCodeStatus(statusFrame, "Request failed (" .. (res and tostring(res.StatusCode) or "no response") .. ")", false)
+			break
+		end
+
+		local msg, _, err = parseMessage(res.Body)
+		if err then updateCodeStatus(statusFrame, err, false) break end
+
+		local toolCalls = msg.tool_calls
+		if not toolCalls or #toolCalls == 0 then
+			local text = Prompt.stripMarkdown(msg.content or "")
+			updateCodeStatus(statusFrame, text, true)
+			table.insert(codeHistory, { role = "assistant", content = text })
+			break
+		end
+
+		table.insert(codeHistory, msg)
+
+		local seenCodeCalls = {}
+		for _, call in ipairs(toolCalls) do
+			local fnName = call["function"] and call["function"].name or ""
+			local fnArgs = call["function"] and call["function"].arguments or ""
+			local callKey = fnName .. "|" .. fnArgs
+			if seenCodeCalls[callKey] then continue end
+			seenCodeCalls[callKey] = true
+			local statusLbl = statusFrame:FindFirstChild("TextLabel", true)
+			if fnName == "write_code" and statusLbl then statusLbl.Text = "Agent is writing code..." end
+			if fnName == "edit_code"  and statusLbl then statusLbl.Text = "Agent is editing code..."  end
+			local result = Tools.run(fnName, fnArgs)
+			table.insert(codeHistory, {
+				role         = "tool",
+				tool_call_id = call.id or fnName,
+				name         = fnName,
+				content      = result,
+			})
+		end
+	end
+
+	if stepsDone >= MAX_CODE_STEPS then
+		updateCodeStatus(statusFrame, "Reached max steps.", false)
+	end
+
+	setBusy(false)
+	TextBoxInput:CaptureFocus()
+end
+
+-- ── Agent loop ────────────────────────────────────────────────────────────────
+
+local MAX_STEPS = 10
+
+local function runAgentLoop(userText)
+	StepCount    = 0
+	agentAborted = false
+	setBusy(true)
+
+	table.insert(conversationHistory, { role = "user", content = userText })
+	local stepsDone  = 0
+	local agentDone  = false
+	local seenGlobal = {}  -- cross-step duplicate detection
+
+	local generatingFrame = nil
+	local function genLabel()
+		if not generatingFrame then return nil end
+		if generatingFrame:IsA("TextLabel") and generatingFrame.Name ~= "TokenCount" then
+			return generatingFrame
+		end
+		for _, d in ipairs(generatingFrame:GetDescendants()) do
+			if d:IsA("TextLabel") and d.Name ~= "TokenCount" then return d end
+		end
+	end
+	local function showGenerating()
+		if not generatingFrame then
+			generatingFrame = addElement("AssistantResponse", "", false)
+		end
+		local lbl = genLabel()
+		if lbl then lbl.Text = "●" end
+		TotalElements.Value += 1
+		generatingFrame.LayoutOrder = TotalElements.Value
+		scrollBottom()
+	end
+
+	while stepsDone < MAX_STEPS do
+		if agentAborted then
+			if generatingFrame then generatingFrame:Destroy(); generatingFrame = nil end
+			addElement("AbortText", "Stopped by user.", true)
+			break
+		end
+		stepsDone += 1
+
+		showGenerating()
+
+		local res = Http.request(buildUrl(), "POST", buildHeaders(), buildBody())
+		if isContextError(res) then
+			Toast.show("History trimmed", "Context too long — retrying with less history", "warn", 3)
+			res = Http.request(buildUrl(), "POST", buildHeaders(), buildBody(trimHistory(conversationHistory)))
+		end
+		if not res or res.StatusCode ~= 200 then
+			if generatingFrame then generatingFrame:Destroy(); generatingFrame = nil end
+			addResponse("Request failed (status " .. (res and tostring(res.StatusCode) or "no response") .. ")")
+			break
+		end
+
+		local msg, usage, err = parseMessage(res.Body)
+		if err then
+			if generatingFrame then generatingFrame:Destroy(); generatingFrame = nil end
+			addResponse(err)
+			break
+		end
+
+		if msg.thinking and msg.thinking ~= "" then
+			addThinking(Prompt.stripMarkdown(msg.thinking))
+		end
+
+		local toolCalls = msg.tool_calls
+		if not toolCalls or #toolCalls == 0 then
+			local rawContent = msg.content or ""
+			local lbl = genLabel()
+			if lbl and rawContent ~= "" then
+				typewriteInto(lbl, Prompt.stripMarkdown(rawContent) .. "\n")
+				if usage then
+					local tokenLabel = generatingFrame:FindFirstChild("TokenCount", true)
+					if tokenLabel then
+						tokenLabel.Text = "↑ " .. (usage.prompt_tokens or 0) .. "  ↓ " .. (usage.completion_tokens or 0)
+					end
+				end
+			else
+				if generatingFrame then generatingFrame:Destroy(); generatingFrame = nil end
+				addResponse(rawContent, usage)
+			end
+			generatingFrame = nil
+			table.insert(conversationHistory, { role = "assistant", content = Prompt.stripMarkdown(rawContent) })
+			break
+		end
+
+		-- Show any pre-tool commentary the model included
+		if msg.content and msg.content ~= "" then
+			if generatingFrame then generatingFrame:Destroy(); generatingFrame = nil end
+			addResponse(msg.content)
+		end
+
+		-- Keep generating frame below the step about to be added
+		if generatingFrame then
+			TotalElements.Value += 1
+			generatingFrame.LayoutOrder = TotalElements.Value + 100
+		end
+
+		addStep()
+		table.insert(conversationHistory, msg)
+
+		agentDone = false
+		local seenCalls = {}
+		for _, call in ipairs(toolCalls) do
+			local fnName = call["function"] and call["function"].name or ""
+			local fnArgs = call["function"] and call["function"].arguments or ""
+			local callKey = fnName .. "|" .. fnArgs
+			if seenCalls[callKey] then continue end
+			seenCalls[callKey] = true
+			if seenGlobal[callKey] then
+				table.insert(conversationHistory, {
+					role         = "tool",
+					tool_call_id = call.id or fnName,
+					name         = fnName,
+					content      = "Already executed. Call done() with your final response.",
+				})
+				continue
+			end
+			seenGlobal[callKey] = true
+
+			if fnName == "done" then
+				local ok, args = pcall(HS.JSONDecode, HS, fnArgs)
+				local message = (ok and args and args.message) or ""
+				if message ~= "" then
+					local lbl = genLabel()
+					if lbl then
+						TotalElements.Value += 1
+						generatingFrame.LayoutOrder = TotalElements.Value
+						typewriteInto(lbl, Prompt.stripMarkdown(message) .. "\n")
+						if usage then
+							local tokenLabel = generatingFrame:FindFirstChild("TokenCount", true)
+							if tokenLabel then
+								tokenLabel.Text = "↑ " .. (usage.prompt_tokens or 0) .. "  ↓ " .. (usage.completion_tokens or 0)
+							end
+						end
+						generatingFrame = nil
+					else
+						addResponse(message, usage)
+					end
+					table.insert(conversationHistory, { role = "assistant", content = Prompt.stripMarkdown(message) })
+				end
+				if generatingFrame then generatingFrame:Destroy(); generatingFrame = nil end
+				agentDone = true
+				break
+			end
+
+			local taskFrame = addTaskFrame("busy")
+			local lbl = taskFrame:FindFirstChildWhichIsA("TextLabel", true)
+			if lbl then lbl.Text = fnName end
+			local result = Tools.run(fnName, fnArgs)
+			local failed = result:find("^Tool error") or result:find("^Unknown tool")
+				or result:find("^Error") or result:find("^Compile error")
+				or result:find("^Runtime error")
+			updateTaskFrame(taskFrame, failed and "failed" or "succeeded", result, fnName)
+			if not failed and CODE_WRITE_TOOLS[fnName] then
+				addPostAction("View Code →", function() CurrentPage.Value = "Code" end)
+			end
+			table.insert(conversationHistory, {
+				role         = "tool",
+				tool_call_id = call.id or fnName,
+				name         = fnName,
+				content      = result,
+			})
+		end
+		if agentDone then break end
+	end
+
+	if generatingFrame then generatingFrame:Destroy(); generatingFrame = nil end
+	if stepsDone >= MAX_STEPS and not agentDone then
+		addResponse("Reached max steps (" .. MAX_STEPS .. ").")
+	end
+
+	setBusy(false)
+	TextBoxInput:CaptureFocus()
+end
+
+-- ── onSend ────────────────────────────────────────────────────────────────────
+
+local function onSend()
+	local text = TextBoxInput.Text
+	if text == "" or isAssistantBusy.Value then return end
+	TextBoxInput.Text = ""
+	addChat(text)
+	task.spawn(function()
+		if CurrentPage.Value == "Code" then
+			runCodeAgent(text)
+		else
+			runAgentLoop(text)
+		end
+	end)
+end
+
+SendButton.MouseButton1Click:Connect(onSend)
+TextBoxInput.FocusLost:Connect(function(enterPressed)
+	if enterPressed then onSend() end
+end)
+
+-- ── Drag ──────────────────────────────────────────────────────────────────────
+
+local dragging  = false
+local dragStart = nil
+local startPos  = nil
+
+TopBar.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 then
+		dragging  = true
+		dragStart = input.Position
+		startPos  = IYAI.Position
+	end
+end)
+
+UIS.InputChanged:Connect(function(input)
+	if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+		local delta   = input.Position - dragStart
+		IYAI.Position = UDim2.new(
+			startPos.X.Scale, startPos.X.Offset + delta.X,
+			startPos.Y.Scale, startPos.Y.Offset + delta.Y
+		)
+	end
+end)
+
+UIS.InputEnded:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = false end
+end)
