@@ -513,6 +513,11 @@ RunButton.MouseButton1Click:Connect(function()
 end)
 
 -- Code tools registered here so they share CodeBox closure
+local function unescapeCode(s)
+	-- Models sometimes emit literal \n \t \r instead of real control chars
+	return (s:gsub("\\n", "\n"):gsub("\\t", "\t"):gsub("\\r", ""))
+end
+
 Tools.register({
 	definition = {
 		type = "function",
@@ -523,7 +528,7 @@ Tools.register({
 		}
 	},
 	handler = function(args)
-		CodeBox.Text = args.code or ""
+		CodeBox.Text = unescapeCode(args.code or "")
 		return "Code written (" .. select(2, CodeBox.Text:gsub("\n", "\n")) + 1 .. " lines)"
 	end
 })
@@ -539,10 +544,12 @@ Tools.register({
 	},
 	handler = function(args)
 		local current = CodeBox.Text
-		local escaped = args.search:gsub("([%(%)%.%%%+%-%*%?%[%^%$])", "%%%1")
+		local search  = unescapeCode(args.search  or "")
+		local replace = unescapeCode(args.replace or "")
+		local escaped = search:gsub("([%(%)%.%%%+%-%*%?%[%^%$])", "%%%1")
 		if not current:find(escaped, 1, true) then return "Error: search text not found in code." end
 		local before = select(2, current:gsub("\n", "\n")) + 1
-		CodeBox.Text  = current:gsub(escaped, args.replace:gsub("%%", "%%%%"), 1)
+		CodeBox.Text  = current:gsub(escaped, replace:gsub("%%", "%%%%"), 1)
 		local after   = select(2, CodeBox.Text:gsub("\n", "\n")) + 1
 		local diff    = after - before
 		return (diff >= 0 and "+" or "") .. diff .. " lines"
@@ -600,7 +607,7 @@ Tools.register({
 		local e = math.min(#lines, math.floor(args.end_line))
 		if s > #lines then return "Error: start_line out of range (total " .. #lines .. " lines)" end
 		local before = #lines
-		local newLines = args.replacement:split("\n")
+		local newLines = unescapeCode(args.replacement or ""):split("\n")
 		local result = {}
 		for i = 1, s - 1            do result[#result+1] = lines[i] end
 		for _, l in ipairs(newLines) do result[#result+1] = l end
