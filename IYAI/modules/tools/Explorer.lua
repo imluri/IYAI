@@ -1,7 +1,7 @@
 -- tools/Explorer.lua  |  Instance explorer tools
--- Returns function(Tools) — call it to register tools.
+-- Returns function(Tools, getProperties) — call it to register tools.
 
-return function(Tools)
+return function(Tools, getProperties)
 
 	local Players = game:GetService("Players")
 
@@ -164,7 +164,7 @@ return function(Tools)
 			local inst, err = resolvePath(args.path)
 			if not inst then return "Error: " .. tostring(err) end
 			local lines = { inst.ClassName .. ' "' .. inst.Name .. '" @ ' .. inst:GetFullName() }
-			local propNames = getProperties(inst.ClassName)
+			local propNames = getProperties and getProperties(inst.ClassName) or {}
 			for _, prop in ipairs(propNames) do
 				local ok, val = pcall(function() return inst[prop.name] end)
 				if ok then
