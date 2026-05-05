@@ -505,7 +505,7 @@ Tools.register({
 		type = "function",
 		["function"] = {
 			name        = "write_code",
-			description = "Write or fully replace the code in the code editor.",
+			description = "Write or fully replace the code in the code editor. Use for initial generation or complete rewrites.",
 			parameters  = { type = "object", properties = { code = { type = "string", description = "The full Lua code to write." } }, required = { "code" } }
 		}
 	},
@@ -520,7 +520,7 @@ Tools.register({
 		type = "function",
 		["function"] = {
 			name        = "edit_code",
-			description = "Find-and-replace in the code editor.",
+			description = "Replace a specific block of text in the code editor. Use for targeted edits without rewriting everything.",
 			parameters  = { type = "object", properties = { search = { type = "string" }, replace = { type = "string" } }, required = { "search", "replace" } }
 		}
 	},
@@ -541,7 +541,7 @@ Tools.register({
 		type = "function",
 		["function"] = {
 			name        = "read_code",
-			description = "Get total line count of the code editor.",
+			description = "Read the current code editor. Returns total line count so you know what range to fetch with get_lines.",
 			parameters  = { type = "object", properties = {} }
 		}
 	},
@@ -557,7 +557,7 @@ Tools.register({
 		type = "function",
 		["function"] = {
 			name        = "get_lines",
-			description = "Fetch a specific line range from the code editor.",
+			description = "Fetch a range of lines from the code editor by line number. Use this to inspect a section without reading the whole file.",
 			parameters  = { type = "object", properties = { start_line = { type = "number" }, end_line = { type = "number" } }, required = { "start_line", "end_line" } }
 		}
 	},
@@ -577,7 +577,7 @@ Tools.register({
 		type = "function",
 		["function"] = {
 			name        = "replace_lines",
-			description = "Replace a range of lines in the code editor by line number.",
+			description = "Replace a range of lines in the code editor. Prefer this over edit_code for large files — you only need to know the line numbers.",
 			parameters  = { type = "object", properties = { start_line = { type = "number" }, end_line = { type = "number" }, replacement = { type = "string" } }, required = { "start_line", "end_line", "replacement" } }
 		}
 	},
@@ -603,7 +603,7 @@ Tools.register({
 		type = "function",
 		["function"] = {
 			name        = "find_in_code",
-			description = "Search for a string in the code editor. Returns matching line numbers.",
+			description = "Search for a string in the code editor. Returns matching line numbers and their content so you can target get_lines or replace_lines precisely.",
 			parameters  = { type = "object", properties = { query = { type = "string", description = "Plain text to search for." } }, required = { "query" } }
 		}
 	},
@@ -1226,18 +1226,25 @@ end)
 
 local CODE_SYSTEM = table.concat({
 	"You are a Lua coding agent inside a Roblox plugin.",
-	"The user describes what they want built. You write or edit Lua code in the code editor.",
+	"The user describes what they want built. You write code, run it, analyze the output, and iterate until the goal is reached.",
 	"",
-	"Workflow for edits on existing code:",
+	"Workflow:",
+	"1. Write or edit the code using write_code / replace_lines / edit_code.",
+	"2. Run it with run(code) — always wrap output in print().",
+	"3. Read the output. If it errored or produced wrong results, fix the code and run again.",
+	"4. Keep iterating until the output is correct or the task is fully done.",
+	"Never stop after just writing code if the user wants it executed and verified.",
+	"",
+	"Workflow for edits on large existing code:",
 	"1. Call read_code() to get the total line count.",
 	"2. Call find_in_code(query) to locate the relevant lines by keyword.",
 	"3. Call get_lines(start, end) to read that section in context.",
 	"4. Call replace_lines(start, end, replacement) to make the change.",
 	"Never read or rewrite the entire file if you only need to change a small section.",
 	"",
-	"Use write_code only for new scripts or complete rewrites.",
-	"Use any game inspection tools to gather context before coding.",
-	"After editing, briefly explain what you changed. Plain text only, no markdown.",
+	"Use write_code only for new scripts or complete rewrites (editor is empty or user asks for a full rewrite).",
+	"Use any game inspection tools (tree, props, source, etc.) to gather context before coding.",
+	"After the task is done, briefly explain what you did and what the output was. Plain text only, no markdown.",
 	"Do not ask clarifying questions — make a reasonable attempt and explain your assumptions.",
 }, "\n")
 
