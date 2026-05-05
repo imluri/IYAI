@@ -778,6 +778,14 @@ local _uisBegan = UIS.InputBegan:Connect(function(input)
 	if not inside(DropdownList) and not inside(ModelFrame) then closeDropdown() end
 end)
 
+local function updateApiKeyVisibility(host)
+	if APIKeyFrame then
+		APIKeyFrame.Visible = host ~= "Ollama"
+	end
+end
+
+updateApiKeyVisibility(selectedHost)
+
 for _, btn in pairs(HostButtons) do
 	if not btn:IsA("TextButton") then continue end
 	btn.MouseButton1Click:Connect(function()
@@ -787,6 +795,7 @@ for _, btn in pairs(HostButtons) do
 				b.BackgroundTransparency = b.Text == selectedHost and 0.7 or 1
 			end
 		end
+		updateApiKeyVisibility(selectedHost)
 		UnsavedChanges.Visible = true
 	end)
 end
