@@ -1,139 +1,135 @@
--- Prompt.lua  |  System prompt builder + markdown stripper
--- Usage: local Prompt = loadMod("modules/Prompt.lua")(Http)
--- Accepts Http so it can branch tool list on Http.ENV.
+-- PromptModule (ModuleScript under script)
+local HS   = game:GetService("HttpService")
+local Http = require(script.Parent.HttpModule)
 
-return function(Http)
+local Prompt = {}
 
-	local Prompt = {}
-
-	local function getGameContext()
-		local services = {
-			"Workspace", "ReplicatedStorage", "StarterGui",
-			"StarterPack", "StarterPlayer", "Lighting",
-			"ServerScriptService", "ServerStorage"
-		}
-		local lines = {
-			"Game: "    .. tostring(game.Name),
-			"PlaceId: " .. tostring(game.PlaceId),
-			"Players: " .. #game:GetService("Players"):GetChildren(),
-		}
-		for _, sname in ipairs(services) do
-			local ok, svc = pcall(game.GetService, game, sname)
-			if ok and svc then
-				local ch = svc:GetChildren()
-				lines[#lines+1] = sname .. " (" .. #ch .. " children)"
-				for i, child in ipairs(ch) do
-					if i > 6 then
-						lines[#lines+1] = "  ...+" .. (#ch - 6) .. " more"
-						break
-					end
-					lines[#lines+1] = "  " .. child.ClassName .. " " .. child.Name
+local function getGameContext()
+	local services = {
+		"Workspace", "ReplicatedStorage", "StarterGui",
+		"StarterPack", "StarterPlayer", "Lighting",
+		"ServerScriptService", "ServerStorage"
+	}
+	local lines = {
+		"Game: "    .. tostring(game.Name),
+		"PlaceId: " .. tostring(game.PlaceId),
+		"Players: " .. #game:GetService("Players"):GetChildren(),
+	}
+	for _, sname in ipairs(services) do
+		local ok, svc = pcall(game.GetService, game, sname)
+		if ok and svc then
+			local ch = svc:GetChildren()
+			lines[#lines+1] = sname .. " (" .. #ch .. " children)"
+			for i, child in ipairs(ch) do
+				if i > 6 then
+					lines[#lines+1] = "  ...+" .. (#ch - 6) .. " more"
+					break
 				end
+				lines[#lines+1] = "  " .. child.ClassName .. " " .. child.Name
 			end
 		end
-		return table.concat(lines, "\n")
 	end
-
-	local function buildToolList()
-		local tools = {
-			"  local_player()            — get the local player's name, userId, and character stats (WalkSpeed, Health, etc.). Use for ANY 'my ...' question.",
-			"  tree(path, depth)         — walk the instance tree from any path",
-			"  props(path)               — read all properties of a specific instance",
-			"  find_class(class, root)   — find all instances of a ClassName",
-			"  find_name(name, root)     — find instances by Name",
-			"  source(path)              — read Lua source of a Script/LocalScript/ModuleScript (Studio only, unobfuscated)",
-			"  decompile(path)           — decompile a script back to Lua (executor only — not available in Studio)",
-			"  get_value(path, property) — get a single property value from any instance",
-			"  set_property(path, property, value) — set a property on any instance. Supports: numbers, booleans, Vector3 (x,y,z), Color3 (#hex or r,g,b), Enum (e.g. 'Plastic'), UDim2 (sx,ox,sy,oy). If path is a Model/container, automatically applies to all BasePart descendants (e.g. set Color on a whole character).",
-			"  get_players()             — list all players currently in the server",
-			"  write_code(code)                    — write or fully replace code in the code editor",
-			"  read_code()                         — get total line count of the code editor",
-			"  find_in_code(query)                 — find lines containing a string, returns line numbers",
-			"  get_lines(start_line, end_line)     — fetch a specific line range without reading the whole file",
-			"  replace_lines(start, end, content)  — replace a line range with new content",
-			"  edit_code(search, replace)          — find-and-replace when you don't know the line numbers",
-			"  web_search(query, max?)              — search the web via DuckDuckGo. Use for current events, Roblox scripting docs, or anything outside your training data.",
-			"  fetch_page(url, max_chars?)          — fetch and read the full text of a URL. Use after web_search to follow links and read documentation or articles.",
-			"  roblox_version()                     — get the current live Roblox client version.",
-			"  done(message)                        — call this when you have finished your task. Pass your final response as message. Always call this after using tools.",
-		}
-		if Http.ENV == "syn" or Http.ENV == "executor" then
-			tools[#tools+1] = "  run(code)                 — execute Lua; ALWAYS use print() for output"
-			tools[#tools+1] = "  iy_status()                — check if Infinite Yield is loaded. Call this first before using iy_cmd."
-			tools[#tools+1] = "  iy_cmd(command)            — execute an IY command if IY is loaded, or a direct Lua fallback for simple ones (speed, jumppower, health)"
-			tools[#tools+1] = "  list_iy_cmds(filter?, plugin?) — list available IY commands, filtered by command name and/or plugin name"
-			tools[#tools+1] = "  list_iy_plugins()          — list plugins registered in IY and how many commands each contributed"
-			tools[#tools+1] = "  Note: 'dex' opens Dex Explorer — a full instance/property browser. Suggest it when the user wants to visually explore or edit the game tree."
-		end
-		return table.concat(tools, "\n")
-	end
-
-	local function buildRules()
-		local rules = {
-			"- Act on requests immediately — no confirmation needed.",
-			"- After any tool use, call done(message) with your final reply. For tool-free answers, reply directly.",
-			"- Keep replies short. No filler, no repeating the user's message back.",
-			"- Paths use dot notation: 'game.Workspace.Part' or just 'Workspace.Part'. Use local_player() for anything about the user's own character/stats — never for real-world questions.",
-			"- Only take in-game actions when the user explicitly asks. Statements of fact ('its 6am', 'I'm in Singapore') get a plain reply, not a tool call.",
-				"- Read vs write: questions asking 'what is', 'what's my', 'check', 'how much' are read-only — use local_player() or get_value() and report the result. Never modify as a side effect of reading.",
-			"- Before modifying anything, scout the target first: use tree(), props(), find_class(), or find_name() to confirm the instance exists and understand its structure. Never apply changes blindly.",
-			"- If the correct property name, enum value, or Roblox API is not certain, use web_search() to verify before acting. web_search() exists precisely for this — use it proactively, not as a fallback.",
-			"- set_property() over run() for property changes. For relative changes, call get_value() first.",
-			"- NEVER include Lua code in your text replies. ALL code must go through write_code(). No exceptions — not even one-liners, not even examples.",
-			"- Code workflow: (1) write_code(code) to put it in the editor, (2) run(code) to execute and get print output, (3) read the output — if there's an error or wrong result, fix the code with edit_code/replace_lines and run again, (4) only call done() once the output is correct or the task is complete. Report what the output was.",
-			"- web_search() for live data (news, prices, time, recent updates). Phrase queries specifically ('current time in X right now'). If snippets lack detail, use fetch_page(url) to read the full page. Never send the user to a link.",
-			"- If props() misses a property, use get_value() directly.",
-			"- For any task involving computation, comparison, iteration, or bulk changes (closest player, highest value, renaming many instances, etc.), write a Lua script via write_code() and run() with print() to get the result in one shot. Do not manually fetch values and compute in your head — write code.",
-		}
-		if Http.ENV == "syn" or Http.ENV == "executor" then
-			rules[#rules+1] = "- run() captures print() output and returns it — bare expressions return nothing. Always use print() for any value you want back."
-			rules[#rules+1] = "- For IY commands: call iy_cmd() directly. If the exact command name is unclear, use list_iy_cmds(filter) first — never guess. Executor functions like saveinstance are not IY commands."
-			rules[#rules+1] = "- To toggle off an IY command, try 'no'/'un' prefix (noesp, unfly). Exception: noclip toggles off with 'clip'."
-		end
-		return table.concat(rules, "\n")
-	end
-
-	function Prompt.build(includeContext)
-		local lines = {
-			"You are IYAI, an AI plugin by urluri for Roblox games and Infinite Yield (a Roblox executor tool).",
-			"You help users inspect instances, run code, and modify the game world using live data from your tools.",
-			"Your tone is professional and precise. No emoji, no filler. Deliver information directly.",
-			"",
-			"## Tools",
-			buildToolList(),
-			"",
-			"## Rules",
-			buildRules(),
-		}
-		if includeContext then
-			lines[#lines+1] = ""
-			lines[#lines+1] = "## Current game context"
-			local ok, ctx = pcall(getGameContext)
-			lines[#lines+1] = ok and ctx or "(context unavailable)"
-		end
-		return table.concat(lines, "\n")
-	end
-
-	function Prompt.stripMarkdown(s)
-		if type(s) ~= "string" then return tostring(s) end
-		s = s:gsub("^#+%s+", ""):gsub("\n#+%s+", "\n")
-		s = s:gsub("%*%*%*(.-)%*%*%*", "%1")
-		s = s:gsub("%*%*(.-)%*%*",     "%1")
-		s = s:gsub("%*(.-)%*",         "%1")
-		s = s:gsub("__(.-)__",         "%1")
-		s = s:gsub("_(.-)_",           "%1")
-		s = s:gsub("```[^\n]*\n([^`]*)```", function(code) return code end)
-		s = s:gsub("```[^\n]*```", "")
-		s = s:gsub("`([^`\n]+)`", "%1")
-		s = s:gsub("\n%-%-%-+\n", "\n")
-		s = s:gsub("\n%*%*%*+\n", "\n")
-		s = s:gsub("\n>%s*", "\n"):gsub("^>%s*", "")
-		s = s:gsub("%[(.-)%]%(.-%)","  %1")
-		s = s:gsub(" +\n", "\n")
-		s = s:gsub("\n\n\n+", "\n\n")
-		return s:match("^%s*(.-)%s*$")
-	end
-
-	return Prompt
-
+	return table.concat(lines, "\n")
 end
+
+local function buildToolList()
+	local tools = {
+		"  local_player()            — get the local player's name, userId, and character stats (WalkSpeed, Health, etc.). Use for ANY 'my ...' question.",
+		"  tree(path, depth)         — walk the instance tree from any path",
+		"  props(path)               — read all properties of a specific instance",
+		"  find_class(class, root)   — find all instances of a ClassName",
+		"  find_name(name, root)     — find instances by Name",
+		"  source(path)              — read Lua source of a Script/LocalScript/ModuleScript (Studio only, unobfuscated)",
+		"  decompile(path)           — decompile a script back to Lua (executor only — not available in Studio)",
+		"  get_value(path, property) — get a single property value from any instance",
+		"  set_property(path, property, value) — set a property on any instance. Supports: numbers, booleans, Vector3 (x,y,z), Color3 (#hex or r,g,b), Enum (e.g. 'Plastic'), UDim2 (sx,ox,sy,oy). If path is a Model/container, automatically applies to all BasePart descendants (e.g. set Color on a whole character).",
+		"  get_players()             — list all players currently in the server",
+		"  write_code(code)                    — write or fully replace code in the code editor",
+		"  read_code()                         — get total line count of the code editor",
+		"  find_in_code(query)                 — find lines containing a string, returns line numbers",
+		"  get_lines(start_line, end_line)     — fetch a specific line range without reading the whole file",
+		"  replace_lines(start, end, content)  — replace a line range with new content",
+		"  edit_code(search, replace)          — find-and-replace when you don't know the line numbers",
+		"  web_search(query, max?)              — search the web via DuckDuckGo. Use for current events, Roblox scripting docs, or anything outside your training data.",
+		"  fetch_page(url, max_chars?)          — fetch and read the full text of a URL. Use after web_search to follow links and read documentation or articles.",
+		"  roblox_version()                     — get the current live Roblox client version.",
+		"  done(message)                        — call this when you have finished your task. Pass your final response as message. Always call this after using tools.",
+	}
+	if Http.ENV == "syn" or Http.ENV == "executor" then
+		tools[#tools+1] = "  run(code)                 — execute Lua; ALWAYS use print() for output"
+		tools[#tools+1] = "  iy_status()                — check if Infinite Yield is loaded. Call this first before using iy_cmd."
+		tools[#tools+1] = "  iy_cmd(command)            — execute an IY command if IY is loaded, or a direct Lua fallback for simple ones (speed, jumppower, health)"
+		tools[#tools+1] = "  list_iy_cmds(filter?, plugin?) — list available IY commands, filtered by command name and/or plugin name"
+		tools[#tools+1] = "  list_iy_plugins()          — list plugins registered in IY and how many commands each contributed"
+		tools[#tools+1] = "  Note: 'dex' opens Dex Explorer — a full instance/property browser. Suggest it when the user wants to visually explore or edit the game tree."
+	end
+	return table.concat(tools, "\n")
+end
+
+local function buildRules()
+	local rules = {
+		"- Act on requests immediately — no confirmation needed.",
+		"- After any tool use, call done(message) with your final reply. For tool-free answers, reply directly.",
+		"- Keep replies short. No filler, no repeating the user's message back.",
+		"- Paths use dot notation: 'game.Workspace.Part' or just 'Workspace.Part'. Use local_player() for anything about the user's own character/stats — never for real-world questions.",
+		"- Only take in-game actions when the user explicitly asks. Statements of fact ('its 6am', 'I'm in Singapore') get a plain reply, not a tool call.",
+			"- Read vs write: questions asking 'what is', 'what's my', 'check', 'how much' are read-only — use local_player() or get_value() and report the result. Never modify as a side effect of reading.",
+		"- Before modifying anything, scout the target first: use tree(), props(), find_class(), or find_name() to confirm the instance exists and understand its structure. Never apply changes blindly.",
+		"- If the correct property name, enum value, or Roblox API is not certain, use web_search() to verify before acting. web_search() exists precisely for this — use it proactively, not as a fallback.",
+		"- set_property() over run() for property changes. For relative changes, call get_value() first.",
+		"- NEVER include Lua code in your text replies. ALL code must go through write_code(). No exceptions — not even one-liners, not even examples.",
+		"- Code workflow: (1) write_code(code) — syntax is checked automatically, fix any reported errors before proceeding. (2) Only run(code) if the user explicitly asked to run/execute/test it, or if you need live game data to complete the task (e.g. finding a value, analyzing instances). Do not run just because you wrote code. (3) If you do run: read the output — if there's an error or wrong result, fix with edit_code/replace_lines and run again. (4) done() with what was written or what the output showed.",
+		"- web_search() for live data (news, prices, time, recent updates). Phrase queries specifically ('current time in X right now'). If snippets lack detail, use fetch_page(url) to read the full page. Never send the user to a link.",
+		"- If props() misses a property, use get_value() directly.",
+		"- For any task involving computation, comparison, iteration, or bulk changes (closest player, highest value, renaming many instances, etc.), write a Lua script via write_code() and run() with print() to get the result in one shot. Do not manually fetch values and compute in your head — write code.",
+	}
+	if Http.ENV == "syn" or Http.ENV == "executor" then
+		rules[#rules+1] = "- run() captures print() output and returns it — bare expressions return nothing. Always use print() for any value you want back."
+		rules[#rules+1] = "- For IY commands: call iy_cmd() directly. If the exact command name is unclear, use list_iy_cmds(filter) first — never guess. Executor functions like saveinstance are not IY commands."
+		rules[#rules+1] = "- To toggle off an IY command, try 'no'/'un' prefix (noesp, unfly). Exception: noclip toggles off with 'clip'."
+	end
+	return table.concat(rules, "\n")
+end
+
+function Prompt.build(includeContext)
+	local lines = {
+		"You are IYAI, an AI plugin by urluri for Roblox games and Infinite Yield (a Roblox executor tool).",
+		"You help users inspect instances, run code, and modify the game world using live data from your tools.",
+		"Your tone is professional and precise. No emoji, no filler. Deliver information directly.",
+		"",
+		"## Tools",
+		buildToolList(),
+		"",
+		"## Rules",
+		buildRules(),
+	}
+	if includeContext then
+		lines[#lines+1] = ""
+		lines[#lines+1] = "## Current game context"
+		local ok, ctx = pcall(getGameContext)
+		lines[#lines+1] = ok and ctx or "(context unavailable)"
+	end
+	return table.concat(lines, "\n")
+end
+
+function Prompt.stripMarkdown(s)
+	if type(s) ~= "string" then return tostring(s) end
+	s = s:gsub("^#+%s+", ""):gsub("\n#+%s+", "\n")
+	s = s:gsub("%*%*%*(.-)%*%*%*", "%1")
+	s = s:gsub("%*%*(.-)%*%*",     "%1")
+	s = s:gsub("%*(.-)%*",         "%1")
+	s = s:gsub("__(.-)__",         "%1")
+	s = s:gsub("_(.-)_",           "%1")
+	s = s:gsub("```[^\n]*\n([^`]*)```", function(code) return code end)
+	s = s:gsub("```[^\n]*```", "")
+	s = s:gsub("`([^`\n]+)`", "%1")
+	s = s:gsub("\n%-%-%-+\n", "\n")
+	s = s:gsub("\n%*%*%*+\n", "\n")
+	s = s:gsub("\n>%s*", "\n"):gsub("^>%s*", "")
+	s = s:gsub("%[(.-)%]%(.-%)","  %1")
+	s = s:gsub(" +\n", "\n")
+	s = s:gsub("\n\n\n+", "\n\n")
+	return s:match("^%s*(.-)%s*$")
+end
+
+return Prompt
