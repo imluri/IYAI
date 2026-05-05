@@ -1,7 +1,7 @@
 -- tools/Explorer.lua  |  Instance explorer tools
--- Returns function(Tools, getProperties) — call it to register tools.
+-- Returns function(Tools) — call it to register tools.
 
-return function(Tools, getProperties)
+return function(Tools)
 
 	local Players = game:GetService("Players")
 
@@ -164,23 +164,32 @@ return function(Tools, getProperties)
 			local inst, err = resolvePath(args.path)
 			if not inst then return "Error: " .. tostring(err) end
 			local lines = { inst.ClassName .. ' "' .. inst.Name .. '" @ ' .. inst:GetFullName() }
-			local propNames = getProperties and getProperties(inst.ClassName) or {}
-			for _, prop in ipairs(propNames) do
-				local ok, val = pcall(function() return inst[prop.name] end)
-				if ok then
-					lines[#lines+1] = "  " .. prop.name .. " (" .. prop.valueType .. ") = " .. tostring(val)
-				end
+			if inst:IsA("BasePart") then
+				lines[#lines+1] = "  Position     = " .. tostring(inst.Position)
+				lines[#lines+1] = "  Size         = " .. tostring(inst.Size)
+				lines[#lines+1] = "  Anchored     = " .. tostring(inst.Anchored)
+				lines[#lines+1] = "  CanCollide   = " .. tostring(inst.CanCollide)
+				lines[#lines+1] = "  Transparency = " .. tostring(inst.Transparency)
+				lines[#lines+1] = "  Material     = " .. tostring(inst.Material)
+			end
+			if inst:IsA("Model") then
+				local pp = inst.PrimaryPart
+				lines[#lines+1] = "  PrimaryPart  = " .. (pp and pp.Name or "nil")
 			end
 			if inst:IsA("LuaSourceContainer") then
-				local src = ""
-				pcall(function() src = inst.Source end)
-				lines[#lines+1] = "  Source: " .. #src .. " chars"
+				local s = ""
+				pcall(function() s = inst.Source end)
+				lines[#lines+1] = "  Source: " .. #s .. " chars"
+			end
+			if inst.ClassName:find("Value$") then
+				pcall(function() lines[#lines+1] = "  Value = " .. tostring(inst.Value) end)
+			end
+			for _, child in ipairs(inst:GetChildren()) do
+				lines[#lines+1] = "  " .. child.Name .. " (" .. child.ClassName .. ")"
 			end
 			return table.concat(lines, "\n")
 		end
-	})
-
-	-- get_value: read any single property from an instance via pcall
+	})-- get_value: read any single property from an instance via pcall
 	Tools.register({
 		definition = {
 			type = "function",

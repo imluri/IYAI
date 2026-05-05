@@ -101,8 +101,8 @@ local SaveButton             = G2L["91"]
 local RevertButton           = G2L["93"]
 local CodePage               = G2L["96"]
 local CodeSF                 = G2L["97"]
-local LineLabel              = G2L["98"]
-local CodeBox                = G2L["9a"]
+local LineLabel              = G2L["99"]
+local CodeBox                = G2L["9b"]
 local CodeActionsFrame       = G2L["9d"]
 local CodeClearButton        = G2L["9f"]
 local CodeCopyButton         = G2L["a0"]
@@ -112,10 +112,10 @@ local TopBar                 = G2L["b3"]
 local CloseButton            = G2L["b5"]
 local MinimizeButton         = G2L["b8"]
 local Highlight              = G2L["b9"]
-local IntroFrame             = G2L["c9"]
-local IYAIToastContainer     = G2L["cc"]
-local ToastTemplate          = G2L["cd"]
-local CurrentPage            = G2L["d9"]
+local IntroFrame             = G2L["d0"]
+local IYAIToastContainer     = G2L["d3"]
+local ToastTemplate          = G2L["d4"]
+local CurrentPage            = G2L["e0"]
 local ModalFrame             = G2L["ba"]
 local ModalInner             = G2L["bc"]
 local ModalCloseButton       = G2L["be"]
@@ -127,10 +127,14 @@ local ModalSearchButton      = G2L["c4"]
 local ModalOpenButton        = G2L["7a"]
 local MaxStepFrame           = G2L["86"]
 local MaxStepBox             = G2L["8a"]
+local ToolResultViewModal    = G2L["c9"]
+local ToolResultSF           = G2L["cb"]
+local ToolResultTextBox      = G2L["cc"]
+local ModalTitleLabel        = G2L["ce"]
 
 -- ── Main logic ────────────────────────────────────────────────────────────────
 
-local VERSION           = G2L["da"] and G2L["da"].Value or ""
+local VERSION           = G2L["e1"] and G2L["e1"].Value or ""
 local Tween             = TweenInfo.new(0.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut)
 local DefaultIYAISize   = UDim2.new(0, 600, 0, 400)
 local MinimizedIYAISize = UDim2.new(0, 100, 0, 25)
@@ -982,15 +986,32 @@ local function modalFetch()
 end
 
 local function openModal()
+	if ModalTitleLabel then ModalTitleLabel.Text = "Select Model" end
+	SearchModelModal.Visible    = true
+	ToolResultViewModal.Visible = false
 	ModalFrame.Visible = true
 	if ModalSearchBox then ModalSearchBox.Text = "" end
 	modalClearButtons()
 	task.spawn(modalFetch)
 end
 
+local function openToolResultModal(fullText)
+	if ModalTitleLabel then ModalTitleLabel.Text = "Tool Output" end
+	SearchModelModal.Visible    = false
+	ToolResultViewModal.Visible = true
+	ToolResultTextBox.Text      = fullText
+	ToolResultSF.CanvasPosition = Vector2.new(0, 0)
+	ModalFrame.Visible          = true
+	task.defer(function()
+		ToolResultSF.CanvasSize = UDim2.new(0, 0, 0, ToolResultTextBox.AbsoluteSize.Y + 20)
+	end)
+end
+
 ModalOpenButton.MouseButton1Click:Connect(openModal)
 ModalCloseButton.MouseButton1Click:Connect(function()
-	ModalFrame.Visible = false
+	ModalFrame.Visible          = false
+	SearchModelModal.Visible    = true
+	ToolResultViewModal.Visible = false
 end)
 
 if ModalSearchBox then
@@ -1171,7 +1192,16 @@ local function updateTaskFrame(frame, kind, result, toolName)
 	new.LayoutOrder = order
 	if result then
 		local lbl = new:FindFirstChildWhichIsA("TextLabel", true)
-		if lbl then lbl.Text = summarizeResult(toolName or "", result) end
+		if lbl then
+			lbl.RichText = true
+			lbl.Text = summarizeResult(toolName or "", result) .. '  <font size="12" color="#A1A5A2"><u>Open</u></font>'
+			local capturedResult = result
+			lbl.InputBegan:Connect(function(input)
+				if input.UserInputType == Enum.UserInputType.MouseButton1 then
+					openToolResultModal(capturedResult)
+				end
+			end)
+		end
 	end
 	return new
 end
