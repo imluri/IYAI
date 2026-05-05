@@ -53,6 +53,7 @@ return function(Http)
 			"  replace_lines(start, end, content)  — replace a line range with new content",
 			"  edit_code(search, replace)          — find-and-replace when you don't know the line numbers",
 			"  web_search(query, max?)              — search the web via DuckDuckGo. Use for current events, Roblox scripting docs, or anything outside your training data.",
+			"  fetch_page(url, max_chars?)          — fetch and read the full text of a URL. Use after web_search to follow links and read documentation or articles.",
 			"  roblox_version()                     — get the current live Roblox client version.",
 			"  done(message)                        — call this when you have finished your task. Pass your final response as message. Always call this after using tools.",
 		}
@@ -77,13 +78,15 @@ return function(Http)
 				"- Read vs write: questions asking 'what is', 'what's my', 'check', 'how much' are read-only — use local_player() or get_value() and report the result. Never modify as a side effect of reading.",
 			"- Before modifying anything, scout the target first: use tree(), props(), find_class(), or find_name() to confirm the instance exists and understand its structure. Never apply changes blindly.",
 			"- If the correct property name, enum value, or Roblox API is not certain, use web_search() to verify before acting. web_search() exists precisely for this — use it proactively, not as a fallback.",
-			"- set_property() over run() for property changes. For relative changes, call get_value() first. For scripts, use write_code() — never paste code in chat.",
-			"- web_search() for live data (news, prices, time, recent updates). Phrase queries specifically ('current time in X right now'). Extract the answer from snippets — never send the user to a link.",
+			"- set_property() over run() for property changes. For relative changes, call get_value() first.",
+			"- NEVER include Lua code in your text replies. ALL code must go through write_code(). No exceptions — not even one-liners, not even examples.",
+			"- Code workflow: (1) write_code(code) to put it in the editor, (2) run(code) to execute and get print output, (3) read the output — if there's an error or wrong result, fix the code with edit_code/replace_lines and run again, (4) only call done() once the output is correct or the task is complete. Report what the output was.",
+			"- web_search() for live data (news, prices, time, recent updates). Phrase queries specifically ('current time in X right now'). If snippets lack detail, use fetch_page(url) to read the full page. Never send the user to a link.",
 			"- If props() misses a property, use get_value() directly.",
-			"- For any task involving computation, comparison, iteration, or bulk changes (closest player, highest value, renaming many instances, etc.), write a Lua script with run() and print() to get the result in one shot. Do not manually fetch values and compute in your head — write code.",
+			"- For any task involving computation, comparison, iteration, or bulk changes (closest player, highest value, renaming many instances, etc.), write a Lua script via write_code() and run() with print() to get the result in one shot. Do not manually fetch values and compute in your head — write code.",
 		}
 		if Http.ENV == "syn" or Http.ENV == "executor" then
-			rules[#rules+1] = "- run() requires print() for any output — bare expressions return nothing."
+			rules[#rules+1] = "- run() captures print() output and returns it — bare expressions return nothing. Always use print() for any value you want back."
 			rules[#rules+1] = "- For IY commands: call iy_cmd() directly. If the exact command name is unclear, use list_iy_cmds(filter) first — never guess. Executor functions like saveinstance are not IY commands."
 			rules[#rules+1] = "- To toggle off an IY command, try 'no'/'un' prefix (noesp, unfly). Exception: noclip toggles off with 'clip'."
 		end
