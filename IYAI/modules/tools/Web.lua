@@ -124,6 +124,65 @@ return function(Tools, Http)
 		end
 	})
 
+	-- ── fetch_page ────────────────────────────────────────────────────────────
+
+	Tools.register({
+		definition = {
+			type = "function",
+			["function"] = {
+				name        = "fetch_page",
+				description = "Fetch and read the text content of a URL. Use this to follow links returned by web_search and read documentation, articles, or any web page. Returns stripped plain text.",
+				parameters  = {
+					type       = "object",
+					properties = {
+						url     = { type = "string",  description = "The URL to fetch" },
+						max_chars = { type = "integer", description = "Maximum characters to return (default 4000)" },
+					},
+					required = {"url"}
+				}
+			}
+		},
+		handler = function(args)
+			if not Http then return "Error: Http module unavailable" end
+			local url      = tostring(args.url or "")
+			local maxChars = tonumber(args.max_chars) or 4000
+			if url == "" then return "Error: url is required" end
+
+			local res = Http.request(url, "GET", {
+				["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+				["Accept"]     = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+			})
+
+			if not res or res.StatusCode ~= 200 then
+				return "Error: could not fetch page (status " .. tostring(res and res.StatusCode or "none") .. ")"
+			end
+
+			local html = res.Body or ""
+
+			-- Remove <script> and <style> blocks entirely
+			html = html:gsub("<script[^>]*>.-</script>", " ")
+			html = html:gsub("<style[^>]*>.-</style>",   " ")
+			-- Remove all remaining HTML tags
+			html = html:gsub("<[^>]+>", " ")
+			-- Decode common HTML entities
+			html = htmlDecode(html)
+			-- Collapse whitespace
+			html = html:gsub("[ \t]+", " ")
+			html = html:gsub("\n[ \t]+", "\n")
+			html = html:gsub("\n\n+", "\n\n")
+			html = html:match("^%s*(.-)%s*$") or ""
+
+			if #html == 0 then return "No readable content found at: " .. url end
+
+			local truncated = #html > maxChars
+			local text = html:sub(1, maxChars)
+			if truncated then
+				text = text .. "\n\n[Truncated — " .. #html .. " total chars. Use max_chars to read more.]"
+			end
+			return text
+		end
+	})
+
 	-- ── roblox_version ────────────────────────────────────────────────────────
 
 	Tools.register({
