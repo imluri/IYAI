@@ -51,12 +51,12 @@ local HS  = game:GetService("HttpService")
 local G2L = loadMod("modules/Layout.lua")
 
 -- Destroy Studio-only LocalScripts before parenting — prevents executors running them
-for _, key in ipairs({"2", "d"}) do
+for _, key in ipairs({"db", "e6"}) do
 	pcall(function() if G2L[key] then G2L[key]:Destroy() end end)
 end
 
 -- Hide before any frame renders — fade-in tween reveals it later
-if G2L["e"] then G2L["e"].GroupTransparency = 1 end
+if G2L["2"] then G2L["2"].GroupTransparency = 1 end
 
 -- Parent to a hidden container to avoid detection
 local function getHiddenContainer()
@@ -74,76 +74,85 @@ G2L["1"].Parent = _container
 -- ── Named aliases ─────────────────────────────────────────────────────────────
 
 local ScreenGui              = G2L["1"]
-local IYAI                   = G2L["e"]
-local ContentPages           = G2L["11"]
-local AgentPage              = G2L["12"]
-local ScrollingFrameMainChat = G2L["13"]
-local ListLayout             = G2L["14"]
-local ElementTemplate        = G2L["16"]
-local TotalElements          = G2L["44"]
-local isAssistantBusy        = G2L["45"]
-local InputFrame             = G2L["4b"]
-local TextBoxInput           = G2L["4c"]
-local SendButton             = G2L["50"]
-local StopButton             = G2L["52"]
-local ActionsFrame           = G2L["54"]
-local ClearButton            = G2L["56"]
-local SettingsPage           = G2L["57"]
-local Settings_SF            = G2L["58"]
-local APIKeyFrame            = G2L["59"]
-local APIKeyLabel            = G2L["5c"]
-local APIKeyBox              = G2L["5d"]
-local HostSelectFrame        = G2L["60"]
-local HostFrame              = G2L["63"]
+local IYAI                   = G2L["2"]
+local ContentPages           = G2L["4"]
+local AgentPage              = G2L["5"]
+local ScrollingFrameMainChat = G2L["6"]
+local ListLayout             = G2L["7"]
+local ElementTemplate        = G2L["9"]
+local TotalElements          = G2L["37"]
+local isAssistantBusy        = G2L["38"]
+local InputFrame             = G2L["3e"]
+local TextBoxInput           = G2L["3f"]
+local SendButton             = G2L["42"]
+local StopButton             = G2L["44"]
+local ActionsFrame           = G2L["47"]
+local ClearButton            = G2L["49"]
+local SettingsPage           = G2L["4a"]
+local Settings_SF            = G2L["4b"]
+local APIKeyFrame            = G2L["4c"]
+local APIKeyLabel            = G2L["4f"]
+local APIKeyBox              = G2L["50"]
+local HostSelectFrame        = G2L["53"]
+local HostFrame              = G2L["56"]
 local HostButtons            = HostFrame:GetChildren()
-local ModelSelectFrame       = G2L["73"]
-local ModelFrame             = G2L["76"]
-local ModelBox               = G2L["77"]
-local DropdownButton         = G2L["7a"]
+local ModelSelectFrame       = G2L["64"]
+local ModelFrame             = G2L["67"]
+local ModelBox               = G2L["68"]
+local DropdownButton         = G2L["6b"]
 local DropdownList           = Instance.new("Frame")  -- dropdown disabled; detached dummy
-local TestFrame              = G2L["7d"]
-local ConnectionButton       = G2L["81"]
-local CredentialButton       = G2L["83"]
-local UnsavedChanges         = G2L["8d"]
-local TextLabel              = G2L["8f"]
-local SaveButton             = G2L["91"]
-local RevertButton           = G2L["93"]
-local CodePage               = G2L["96"]
-local CodeSF                 = G2L["9d"]
-local LineLabel              = G2L["9f"]
-local CodeBox                = G2L["a1"]
-local CodeActionsFrame       = G2L["97"]
-local CodeClearButton        = G2L["99"]
-local CodeCopyButton         = G2L["9a"]
-local RunButton              = G2L["9b"]
-local LeftSidebar            = G2L["a4"]
-local TopBar                 = G2L["b3"]
-local CloseButton            = G2L["b5"]
-local MinimizeButton         = G2L["b8"]
-local Highlight              = G2L["b9"]
-local IntroFrame             = G2L["d0"]
-local IYAIToastContainer     = G2L["d3"]
-local ToastTemplate          = G2L["d4"]
-local CurrentPage            = G2L["e0"]
-local ModalFrame             = G2L["ba"]
-local ModalInner             = G2L["bc"]
-local ModalCloseButton       = G2L["be"]
-local SearchModelModal       = G2L["bf"]
-local ModalSearchBox         = G2L["c1"]
-local ModalSF                = G2L["c5"]
-local ExampleModelBtn        = G2L["c6"]
-local ModalSearchButton      = G2L["c4"]
-local ModalOpenButton        = G2L["7a"]
-local MaxStepFrame           = G2L["86"]
+local TestFrame              = G2L["6e"]
+local ConnectionButton       = G2L["72"]
+local CredentialButton       = G2L["74"]
+local UnsavedChanges         = G2L["7e"]
+local TextLabel              = G2L["80"]
+local SaveButton             = G2L["82"]
+local RevertButton           = G2L["84"]
+local CodePage               = G2L["87"]
+local CodeSF                 = G2L["8e"]
+local LineLabel              = G2L["90"]
+local CodeBox                = G2L["92"]
+local CodeActionsFrame       = G2L["88"]
+local CodeClearButton        = G2L["89"]
+local CodeCopyButton         = G2L["8a"]
+local RunButton              = G2L["8b"]
+local LeftSidebar            = G2L["a7"]
+local TopBar                 = G2L["ba"]
+local CloseButton            = G2L["bc"]
+local MinimizeButton         = G2L["bf"]
+local Highlight              = G2L["c0"]
+local IntroFrame             = G2L["d7"]
+local IYAIToastContainer     = G2L["e7"]
+local ToastTemplate          = G2L["e8"]
+local CurrentPage            = G2L["f4"]
+local ModalFrame             = G2L["c1"]
+local ModalInner             = G2L["c3"]
+local ModalCloseButton       = G2L["c5"]
+local SearchModelModal       = G2L["c6"]
+local ModalSearchBox         = G2L["c8"]
+local ModalSF                = G2L["cc"]
+local ExampleModelBtn        = G2L["cd"]
+local ModalSearchButton      = G2L["cb"]
+local ModalOpenButton        = G2L["6b"]
+local MaxStepFrame           = G2L["77"]
 local MaxStepBox             = G2L["8a"]
-local ToolResultViewModal    = G2L["c9"]
-local ToolResultSF           = G2L["cb"]
-local ToolResultTextBox      = G2L["cc"]
-local ModalTitleLabel        = G2L["ce"]
+local ToolsPage              = G2L["94"]
+local ToolsSF                = G2L["95"]
+local ToolsElementTemplate   = G2L["98"]
+local ToolsGroupFrame        = G2L["99"]  -- GroupFrame template
+local ToolsGroupInner        = G2L["9a"]  -- inner card Frame
+local ToolsGroupTitle        = G2L["9b"]  -- GroupTitle label
+local ToolsToolFrame         = G2L["9c"]  -- ToolFrame template
+local ToolsToolNameDesc      = G2L["a0"]  -- ToolNameDesc label
+local ToolsTotalElements     = G2L["a5"]
+local ToolResultViewModal    = G2L["d0"]
+local ToolResultSF           = G2L["d2"]
+local ToolResultTextBox      = G2L["d3"]
+local ModalTitleLabel        = G2L["d5"]
 
 -- ── Main logic ────────────────────────────────────────────────────────────────
 
-local VERSION           = G2L["e1"] and G2L["e1"].Value or ""
+local VERSION           = G2L["f5"] and G2L["f5"].Value or ""
 local Tween             = TweenInfo.new(0.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut)
 local DefaultIYAISize   = UDim2.new(0, 600, 0, 400)
 local MinimizedIYAISize = UDim2.new(0, 100, 0, 25)
@@ -513,12 +522,14 @@ RunButton.MouseButton1Click:Connect(function()
 end)
 
 -- Code tools registered here so they share CodeBox closure
+local CODE_TOOL_GROUP = "Code"
 local function unescapeCode(s)
 	-- Models sometimes emit literal \n \t \r instead of real control chars
 	return (s:gsub("\\n", "\n"):gsub("\\t", "\t"):gsub("\\r", ""))
 end
 
 Tools.register({
+	group = CODE_TOOL_GROUP,
 	definition = {
 		type = "function",
 		["function"] = {
@@ -540,6 +551,7 @@ Tools.register({
 })
 
 Tools.register({
+	group = CODE_TOOL_GROUP,
 	definition = {
 		type = "function",
 		["function"] = {
@@ -563,6 +575,7 @@ Tools.register({
 })
 
 Tools.register({
+	group = CODE_TOOL_GROUP,
 	definition = {
 		type = "function",
 		["function"] = {
@@ -579,6 +592,7 @@ Tools.register({
 })
 
 Tools.register({
+	group = CODE_TOOL_GROUP,
 	definition = {
 		type = "function",
 		["function"] = {
@@ -599,6 +613,7 @@ Tools.register({
 })
 
 Tools.register({
+	group = CODE_TOOL_GROUP,
 	definition = {
 		type = "function",
 		["function"] = {
@@ -625,6 +640,7 @@ Tools.register({
 })
 
 Tools.register({
+	group = CODE_TOOL_GROUP,
 	definition = {
 		type = "function",
 		["function"] = {
@@ -643,6 +659,70 @@ Tools.register({
 		return #matches .. " match(es):\n" .. table.concat(matches, "\n")
 	end
 })
+
+-- ── Tools page ────────────────────────────────────────────────────────────────
+
+local _toolsPopulated = false
+
+local function populateToolsPage()
+	if _toolsPopulated then return end
+	_toolsPopulated = true
+
+	-- Group tools by their registered group field
+	local groups = {}
+	local groupOrder = {}
+	for _, entry in ipairs(Tools.getDefinitions()) do
+		local fn    = entry.definition and entry.definition["function"]
+		local name  = fn and fn.name
+		local desc  = fn and fn.description or ""
+		local group = entry.group or "Other"
+		if name and name ~= "done" then
+			if not groups[group] then
+				groups[group] = {}
+				table.insert(groupOrder, group)
+			end
+			table.insert(groups[group], { name = name, desc = desc })
+		end
+	end
+
+	for _, groupName in ipairs(groupOrder) do
+		local tools = groups[groupName]
+		local gf    = ToolsGroupFrame:Clone()
+		local inner = gf:FindFirstChild("Frame") or gf:FindFirstChildWhichIsA("Frame")
+		local title = inner and inner:FindFirstChild("GroupTitle")
+		local tf    = inner and inner:FindFirstChild("ToolFrame")
+
+		if title then title.Text = groupName end
+
+		for _, tool in ipairs(tools) do
+			local row = tf:Clone()
+			local lbl = row:FindFirstChild("ToolNameDesc")
+			if lbl then
+				lbl.Text = '<font weight="bold">' .. tool.name .. '</font>\n<font transparency="0.4">' .. tool.desc .. '</font>'
+			end
+			row.Visible = true
+			row.Parent  = inner
+		end
+
+		if tf then tf:Destroy() end
+		gf.Visible = true
+		gf.Parent  = ToolsSF
+	end
+
+	task.defer(function()
+		local h = 0
+		for _, c in ipairs(ToolsSF:GetChildren()) do
+			if c:IsA("GuiObject") and c ~= ToolsElementTemplate then
+				h = h + c.AbsoluteSize.Y + 8
+			end
+		end
+		ToolsSF.CanvasSize = UDim2.new(0, 0, 0, h)
+	end)
+end
+
+CurrentPage.Changed:Connect(function(page)
+	if page == "Tools" then populateToolsPage() end
+end)
 
 -- ── Settings page ─────────────────────────────────────────────────────────────
 
@@ -1151,7 +1231,9 @@ local function buildBody(history)
 	}
 	local defs = Tools.getDefinitions()
 	if #defs > 0 then
-		body.tools       = defs
+		local toolDefs = {}
+		for _, e in ipairs(defs) do toolDefs[#toolDefs+1] = e.definition end
+		body.tools       = toolDefs
 		body.tool_choice = "auto"
 	end
 	local json = HS:JSONEncode(body)
@@ -1339,7 +1421,11 @@ local function runCodeAgent(userText)
 					for _, m in ipairs(hist) do msgs[#msgs+1] = m end
 					return msgs
 				end)(),
-				tools       = Tools.getDefinitions(),
+				tools       = (function()
+					local t = {}
+					for _, e in ipairs(Tools.getDefinitions()) do t[#t+1] = e.definition end
+					return t
+				end)(),
 				tool_choice = "auto",
 				stream      = false,
 			}

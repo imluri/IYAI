@@ -34,6 +34,7 @@ return function(Tools, Http)
 	-- ── web_search ────────────────────────────────────────────────────────────
 
 	Tools.register({
+		group = "Web",
 		definition = {
 			type = "function",
 			["function"] = {
@@ -127,6 +128,7 @@ return function(Tools, Http)
 	-- ── fetch_page ────────────────────────────────────────────────────────────
 
 	Tools.register({
+		group = "Web",
 		definition = {
 			type = "function",
 			["function"] = {
@@ -186,6 +188,7 @@ return function(Tools, Http)
 	-- ── roblox_version ────────────────────────────────────────────────────────
 
 	Tools.register({
+		group = "Web",
 		definition = {
 			type = "function",
 			["function"] = {

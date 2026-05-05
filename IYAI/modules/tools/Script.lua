@@ -18,6 +18,7 @@ return function(Tools)
 
 	-- source: read script source
 	Tools.register({
+		group = "Script",
 		definition = {
 			type = "function",
 			["function"] = {
@@ -49,6 +50,7 @@ return function(Tools)
 
 	-- run: execute Lua with print() capture
 	Tools.register({
+		group = "Script",
 		definition = {
 			type = "function",
 			["function"] = {

@@ -17,7 +17,8 @@ end
 function Tools.getDefinitions()
 	local defs = {}
 	for _, t in ipairs(_registry) do
-		table.insert(defs, t.definition)
+		local entry = { definition = t.definition, group = t.group or "Other" }
+		table.insert(defs, entry)
 	end
 	return defs
 end

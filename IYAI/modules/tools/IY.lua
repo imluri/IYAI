@@ -9,6 +9,7 @@ return function(Tools)
 
 	-- iy_status: detect whether IY is present
 	Tools.register({
+		group = "IY",
 		definition = {
 			type = "function",
 			["function"] = {
@@ -34,6 +35,7 @@ return function(Tools)
 
 	-- iy_cmd: execute an IY command
 	Tools.register({
+		group = "IY",
 		definition = {
 			type = "function",
 			["function"] = {
@@ -83,6 +85,7 @@ return function(Tools)
 
 	-- list_iy_cmds: list available IY commands
 	Tools.register({
+		group = "IY",
 		definition = {
 			type = "function",
 			["function"] = {
@@ -122,6 +125,7 @@ return function(Tools)
 
 	-- list_iy_plugins: list plugins registered in IY
 	Tools.register({
+		group = "IY",
 		definition = {
 			type = "function",
 			["function"] = {

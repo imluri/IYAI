@@ -52,6 +52,7 @@ return function(Tools, getProperties, getMethods)
 
 	-- tree: walk instance tree from a path
 	Tools.register({
+		group = "Explorer",
 		definition = {
 			type = "function",
 			["function"] = {
@@ -76,6 +77,7 @@ return function(Tools, getProperties, getMethods)
 
 	-- find_class: find all instances of a ClassName
 	Tools.register({
+		group = "Explorer",
 		definition = {
 			type = "function",
 			["function"] = {
@@ -111,6 +113,7 @@ return function(Tools, getProperties, getMethods)
 
 	-- find_name: find instances by name
 	Tools.register({
+		group = "Explorer",
 		definition = {
 			type = "function",
 			["function"] = {
@@ -146,6 +149,7 @@ return function(Tools, getProperties, getMethods)
 
 	-- props: read properties of a specific instance
 	Tools.register({
+		group = "Explorer",
 		definition = {
 			type = "function",
 			["function"] = {
@@ -191,6 +195,7 @@ return function(Tools, getProperties, getMethods)
 		end
 	})-- get_value: read any single property from an instance via pcall
 	Tools.register({
+		group = "Explorer",
 		definition = {
 			type = "function",
 			["function"] = {
@@ -273,6 +278,7 @@ return function(Tools, getProperties, getMethods)
 	end
 
 	Tools.register({
+		group = "Explorer",
 		definition = {
 			type = "function",
 			["function"] = {
@@ -350,6 +356,7 @@ return function(Tools, getProperties, getMethods)
 	end
 
 	Tools.register({
+		group = "Explorer",
 		definition = {
 			type = "function",
 			["function"] = {
@@ -403,6 +410,7 @@ return function(Tools, getProperties, getMethods)
 
 	-- create_instance: create a new instance, optionally parent and configure it
 	Tools.register({
+		group = "Explorer",
 		definition = {
 			type = "function",
 			["function"] = {
@@ -446,6 +454,7 @@ return function(Tools, getProperties, getMethods)
 
 	-- delete: destroy an instance
 	Tools.register({
+		group = "Explorer",
 		definition = {
 			type = "function",
 			["function"] = {
@@ -472,6 +481,7 @@ return function(Tools, getProperties, getMethods)
 
 	-- local_player: get full info about the local player and their character
 	Tools.register({
+		group = "Explorer",
 		definition = {
 			type = "function",
 			["function"] = {
@@ -523,6 +533,7 @@ return function(Tools, getProperties, getMethods)
 
 	-- get_players: list all players in the server
 	Tools.register({
+		group = "Explorer",
 		definition = {
 			type = "function",
 			["function"] = {
@@ -546,6 +557,7 @@ return function(Tools, getProperties, getMethods)
 
 	-- decompile: decompile a script instance (executor only)
 	Tools.register({
+		group = "Explorer",
 		definition = {
 			type = "function",
 			["function"] = {

@@ -1,0 +1,13 @@
+local ok, src = pcall(readfile, "IYAI/IYAI_Core.iy")
+if not ok then error("[IYAI_dev] Cannot read IYAI/IYAI_Core.iy: " .. tostring(src)) end
+
+local fn, ce = loadstring(src)
+if not fn then error("[IYAI_dev] Compile error: " .. tostring(ce)) end
+
+local coreFn = fn()
+if type(coreFn) ~= "function" then error("[IYAI_dev] Core must return a function.") end
+
+local Plugin = coreFn("")
+if type(Plugin) ~= "table" then error("[IYAI_dev] Core did not return a Plugin table.") end
+
+return Plugin
