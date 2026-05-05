@@ -49,13 +49,17 @@ local HS  = game:GetService("HttpService")
 
 local G2L = loadMod("modules/Layout.lua")
 
--- Hide before any frame renders — fade-in tween reveals it later
-if G2L["e"] then G2L["e"].GroupTransparency = 1 end
-
--- Destroy Studio-only LocalScripts before executors can run them
+-- Destroy Studio-only LocalScripts before parenting — prevents executors running them
 for _, key in ipairs({"2", "d"}) do
 	pcall(function() if G2L[key] then G2L[key]:Destroy() end end)
 end
+
+-- Hide before any frame renders — fade-in tween reveals it later
+if G2L["e"] then G2L["e"].GroupTransparency = 1 end
+
+-- Parent to PlayerGui now that LocalScripts are gone
+local _playerGui = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
+G2L["1"].Parent = _playerGui
 
 -- ── Named aliases ─────────────────────────────────────────────────────────────
 
