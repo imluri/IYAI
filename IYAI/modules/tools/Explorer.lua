@@ -403,7 +403,9 @@ return function(Tools)
 				parameters  = {
 					type       = "object",
 					properties = {
-						path = { type = "string", description = "Instance path e.g. 'game.Workspace.MyScript'" },
+						path    = { type = "string",  description = "Instance path e.g. 'game.Workspace.MyScript'" },
+						mode    = { type = "string",  description = "Decompile mode (optional, executor-specific — e.g. 'default')" },
+						timeout = { type = "number",  description = "Timeout in seconds (optional)" },
 					},
 					required = { "path" }
 				}
@@ -418,7 +420,12 @@ return function(Tools)
 			if not (inst:IsA("BaseScript") or inst:IsA("ModuleScript")) then
 				return "Error: " .. inst.ClassName .. " is not a script instance."
 			end
-			local ok, result = pcall(decompile, inst)
+			local ok, result
+			if args.mode ~= nil or args.timeout ~= nil then
+				ok, result = pcall(decompile, inst, args.mode, args.timeout)
+			else
+				ok, result = pcall(decompile, inst)
+			end
 			if not ok then return "Decompile failed: " .. tostring(result) end
 			if not result or result == "" then return "Decompile returned empty output." end
 			return result
