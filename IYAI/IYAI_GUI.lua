@@ -58,9 +58,18 @@ end
 -- Hide before any frame renders — fade-in tween reveals it later
 if G2L["e"] then G2L["e"].GroupTransparency = 1 end
 
--- Parent to PlayerGui now that LocalScripts are gone
-local _playerGui = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
-G2L["1"].Parent = _playerGui
+-- Parent to a hidden container to avoid detection
+local function getHiddenContainer()
+	if gethui then return gethui() end
+	local ok, cg = pcall(function() return cloneref(game:GetService("CoreGui")) end)
+	if ok and cg then return cg end
+	local ok2, cg2 = pcall(function() return game:GetService("CoreGui") end)
+	if ok2 and cg2 then return cg2 end
+	return game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
+end
+local _container = getHiddenContainer()
+if syn and syn.protect_gui then pcall(syn.protect_gui, G2L["1"]) end
+G2L["1"].Parent = _container
 
 -- ── Named aliases ─────────────────────────────────────────────────────────────
 
