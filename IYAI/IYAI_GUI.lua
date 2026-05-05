@@ -528,8 +528,14 @@ Tools.register({
 		}
 	},
 	handler = function(args)
-		CodeBox.Text = unescapeCode(args.code or "")
-		return "Code written (" .. select(2, CodeBox.Text:gsub("\n", "\n")) + 1 .. " lines)"
+		local code = unescapeCode(args.code or "")
+		CodeBox.Text = code
+		local lines = select(2, code:gsub("\n", "\n")) + 1
+		local _, syntaxErr = loadstring(code)
+		if syntaxErr then
+			return "Code written (" .. lines .. " lines) — Syntax error: " .. tostring(syntaxErr)
+		end
+		return "Code written (" .. lines .. " lines)"
 	end
 })
 
