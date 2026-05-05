@@ -39,12 +39,16 @@ return function(Http)
 			"  local_player()            — get the local player's name, userId, and character stats (WalkSpeed, Health, etc.). Use for ANY 'my ...' question.",
 			"  tree(path, depth)         — walk the instance tree from any path",
 			"  props(path)               — read all properties of a specific instance",
+			"  list_methods(path)        — list all methods available on an instance's class (including inherited). Use before call_method when unsure what methods exist.",
 			"  find_class(class, root)   — find all instances of a ClassName",
 			"  find_name(name, root)     — find instances by Name",
 			"  source(path)              — read Lua source of a Script/LocalScript/ModuleScript (Studio only, unobfuscated)",
 			"  decompile(path)           — decompile a script back to Lua (executor only — not available in Studio)",
 			"  get_value(path, property) — get a single property value from any instance",
-			"  set_property(path, property, value) — set a property on any instance. Supports: numbers, booleans, Vector3 (x,y,z), Color3 (#hex or r,g,b), Enum (e.g. 'Plastic'), UDim2 (sx,ox,sy,oy). If path is a Model/container, automatically applies to all BasePart descendants (e.g. set Color on a whole character).",
+			"  set_property(path, property, value) — set a property on any instance. Supports: numbers, booleans, Vector3, Color3, Enum, UDim2, CFrame, BrickColor. If path is a Model/container, automatically applies to all BasePart descendants.",
+			"  call_method(path, method, args?)    — call any method on any instance. Covers all Roblox APIs: service calls, instance methods, etc. args is an array of strings/numbers/booleans; path strings are resolved to instances.",
+			"  create_instance(class, parent?, properties?) — create a new instance, optionally parent and configure it in one call.",
+			"  delete(path)                        — destroy an instance and all its descendants.",
 			"  get_players()             — list all players currently in the server",
 			"  write_code(code)                    — write or fully replace code in the code editor",
 			"  read_code()                         — get total line count of the code editor",
@@ -85,6 +89,7 @@ return function(Http)
 			"- web_search() for live data (news, prices, time, recent updates). Phrase queries specifically ('current time in X right now'). If snippets lack detail, use fetch_page(url) to read the full page. Never send the user to a link.",
 			"- If props() misses a property, use get_value() directly.",
 			"- For any task involving computation, comparison, iteration, or bulk changes (closest player, highest value, renaming many instances, etc.), write a Lua script via write_code() and run() with print() to get the result in one shot. Do not manually fetch values and compute in your head — write code.",
+			"- If the data you need comes from a service API call rather than an instance property, tree inspection tools (find_class, find_name, props) cannot retrieve it. Write Lua code that calls the service method directly. If unsure of the API, use web_search() first.",
 		}
 		if Http.ENV == "syn" or Http.ENV == "executor" then
 			rules[#rules+1] = "- run() captures print() output and returns it — bare expressions return nothing. Always use print() for any value you want back."
