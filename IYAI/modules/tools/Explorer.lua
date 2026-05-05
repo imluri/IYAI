@@ -1,7 +1,7 @@
 -- tools/Explorer.lua  |  Instance explorer tools
 -- Returns function(Tools) — call it to register tools.
 
-return function(Tools)
+return function(Tools, getProperties, getMethods)
 
 	local Players = game:GetService("Players")
 
@@ -256,6 +256,17 @@ return function(Tools)
 			local sx, ox, sy, oy = valStr:match("^([%.%d]+),%s*([%-%.%d]+),%s*([%.%d]+),%s*([%-%.%d]+)$")
 			if not sx then return nil, "expected 'scaleX,offsetX,scaleY,offsetY' for UDim2, got '" .. valStr .. "'" end
 			return UDim2.new(tonumber(sx), tonumber(ox), tonumber(sy), tonumber(oy))
+		elseif t == "CFrame" then
+			local x, y, z = valStr:match("^([%-%.%d]+),%s*([%-%.%d]+),%s*([%-%.%d]+)$")
+			if x then return CFrame.new(tonumber(x), tonumber(y), tonumber(z)) end
+			local comps = {}
+			for n in valStr:gmatch("[%-%.%d]+") do comps[#comps+1] = tonumber(n) end
+			if #comps == 12 then return CFrame.new(table.unpack(comps)) end
+			return nil, "expected 'x,y,z' or full 12-component CFrame string"
+		elseif t == "BrickColor" then
+			local ok, bc = pcall(BrickColor.new, valStr)
+			if not ok then return nil, "invalid BrickColor name '" .. valStr .. "'" end
+			return bc
 		else
 			return nil, "unsupported type '" .. t .. "' — use run() to set manually"
 		end
@@ -266,7 +277,7 @@ return function(Tools)
 			type = "function",
 			["function"] = {
 				name        = "set_property",
-				description = "Set a property on an instance. Automatically coerces the value string to the correct type (number, boolean, Vector3, Color3, Enum, UDim2, string). If the instance is a Model or container that doesn't have the property directly, automatically applies to all BasePart descendants (useful for setting body color on a character).",
+				description = "Set a property on an instance. Automatically coerces the value string to the correct type (number, boolean, Vector3, Color3, Enum, UDim2, CFrame, BrickColor, string). If the instance is a Model or container that doesn't have the property directly, automatically applies to all BasePart descendants (useful for setting body color on a character).",
 				parameters  = {
 					type       = "object",
 					properties = {
@@ -316,6 +327,140 @@ return function(Tools)
 			local setOk, setErr = pcall(function() inst[prop] = coerced end)
 			if not setOk then return "Error setting property: " .. tostring(setErr) end
 			return inst:GetFullName() .. "." .. prop .. " = " .. tostring(coerced)
+		end
+	})
+
+	-- call_method: invoke any method on an instance
+	local function serializeResult(v)
+		local t = typeof(v)
+		if v == nil                then return "nil" end
+		if t == "boolean"
+		or t == "number"
+		or t == "string"           then return tostring(v) end
+		if t == "Instance"         then return v.ClassName .. " " .. v:GetFullName() end
+		if t == "table" then
+			local parts = {}
+			for i, item in ipairs(v) do
+				parts[i] = serializeResult(item)
+				if i >= 50 then parts[#parts+1] = "...+" .. (#v - 50) .. " more"; break end
+			end
+			return "{\n  " .. table.concat(parts, "\n  ") .. "\n}"
+		end
+		return tostring(v)
+	end
+
+	Tools.register({
+		definition = {
+			type = "function",
+			["function"] = {
+				name        = "call_method",
+				description = "Call any method on an instance and return the result. Covers every Roblox API — service calls (GetAsync, GetDeveloperProductsAsync), instance methods (TakeDamage, FindFirstChildWhichIsA), etc. For methods that need Instance arguments, pass their path string.",
+				parameters  = {
+					type       = "object",
+					properties = {
+						path   = { type = "string", description = "Instance path e.g. 'game.Players.LocalPlayer.Humanoid'" },
+						method = { type = "string", description = "Method name e.g. 'TakeDamage', 'GetAsync', 'FindFirstChildWhichIsA'" },
+						args   = {
+							type  = "array",
+							items = {},
+							description = "Arguments to pass (strings, numbers, booleans). Strings that are valid instance paths are resolved to instances automatically.",
+						},
+					},
+					required = { "path", "method" }
+				}
+			}
+		},
+		handler = function(args)
+			local inst, err = resolvePath(args.path)
+			if not inst then return "Error: " .. tostring(err) end
+			local method = args.method
+			local ok, val = pcall(function() return inst[method] end)
+			if not ok or type(val) ~= "function" then
+				return "Error: " .. inst.ClassName .. " has no method '" .. method .. "'"
+			end
+			local callArgs = {}
+			for _, a in ipairs(args.args or {}) do
+				if type(a) == "string" then
+					local resolved = resolvePath(a)
+					callArgs[#callArgs+1] = resolved or a
+				else
+					callArgs[#callArgs+1] = a
+				end
+			end
+			local results = table.pack(pcall(inst[method], inst, table.unpack(callArgs)))
+			if not results[1] then return "Error: " .. tostring(results[2]) end
+			local out = {}
+			for i = 2, results.n do out[#out+1] = serializeResult(results[i]) end
+			return #out > 0 and table.concat(out, "\n") or "Done (no return value)"
+		end
+	})
+
+	-- create_instance: create a new instance, optionally parent and configure it
+	Tools.register({
+		definition = {
+			type = "function",
+			["function"] = {
+				name        = "create_instance",
+				description = "Create a new Roblox instance. Optionally set properties and parent it in one call.",
+				parameters  = {
+					type       = "object",
+					properties = {
+						class      = { type = "string", description = "ClassName e.g. 'Part', 'RemoteEvent', 'StringValue'" },
+						parent     = { type = "string", description = "Path to parent instance (default: game.Workspace)" },
+						properties = { type = "object", description = "Key/value pairs of properties to set, same string format as set_property." },
+					},
+					required = { "class" }
+				}
+			}
+		},
+		handler = function(args)
+			local ok, inst = pcall(Instance.new, args.class)
+			if not ok then return "Error: invalid class '" .. tostring(args.class) .. "': " .. tostring(inst) end
+
+			for prop, valStr in pairs(args.properties or {}) do
+				local readOk, cur = pcall(function() return inst[prop] end)
+				if readOk then
+					local coerced, coerceErr = coerceValue(cur, tostring(valStr))
+					if coerced ~= nil then
+						pcall(function() inst[prop] = coerced end)
+					end
+				end
+			end
+
+			local parentPath = args.parent or "game.Workspace"
+			local parent, perr = resolvePath(parentPath)
+			if not parent then
+				inst:Destroy()
+				return "Error: invalid parent path '" .. parentPath .. "': " .. tostring(perr)
+			end
+			inst.Parent = parent
+			return "Created " .. args.class .. " at " .. inst:GetFullName()
+		end
+	})
+
+	-- delete: destroy an instance
+	Tools.register({
+		definition = {
+			type = "function",
+			["function"] = {
+				name        = "delete",
+				description = "Destroy an instance and all its descendants.",
+				parameters  = {
+					type       = "object",
+					properties = {
+						path = { type = "string", description = "Instance path to destroy" },
+					},
+					required = { "path" }
+				}
+			}
+		},
+		handler = function(args)
+			local inst, err = resolvePath(args.path)
+			if not inst then return "Error: " .. tostring(err) end
+			if inst == game then return "Error: cannot delete game" end
+			local name = inst:GetFullName()
+			inst:Destroy()
+			return "Deleted " .. name
 		end
 	})
 
