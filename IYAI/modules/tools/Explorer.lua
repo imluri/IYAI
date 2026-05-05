@@ -362,8 +362,8 @@ return function(Tools, getProperties, getMethods)
 						method = { type = "string", description = "Method name e.g. 'TakeDamage', 'GetAsync', 'FindFirstChildWhichIsA'" },
 						args   = {
 							type  = "array",
-							items = {},
-							description = "Arguments to pass (strings, numbers, booleans). Strings that are valid instance paths are resolved to instances automatically.",
+							items = { type = "string" },
+							description = "Arguments to pass as strings. Numbers and booleans as strings too ('10', 'true'). Strings that are valid instance paths are resolved to instances automatically.",
 						},
 					},
 					required = { "path", "method" }
@@ -380,11 +380,17 @@ return function(Tools, getProperties, getMethods)
 			end
 			local callArgs = {}
 			for _, a in ipairs(args.args or {}) do
-				if type(a) == "string" then
-					local resolved = resolvePath(a)
-					callArgs[#callArgs+1] = resolved or a
+				local s = tostring(a)
+				local asNum = tonumber(s)
+				if asNum then
+					callArgs[#callArgs+1] = asNum
+				elseif s == "true" then
+					callArgs[#callArgs+1] = true
+				elseif s == "false" then
+					callArgs[#callArgs+1] = false
 				else
-					callArgs[#callArgs+1] = a
+					local resolved = resolvePath(s)
+					callArgs[#callArgs+1] = resolved or s
 				end
 			end
 			local results = table.pack(pcall(inst[method], inst, table.unpack(callArgs)))
