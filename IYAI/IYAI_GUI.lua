@@ -51,12 +51,12 @@ local HS  = game:GetService("HttpService")
 local G2L = loadMod("modules/Layout.lua")
 
 -- Destroy Studio-only LocalScripts before parenting — prevents executors running them
-for _, key in ipairs({"db", "e6"}) do
+for _, key in ipairs({"2", "d"}) do
 	pcall(function() if G2L[key] then G2L[key]:Destroy() end end)
 end
 
 -- Hide before any frame renders — fade-in tween reveals it later
-if G2L["2"] then G2L["2"].GroupTransparency = 1 end
+if G2L["e"] then G2L["e"].GroupTransparency = 1 end
 
 -- Parent to a hidden container to avoid detection
 local function getHiddenContainer()
@@ -74,85 +74,85 @@ G2L["1"].Parent = _container
 -- ── Named aliases ─────────────────────────────────────────────────────────────
 
 local ScreenGui              = G2L["1"]
-local IYAI                   = G2L["2"]
-local ContentPages           = G2L["4"]
-local AgentPage              = G2L["5"]
-local ScrollingFrameMainChat = G2L["6"]
-local ListLayout             = G2L["7"]
-local ElementTemplate        = G2L["9"]
-local TotalElements          = G2L["37"]
-local isAssistantBusy        = G2L["38"]
-local InputFrame             = G2L["3e"]
-local TextBoxInput           = G2L["3f"]
-local SendButton             = G2L["42"]
-local StopButton             = G2L["44"]
-local ActionsFrame           = G2L["47"]
-local ClearButton            = G2L["49"]
-local SettingsPage           = G2L["4a"]
-local Settings_SF            = G2L["4b"]
-local APIKeyFrame            = G2L["4c"]
-local APIKeyLabel            = G2L["4f"]
-local APIKeyBox              = G2L["50"]
-local HostSelectFrame        = G2L["53"]
-local HostFrame              = G2L["56"]
+local IYAI                   = G2L["e"]
+local ContentPages           = G2L["11"]
+local AgentPage              = G2L["12"]
+local ScrollingFrameMainChat = G2L["13"]
+local ListLayout             = G2L["14"]
+local ElementTemplate        = G2L["16"]
+local TotalElements          = G2L["44"]
+local isAssistantBusy        = G2L["45"]
+local InputFrame             = G2L["4b"]
+local TextBoxInput           = G2L["4c"]
+local SendButton             = G2L["50"]
+local StopButton             = G2L["52"]
+local ActionsFrame           = G2L["54"]
+local ClearButton            = G2L["56"]
+local SettingsPage           = G2L["57"]
+local Settings_SF            = G2L["58"]
+local APIKeyFrame            = G2L["59"]
+local APIKeyLabel            = G2L["5c"]
+local APIKeyBox              = G2L["5d"]
+local HostSelectFrame        = G2L["60"]
+local HostFrame              = G2L["63"]
 local HostButtons            = HostFrame:GetChildren()
-local ModelSelectFrame       = G2L["64"]
-local ModelFrame             = G2L["67"]
-local ModelBox               = G2L["68"]
-local DropdownButton         = G2L["6b"]
+local ModelSelectFrame       = G2L["79"]
+local ModelFrame             = G2L["7c"]
+local ModelBox               = G2L["7d"]
+local DropdownButton         = G2L["80"]
 local DropdownList           = Instance.new("Frame")  -- dropdown disabled; detached dummy
-local TestFrame              = G2L["6e"]
-local ConnectionButton       = G2L["72"]
-local CredentialButton       = G2L["74"]
-local UnsavedChanges         = G2L["7e"]
-local TextLabel              = G2L["80"]
-local SaveButton             = G2L["82"]
-local RevertButton           = G2L["84"]
-local CodePage               = G2L["87"]
-local CodeSF                 = G2L["8e"]
-local LineLabel              = G2L["90"]
-local CodeBox                = G2L["92"]
-local CodeActionsFrame       = G2L["88"]
-local CodeClearButton        = G2L["89"]
-local CodeCopyButton         = G2L["8a"]
-local RunButton              = G2L["8b"]
-local LeftSidebar            = G2L["a7"]
-local TopBar                 = G2L["ba"]
-local CloseButton            = G2L["bc"]
-local MinimizeButton         = G2L["bf"]
-local Highlight              = G2L["c0"]
-local IntroFrame             = G2L["d7"]
-local IYAIToastContainer     = G2L["e7"]
-local ToastTemplate          = G2L["e8"]
-local CurrentPage            = G2L["f4"]
-local ModalFrame             = G2L["c1"]
-local ModalInner             = G2L["c3"]
-local ModalCloseButton       = G2L["c5"]
-local SearchModelModal       = G2L["c6"]
-local ModalSearchBox         = G2L["c8"]
-local ModalSF                = G2L["cc"]
-local ExampleModelBtn        = G2L["cd"]
-local ModalSearchButton      = G2L["cb"]
-local ModalOpenButton        = G2L["6b"]
-local MaxStepFrame           = G2L["77"]
-local MaxStepBox             = G2L["8a"]
-local ToolsPage              = G2L["94"]
-local ToolsSF                = G2L["95"]
-local ToolsElementTemplate   = G2L["98"]
-local ToolsGroupFrame        = G2L["99"]  -- GroupFrame template
-local ToolsGroupInner        = G2L["9a"]  -- inner card Frame
-local ToolsGroupTitle        = G2L["9b"]  -- GroupTitle label
-local ToolsToolFrame         = G2L["9c"]  -- ToolFrame template
-local ToolsToolNameDesc      = G2L["a0"]  -- ToolNameDesc label
-local ToolsTotalElements     = G2L["a5"]
-local ToolResultViewModal    = G2L["d0"]
-local ToolResultSF           = G2L["d2"]
-local ToolResultTextBox      = G2L["d3"]
-local ModalTitleLabel        = G2L["d5"]
+local TestFrame              = G2L["83"]
+local ConnectionButton       = G2L["87"]
+local CredentialButton       = G2L["89"]
+local UnsavedChanges         = G2L["93"]
+local TextLabel              = G2L["95"]
+local SaveButton             = G2L["97"]
+local RevertButton           = G2L["99"]
+local CodePage               = G2L["9c"]
+local CodeSF                 = G2L["a3"]
+local LineLabel              = G2L["a5"]
+local CodeBox                = G2L["a7"]
+local CodeActionsFrame       = G2L["9d"]
+local CodeClearButton        = G2L["9f"]
+local CodeCopyButton         = G2L["a0"]
+local RunButton              = G2L["a1"]
+local LeftSidebar            = G2L["bc"]
+local TopBar                 = G2L["cf"]
+local CloseButton            = G2L["d1"]
+local MinimizeButton         = G2L["d4"]
+local Highlight              = G2L["d5"]
+local IntroFrame             = G2L["ec"]
+local IYAIToastContainer     = G2L["ef"]
+local ToastTemplate          = G2L["f0"]
+local CurrentPage            = G2L["fc"]
+local ModalFrame             = G2L["d6"]
+local ModalInner             = G2L["d8"]
+local ModalCloseButton       = G2L["da"]
+local SearchModelModal       = G2L["db"]
+local ModalSearchBox         = G2L["dd"]
+local ModalSF                = G2L["e1"]
+local ExampleModelBtn        = G2L["e2"]
+local ModalSearchButton      = G2L["e0"]
+local ModalOpenButton        = G2L["80"]
+local MaxStepFrame           = G2L["8c"]
+local MaxStepBox             = G2L["90"]
+local ToolsPage              = G2L["a9"]
+local ToolsSF                = G2L["aa"]
+local ToolsElementTemplate   = G2L["ad"]
+local ToolsGroupFrame        = G2L["ae"]  -- GroupFrame template
+local ToolsGroupInner        = G2L["b0"]  -- inner card Frame
+local ToolsGroupTitle        = G2L["b1"]  -- GroupTitle label
+local ToolsToolFrame         = G2L["b5"]  -- ToolFrame template
+local ToolsToolNameDesc      = G2L["b8"]  -- ToolNameDesc label
+local ToolsTotalElements     = G2L["ba"]
+local ToolResultViewModal    = G2L["e5"]
+local ToolResultSF           = G2L["e7"]
+local ToolResultTextBox      = G2L["e8"]
+local ModalTitleLabel        = G2L["ea"]
 
 -- ── Main logic ────────────────────────────────────────────────────────────────
 
-local VERSION           = G2L["f5"] and G2L["f5"].Value or ""
+local VERSION           = G2L["fd"] and G2L["fd"].Value or ""
 local Tween             = TweenInfo.new(0.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut)
 local DefaultIYAISize   = UDim2.new(0, 600, 0, 400)
 local MinimizedIYAISize = UDim2.new(0, 100, 0, 25)
@@ -204,8 +204,9 @@ local function fetchModelsFromOpenAIEndpoint(url, authKey)
 	end
 end
 
-local function fetchOpenRouterModels() fetchModelsFromOpenAIEndpoint("https://openrouter.ai/api/v1/models", "") end
-local function fetchMistralModels()    fetchModelsFromOpenAIEndpoint("https://api.mistral.ai/v1/models",    Config.apiKey) end
+local function fetchOpenRouterModels()  fetchModelsFromOpenAIEndpoint("https://openrouter.ai/api/v1/models",              "")             end
+local function fetchMistralModels()     fetchModelsFromOpenAIEndpoint("https://api.mistral.ai/v1/models",                 Config.apiKey)  end
+local function fetchHuggingFaceModels() fetchModelsFromOpenAIEndpoint("https://router.huggingface.co/v1/models", Config.apiKey) end
 
 local function autoTestOnStart()
 	task.spawn(function()
@@ -215,6 +216,10 @@ local function autoTestOnStart()
 			if ok and data and data.models then modelList = data.models end
 		elseif Config.host == "Mistral" then
 			fetchMistralModels()
+		elseif Config.host == "Pollinations" then
+			fetchModelsFromOpenAIEndpoint("https://gen.pollinations.ai/v1/models", Config.apiKey)
+		elseif Config.host == "HuggingFace" then
+			fetchHuggingFaceModels()
 		else
 			fetchOpenRouterModels()
 		end
@@ -231,6 +236,32 @@ local function autoTestOnStart()
 			Toast.show("Connected", "Ollama is reachable", "ok", 3)
 		else
 			Toast.show("Offline", "Cannot reach Ollama — check Settings", "err", 5)
+			task.delay(1, function() CurrentPage.Value = "Settings" end)
+		end
+	elseif Config.host == "Pollinations" then
+		local res = Http.request("https://gen.pollinations.ai/v1/models", "GET", {
+			["Authorization"] = "Bearer " .. key,
+		})
+		if res and res.StatusCode == 200 then
+			Toast.show("Connected", "Pollinations key is valid", "ok", 3)
+		elseif res and res.StatusCode == 401 then
+			Toast.show("Invalid Key", "Pollinations key rejected — update in Settings", "err", 5)
+			task.delay(1, function() CurrentPage.Value = "Settings" end)
+		else
+			Toast.show("Connection Failed", "Could not reach Pollinations", "err", 5)
+			task.delay(1, function() CurrentPage.Value = "Settings" end)
+		end
+	elseif Config.host == "HuggingFace" then
+		local res = Http.request("https://router.huggingface.co/v1/models", "GET", {
+			["Authorization"] = "Bearer " .. key,
+		})
+		if res and res.StatusCode == 200 then
+			Toast.show("Connected", "HuggingFace token is valid", "ok", 3)
+		elseif res and res.StatusCode == 401 then
+			Toast.show("Invalid Key", "HuggingFace token rejected — update in Settings", "err", 5)
+			task.delay(1, function() CurrentPage.Value = "Settings" end)
+		else
+			Toast.show("Connection Failed", "Could not reach HuggingFace", "err", 5)
 			task.delay(1, function() CurrentPage.Value = "Settings" end)
 		end
 	elseif Config.host == "Mistral" then
@@ -749,7 +780,7 @@ selectedHost               = Config.host
 
 for _, b in pairs(HostButtons) do
 	if b:IsA("TextButton") then
-		b.BackgroundTransparency = b.Text == selectedHost and 0.7 or 1
+		b.BackgroundTransparency = b.Text == selectedHost and 0.9 or 1
 	end
 end
 
@@ -872,7 +903,7 @@ for _, btn in pairs(HostButtons) do
 		selectedHost = btn.Text
 		for _, b in pairs(HostButtons) do
 			if b:IsA("TextButton") then
-				b.BackgroundTransparency = b.Text == selectedHost and 0.7 or 1
+				b.BackgroundTransparency = b.Text == selectedHost and 0.9 or 1
 			end
 		end
 		updateApiKeyVisibility(selectedHost)
@@ -885,8 +916,16 @@ ConnectionButton.MouseButton1Click:Connect(function()
 	local res
 	if selectedHost == "Ollama" then
 		res = Http.request(Config.ollamaUrl .. "/api/tags", "GET", {})
+	elseif selectedHost == "Pollinations" then
+		res = Http.request("https://gen.pollinations.ai/v1/models", "GET", {
+			["Authorization"] = "Bearer " .. APIKeyBox.Text,
+		})
 	elseif selectedHost == "Mistral" then
 		res = Http.request("https://api.mistral.ai/v1/models", "GET", {
+			["Authorization"] = "Bearer " .. APIKeyBox.Text,
+		})
+	elseif selectedHost == "HuggingFace" then
+		res = Http.request("https://router.huggingface.co/v1/models", "GET", {
 			["Authorization"] = "Bearer " .. APIKeyBox.Text,
 		})
 	else
@@ -921,7 +960,9 @@ end)
 
 CredentialButton.MouseButton1Click:Connect(function()
 	local key = APIKeyBox.Text
-	if key == "" then Toast.show("No API Key", "Enter an API key first", "err", 3) return end
+	if selectedHost ~= "Ollama" and key == "" then
+		Toast.show("No API Key", "Enter an API key first", "err", 3) return
+	end
 	CredentialButton.Text = "Testing..."
 	if selectedHost == "Ollama" then
 		local res = Http.request(Config.ollamaUrl .. "/api/tags", "GET", {})
@@ -930,6 +971,23 @@ CredentialButton.MouseButton1Click:Connect(function()
 			Toast.show("OK", "Ollama has no auth — connection is fine", "ok", 3)
 		else
 			Toast.show("Failed", "Could not reach Ollama", "err", 4)
+		end
+	elseif selectedHost == "Pollinations" then
+		-- Send a minimal chat request; public endpoint returns 200 regardless of auth on /models
+		local body = HS:JSONEncode({ model = "openai", messages = {{ role = "user", content = "hi" }}, max_tokens = 1 })
+		local res = Http.request("https://gen.pollinations.ai/v1/chat/completions", "POST", {
+			["Content-Type"]  = "application/json",
+			["Authorization"] = "Bearer " .. key,
+		}, body)
+		CredentialButton.Text = "Credential"
+		if not res then
+			Toast.show("Failed", "No response from Pollinations", "err", 4)
+		elseif res.StatusCode == 200 then
+			Toast.show("Valid Key", "Pollinations key accepted", "ok", 3)
+		elseif res.StatusCode == 401 then
+			Toast.show("Invalid Key", "Pollinations key rejected (401)", "err", 4)
+		else
+			Toast.show("Failed", "Status " .. res.StatusCode, "err", 4)
 		end
 	elseif selectedHost == "Mistral" then
 		local res = Http.request("https://api.mistral.ai/v1/models", "GET", {
@@ -942,6 +1000,23 @@ CredentialButton.MouseButton1Click:Connect(function()
 			Toast.show("Valid Key", "Mistral key accepted", "ok", 3)
 		elseif res.StatusCode == 401 then
 			Toast.show("Invalid Key", "Mistral key rejected (401)", "err", 4)
+		else
+			Toast.show("Failed", "Status " .. res.StatusCode, "err", 4)
+		end
+	elseif selectedHost == "HuggingFace" then
+		-- /api/whoami requires auth; /v1/models is public and always returns 200
+		local res = Http.request("https://huggingface.co/api/whoami", "GET", {
+			["Authorization"] = "Bearer " .. key,
+		})
+		CredentialButton.Text = "Credential"
+		if not res then
+			Toast.show("Failed", "No response from HuggingFace", "err", 4)
+		elseif res.StatusCode == 200 then
+			local ok, data = pcall(HS.JSONDecode, HS, res.Body)
+			local name = ok and data and (data.name or data.fullname) or "unknown"
+			Toast.show("Valid Token", "Logged in as " .. tostring(name), "ok", 3)
+		elseif res.StatusCode == 401 then
+			Toast.show("Invalid Token", "HuggingFace token rejected (401)", "err", 4)
 		else
 			Toast.show("Failed", "Status " .. res.StatusCode, "err", 4)
 		end
@@ -994,9 +1069,10 @@ local function revertSettings()
 	selectedHost               = Config.host
 	for _, b in pairs(HostButtons) do
 		if b:IsA("TextButton") then
-			b.BackgroundTransparency = b.Text == selectedHost and 0.7 or 1
+			b.BackgroundTransparency = b.Text == selectedHost and 0.9 or 1
 		end
 	end
+	updateApiKeyVisibility(selectedHost)
 	_loading = false; _loadingKey = false
 	UnsavedChanges.Visible = false
 end
@@ -1036,6 +1112,7 @@ local function modalRenderChunk()
 			UnsavedChanges.Visible = true
 			ModalFrame.Visible = false
 		end)
+		if i % 20 == 0 then task.wait() end
 	end
 	modalRendered = endIdx
 end
@@ -1064,6 +1141,26 @@ ModalSF:GetPropertyChangedSignal("CanvasPosition"):Connect(function()
 	end
 end)
 
+local function fetchHuggingFaceModalSearch(query)
+	local url = "https://huggingface.co/api/models?filter=text-generation&limit=50&sort=downloads&direction=-1"
+	if query and query ~= "" then
+		url = url .. "&search=" .. HS:UrlEncode(query)
+	end
+	local res = Http.request(url, "GET", { ["Authorization"] = "Bearer " .. APIKeyBox.Text })
+	local ok, data = pcall(HS.JSONDecode, HS, res and res.Body or "")
+	modalAllModels = {}
+	if ok and type(data) == "table" then
+		for _, m in ipairs(data) do
+			local id = type(m) == "table" and (m.modelId or m.id) or tostring(m)
+			if id then table.insert(modalAllModels, { name = id }) end
+		end
+	end
+	modalFiltered = { table.unpack(modalAllModels) }
+	modalRendered = 0
+	modalClearButtons()
+	modalRenderChunk()
+end
+
 local function modalFetch()
 	modalAllModels = {}
 	local host = selectedHost
@@ -1075,13 +1172,15 @@ local function modalFetch()
 				table.insert(modalAllModels, { name = m.name })
 			end
 		end
+	elseif host == "HuggingFace" then
+		fetchHuggingFaceModalSearch("")
+		return
 	else
-		local url = host == "Mistral"
-			and "https://api.mistral.ai/v1/models"
-			or  "https://openrouter.ai/api/v1/models"
-		local res = Http.request(url, "GET", {
-			["Authorization"] = "Bearer " .. APIKeyBox.Text,
-		})
+		local url = host == "Mistral"      and "https://api.mistral.ai/v1/models"
+			or    host == "Pollinations"   and "https://gen.pollinations.ai/v1/models"
+			or    "https://openrouter.ai/api/v1/models"
+		local auth = host ~= "OpenRouter" and APIKeyBox.Text or ""
+		local res = Http.request(url, "GET", auth ~= "" and { ["Authorization"] = "Bearer " .. auth } or {})
 		local ok, data = pcall(HS.JSONDecode, HS, res and res.Body or "")
 		if ok and data and data.data then
 			for _, m in ipairs(data.data) do
@@ -1125,14 +1224,30 @@ ModalCloseButton.MouseButton1Click:Connect(function()
 	ToolResultViewModal.Visible = false
 end)
 
+local _hfSearchTask = nil
 if ModalSearchBox then
 	ModalSearchBox:GetPropertyChangedSignal("Text"):Connect(function()
-		modalApplyFilter(ModalSearchBox.Text)
+		local query = ModalSearchBox.Text
+		if selectedHost == "HuggingFace" then
+			if _hfSearchTask then task.cancel(_hfSearchTask); _hfSearchTask = nil end
+			_hfSearchTask = task.delay(0.4, function()
+				_hfSearchTask = nil
+				fetchHuggingFaceModalSearch(query)
+			end)
+		else
+			modalApplyFilter(query)
+		end
 	end)
 end
 if ModalSearchButton then
 	ModalSearchButton.MouseButton1Click:Connect(function()
-		modalApplyFilter(ModalSearchBox and ModalSearchBox.Text or "")
+		local query = ModalSearchBox and ModalSearchBox.Text or ""
+		if selectedHost == "HuggingFace" then
+			if _hfSearchTask then task.cancel(_hfSearchTask); _hfSearchTask = nil end
+			fetchHuggingFaceModalSearch(query)
+		else
+			modalApplyFilter(query)
+		end
 	end)
 end
 
@@ -1170,13 +1285,17 @@ end)
 local conversationHistory = {}
 
 local function buildUrl()
-	if Config.host == "Ollama"  then return Config.ollamaUrl .. "/api/chat" end
-	if Config.host == "Mistral" then return "https://api.mistral.ai/v1/chat/completions" end
+	if Config.host == "Ollama"       then return Config.ollamaUrl .. "/api/chat" end
+	if Config.host == "Mistral"      then return "https://api.mistral.ai/v1/chat/completions" end
+	if Config.host == "Pollinations" then return "https://gen.pollinations.ai/v1/chat/completions" end
+	if Config.host == "HuggingFace"  then return "https://router.huggingface.co/v1/chat/completions" end
 	return "https://openrouter.ai/api/v1/chat/completions"
 end
 
 local function buildHeaders()
-	if Config.host == "Ollama" then return { ["Content-Type"] = "application/json" } end
+	if Config.host == "Ollama" then
+		return { ["Content-Type"] = "application/json" }
+	end
 	return {
 		["Content-Type"]  = "application/json",
 		["Authorization"] = "Bearer " .. Config.apiKey,
@@ -1545,7 +1664,19 @@ local function runAgentLoop(userText)
 		end
 		if not res or res.StatusCode ~= 200 then
 			if generatingFrame then generatingFrame:Destroy(); generatingFrame = nil end
-			addResponse("Request failed (status " .. (res and tostring(res.StatusCode) or "no response") .. ")")
+			local statusStr = res and tostring(res.StatusCode) or "no response"
+			local errBody   = res and res.Body or "(no response)"
+			local errFrame  = addTaskFrame("failed")
+			local lbl = errFrame:FindFirstChildWhichIsA("TextLabel", true)
+			if lbl then
+				lbl.RichText = true
+				lbl.Text = "Request failed (" .. statusStr .. ")  " .. '<font size="12" color="#A1A5A2"><u>Open</u></font>'
+				lbl.InputBegan:Connect(function(input)
+					if input.UserInputType == Enum.UserInputType.MouseButton1 then
+						openToolResultModal(errBody)
+					end
+				end)
+			end
 			break
 		end
 
