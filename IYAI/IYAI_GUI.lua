@@ -94,65 +94,66 @@ local APIKeyFrame            = G2L["59"]
 local APIKeyLabel            = G2L["5c"]
 local APIKeyBox              = G2L["5d"]
 local HostSelectFrame        = G2L["60"]
+local HostTitle              = G2L["61"]
 local HostFrame              = G2L["63"]
 local HostButtons            = HostFrame:GetChildren()
-local ModelSelectFrame       = G2L["79"]
-local ModelFrame             = G2L["7c"]
-local ModelBox               = G2L["7d"]
-local DropdownButton         = G2L["80"]
+local ModelSelectFrame       = G2L["81"]
+local ModelFrame             = G2L["84"]
+local ModelBox               = G2L["85"]
+local DropdownButton         = G2L["88"]
 local DropdownList           = Instance.new("Frame")  -- dropdown disabled; detached dummy
-local TestFrame              = G2L["83"]
-local ConnectionButton       = G2L["87"]
-local CredentialButton       = G2L["89"]
-local UnsavedChanges         = G2L["93"]
-local TextLabel              = G2L["95"]
-local SaveButton             = G2L["97"]
-local RevertButton           = G2L["99"]
-local CodePage               = G2L["9c"]
-local CodeSF                 = G2L["a3"]
-local LineLabel              = G2L["a5"]
-local CodeBox                = G2L["a7"]
-local CodeActionsFrame       = G2L["9d"]
-local CodeClearButton        = G2L["9f"]
-local CodeCopyButton         = G2L["a0"]
-local RunButton              = G2L["a1"]
-local LeftSidebar            = G2L["bc"]
-local TopBar                 = G2L["cf"]
-local CloseButton            = G2L["d1"]
-local MinimizeButton         = G2L["d4"]
-local Highlight              = G2L["d5"]
-local IntroFrame             = G2L["ec"]
-local IYAIToastContainer     = G2L["ef"]
-local ToastTemplate          = G2L["f0"]
-local CurrentPage            = G2L["fc"]
-local ModalFrame             = G2L["d6"]
-local ModalInner             = G2L["d8"]
-local ModalCloseButton       = G2L["da"]
-local SearchModelModal       = G2L["db"]
-local ModalSearchBox         = G2L["dd"]
-local ModalSF                = G2L["e1"]
-local ExampleModelBtn        = G2L["e2"]
-local ModalSearchButton      = G2L["e0"]
-local ModalOpenButton        = G2L["80"]
-local MaxStepFrame           = G2L["8c"]
-local MaxStepBox             = G2L["90"]
-local ToolsPage              = G2L["a9"]
-local ToolsSF                = G2L["aa"]
-local ToolsElementTemplate   = G2L["ad"]
-local ToolsGroupFrame        = G2L["ae"]  -- GroupFrame template
-local ToolsGroupInner        = G2L["b0"]  -- inner card Frame
-local ToolsGroupTitle        = G2L["b1"]  -- GroupTitle label
-local ToolsToolFrame         = G2L["b5"]  -- ToolFrame template
-local ToolsToolNameDesc      = G2L["b8"]  -- ToolNameDesc label
-local ToolsTotalElements     = G2L["ba"]
-local ToolResultViewModal    = G2L["e5"]
-local ToolResultSF           = G2L["e7"]
-local ToolResultTextBox      = G2L["e8"]
-local ModalTitleLabel        = G2L["ea"]
+local TestFrame              = G2L["8b"]
+local ConnectionButton       = G2L["8f"]
+local CredentialButton       = G2L["91"]
+local UnsavedChanges         = G2L["9b"]
+local TextLabel              = G2L["9d"]
+local SaveButton             = G2L["9f"]
+local RevertButton           = G2L["a1"]
+local CodePage               = G2L["a4"]
+local CodeSF                 = G2L["ab"]
+local LineLabel              = G2L["ad"]
+local CodeBox                = G2L["af"]
+local CodeActionsFrame       = G2L["a5"]
+local CodeClearButton        = G2L["a7"]
+local CodeCopyButton         = G2L["a8"]
+local RunButton              = G2L["a9"]
+local LeftSidebar            = G2L["c4"]
+local TopBar                 = G2L["d7"]
+local CloseButton            = G2L["d9"]
+local MinimizeButton         = G2L["dc"]
+local Highlight              = G2L["dd"]
+local IntroFrame             = G2L["f4"]
+local IYAIToastContainer     = G2L["f7"]
+local ToastTemplate          = G2L["f8"]
+local CurrentPage            = G2L["104"]
+local ModalFrame             = G2L["de"]
+local ModalInner             = G2L["e0"]
+local ModalCloseButton       = G2L["e2"]
+local SearchModelModal       = G2L["e3"]
+local ModalSearchBox         = G2L["e5"]
+local ModalSF                = G2L["e9"]
+local ExampleModelBtn        = G2L["ea"]
+local ModalSearchButton      = G2L["e8"]
+local ModalOpenButton        = G2L["88"]
+local MaxStepFrame           = G2L["94"]
+local MaxStepBox             = G2L["98"]
+local ToolsPage              = G2L["b1"]
+local ToolsSF                = G2L["b2"]
+local ToolsElementTemplate   = G2L["b5"]
+local ToolsGroupFrame        = G2L["b6"]  -- GroupFrame template
+local ToolsGroupInner        = G2L["b8"]  -- inner card Frame
+local ToolsGroupTitle        = G2L["b9"]  -- GroupTitle label
+local ToolsToolFrame         = G2L["bd"]  -- ToolFrame template
+local ToolsToolNameDesc      = G2L["c0"]  -- ToolNameDesc label
+local ToolsTotalElements     = G2L["c2"]
+local ToolResultViewModal    = G2L["ed"]
+local ToolResultSF           = G2L["ef"]
+local ToolResultTextBox      = G2L["f0"]
+local ModalTitleLabel        = G2L["f2"]
 
 -- ── Main logic ────────────────────────────────────────────────────────────────
 
-local VERSION           = G2L["fd"] and G2L["fd"].Value or ""
+local VERSION           = G2L["105"] and G2L["105"].Value or ""
 local Tween             = TweenInfo.new(0.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut)
 local DefaultIYAISize   = UDim2.new(0, 600, 0, 400)
 local MinimizedIYAISize = UDim2.new(0, 100, 0, 25)
@@ -206,6 +207,7 @@ end
 
 local function fetchOpenRouterModels()  fetchModelsFromOpenAIEndpoint("https://openrouter.ai/api/v1/models",              "")             end
 local function fetchMistralModels()     fetchModelsFromOpenAIEndpoint("https://api.mistral.ai/v1/models",                 Config.apiKey)  end
+local function fetchGroqModels()        fetchModelsFromOpenAIEndpoint("https://api.groq.com/openai/v1/models",            Config.apiKey)  end
 local function fetchHuggingFaceModels() fetchModelsFromOpenAIEndpoint("https://router.huggingface.co/v1/models", Config.apiKey) end
 
 local function autoTestOnStart()
@@ -216,6 +218,8 @@ local function autoTestOnStart()
 			if ok and data and data.models then modelList = data.models end
 		elseif Config.host == "Mistral" then
 			fetchMistralModels()
+		elseif Config.host == "Groq" then
+			fetchGroqModels()
 		elseif Config.host == "Pollinations" then
 			fetchModelsFromOpenAIEndpoint("https://gen.pollinations.ai/v1/models", Config.apiKey)
 		elseif Config.host == "HuggingFace" then
@@ -262,6 +266,19 @@ local function autoTestOnStart()
 			task.delay(1, function() CurrentPage.Value = "Settings" end)
 		else
 			Toast.show("Connection Failed", "Could not reach HuggingFace", "err", 5)
+			task.delay(1, function() CurrentPage.Value = "Settings" end)
+		end
+	elseif Config.host == "Groq" then
+		local res = Http.request("https://api.groq.com/openai/v1/models", "GET", {
+			["Authorization"] = "Bearer " .. key,
+		})
+		if res and res.StatusCode == 200 then
+			Toast.show("Connected", "Groq key is valid", "ok", 3)
+		elseif res and res.StatusCode == 401 then
+			Toast.show("Invalid Key", "Groq key rejected — update in Settings", "err", 5)
+			task.delay(1, function() CurrentPage.Value = "Settings" end)
+		else
+			Toast.show("Connection Failed", "Could not reach Groq", "err", 5)
 			task.delay(1, function() CurrentPage.Value = "Settings" end)
 		end
 	elseif Config.host == "Mistral" then
@@ -521,7 +538,9 @@ end
 updateLineNumbers()
 CodeBox:GetPropertyChangedSignal("Text"):Connect(function()
 	updateLineNumbers()
-	CodeSF.CanvasPosition = Vector2.new(0, CodeSF.AbsoluteCanvasSize.Y)
+	if not CodeBox:IsFocused() then
+		CodeSF.CanvasPosition = Vector2.new(0, CodeSF.AbsoluteCanvasSize.Y)
+	end
 end)
 
 CodeClearButton.MouseButton1Click:Connect(function()
@@ -769,21 +788,43 @@ local function maskKey(key)
 	return string.rep("•", #key - visible) .. key:sub(-visible)
 end
 
+local function updateHostLabel(host)
+	if not HostTitle then return end
+	HostTitle.RichText = true
+	HostTitle.Text = 'Host Provider  <font size="11" color="#A1A5A2">(' .. host .. ')</font>'
+end
+
+local ALL_HOSTS = {"OpenRouter", "Ollama", "Mistral", "Groq", "Pollinations", "HuggingFace"}
+local providerCache = {}
+for _, h in ipairs(ALL_HOSTS) do
+	local pd = Config.providerData and Config.providerData[h] or {}
+	providerCache[h] = { key = pd.apiKey or "", model = pd.model or "" }
+end
+-- Authoritative current values from Config
+providerCache[Config.host] = { key = Config.apiKey, model = Config.model }
+
 local _loadingKey = true
 
-APIKeyBox.Text             = Config.apiKey
-APIKeyBox.TextTransparency = 1
-APIKeyLabel.Text           = maskKey(Config.apiKey)
-ModelBox.Text              = Config.model
-MaxStepBox.Text            = tostring(Config.maxSteps)
-selectedHost               = Config.host
+local function applyProviderToUI(host)
+	local cached = providerCache[host] or {}
+	APIKeyBox.Text             = cached.key or ""
+	APIKeyBox.TextTransparency = 1
+	APIKeyLabel.Text           = maskKey(cached.key or "")
+	ModelBox.Text              = cached.model or ""
+end
+
+applyProviderToUI(Config.host)
+MaxStepBox.Text = tostring(Config.maxSteps)
+selectedHost    = Config.host
 
 for _, b in pairs(HostButtons) do
 	if b:IsA("TextButton") then
+		if b.Text == "Google AI Studio" then b.Visible = false; continue end
 		b.BackgroundTransparency = b.Text == selectedHost and 0.9 or 1
 	end
 end
 
+updateHostLabel(selectedHost)
 _loading    = false
 _loadingKey = false
 
@@ -900,13 +941,20 @@ updateApiKeyVisibility(selectedHost)
 for _, btn in pairs(HostButtons) do
 	if not btn:IsA("TextButton") then continue end
 	btn.MouseButton1Click:Connect(function()
+		-- Save current provider's unsaved key+model to cache
+		providerCache[selectedHost] = { key = APIKeyBox.Text, model = ModelBox.Text }
 		selectedHost = btn.Text
 		for _, b in pairs(HostButtons) do
 			if b:IsA("TextButton") then
 				b.BackgroundTransparency = b.Text == selectedHost and 0.9 or 1
 			end
 		end
+		-- Restore new provider's key+model
+		_loading = true; _loadingKey = true
+		applyProviderToUI(selectedHost)
+		_loading = false; _loadingKey = false
 		updateApiKeyVisibility(selectedHost)
+		updateHostLabel(selectedHost)
 		UnsavedChanges.Visible = true
 	end)
 end
@@ -918,6 +966,10 @@ ConnectionButton.MouseButton1Click:Connect(function()
 		res = Http.request(Config.ollamaUrl .. "/api/tags", "GET", {})
 	elseif selectedHost == "Pollinations" then
 		res = Http.request("https://gen.pollinations.ai/v1/models", "GET", {
+			["Authorization"] = "Bearer " .. APIKeyBox.Text,
+		})
+	elseif selectedHost == "Groq" then
+		res = Http.request("https://api.groq.com/openai/v1/models", "GET", {
 			["Authorization"] = "Bearer " .. APIKeyBox.Text,
 		})
 	elseif selectedHost == "Mistral" then
@@ -989,6 +1041,20 @@ CredentialButton.MouseButton1Click:Connect(function()
 		else
 			Toast.show("Failed", "Status " .. res.StatusCode, "err", 4)
 		end
+	elseif selectedHost == "Groq" then
+		local res = Http.request("https://api.groq.com/openai/v1/models", "GET", {
+			["Authorization"] = "Bearer " .. key,
+		})
+		CredentialButton.Text = "Credential"
+		if not res then
+			Toast.show("Failed", "No response from Groq", "err", 4)
+		elseif res.StatusCode == 200 then
+			Toast.show("Valid Key", "Groq key accepted", "ok", 3)
+		elseif res.StatusCode == 401 then
+			Toast.show("Invalid Key", "Groq key rejected (401)", "err", 4)
+		else
+			Toast.show("Failed", "Status " .. res.StatusCode, "err", 4)
+		end
 	elseif selectedHost == "Mistral" then
 		local res = Http.request("https://api.mistral.ai/v1/models", "GET", {
 			["Authorization"] = "Bearer " .. key,
@@ -1049,10 +1115,15 @@ CredentialButton.MouseButton1Click:Connect(function()
 end)
 
 local function saveSettings()
-	Config.apiKey   = APIKeyBox.Text
-	Config.model    = ModelBox.Text
-	Config.host     = selectedHost
-	Config.maxSteps = math.max(1, tonumber(MaxStepBox.Text) or 100)
+	providerCache[selectedHost] = { key = APIKeyBox.Text, model = ModelBox.Text }
+	Config.apiKey       = APIKeyBox.Text
+	Config.model        = ModelBox.Text
+	Config.host         = selectedHost
+	Config.maxSteps     = math.max(1, tonumber(MaxStepBox.Text) or 100)
+	Config.providerData = {}
+	for h, data in pairs(providerCache) do
+		Config.providerData[h] = { apiKey = data.key, model = data.model }
+	end
 	MaxStepBox.Text = tostring(Config.maxSteps)
 	Config.save()
 	UnsavedChanges.Visible = false
@@ -1061,18 +1132,22 @@ end
 
 local function revertSettings()
 	_loading = true; _loadingKey = true
-	APIKeyBox.Text             = Config.apiKey
-	APIKeyBox.TextTransparency = 1
-	APIKeyLabel.Text           = maskKey(Config.apiKey)
-	ModelBox.Text              = Config.model
-	MaxStepBox.Text            = tostring(Config.maxSteps)
-	selectedHost               = Config.host
+	-- Rebuild cache from saved Config
+	for _, h in ipairs(ALL_HOSTS) do
+		local pd = Config.providerData and Config.providerData[h] or {}
+		providerCache[h] = { key = pd.apiKey or "", model = pd.model or "" }
+	end
+	providerCache[Config.host] = { key = Config.apiKey, model = Config.model }
+	selectedHost = Config.host
+	applyProviderToUI(selectedHost)
+	MaxStepBox.Text = tostring(Config.maxSteps)
 	for _, b in pairs(HostButtons) do
 		if b:IsA("TextButton") then
 			b.BackgroundTransparency = b.Text == selectedHost and 0.9 or 1
 		end
 	end
 	updateApiKeyVisibility(selectedHost)
+	updateHostLabel(selectedHost)
 	_loading = false; _loadingKey = false
 	UnsavedChanges.Visible = false
 end
@@ -1177,6 +1252,7 @@ local function modalFetch()
 		return
 	else
 		local url = host == "Mistral"      and "https://api.mistral.ai/v1/models"
+			or    host == "Groq"           and "https://api.groq.com/openai/v1/models"
 			or    host == "Pollinations"   and "https://gen.pollinations.ai/v1/models"
 			or    "https://openrouter.ai/api/v1/models"
 		local auth = host ~= "OpenRouter" and APIKeyBox.Text or ""
@@ -1287,6 +1363,7 @@ local conversationHistory = {}
 local function buildUrl()
 	if Config.host == "Ollama"       then return Config.ollamaUrl .. "/api/chat" end
 	if Config.host == "Mistral"      then return "https://api.mistral.ai/v1/chat/completions" end
+	if Config.host == "Groq"         then return "https://api.groq.com/openai/v1/chat/completions" end
 	if Config.host == "Pollinations" then return "https://gen.pollinations.ai/v1/chat/completions" end
 	if Config.host == "HuggingFace"  then return "https://router.huggingface.co/v1/chat/completions" end
 	return "https://openrouter.ai/api/v1/chat/completions"

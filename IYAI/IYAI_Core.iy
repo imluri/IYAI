@@ -138,9 +138,6 @@ return function(githubBaseUrl)
 		-- Fallback: the ScreenGui in IYAI_GUI.lua is the default-named "ScreenGui"
 		-- (it is never given a custom Name in NewGui_Converted.lua)
 		_gui = playerGui:FindFirstChild("ScreenGui")
-		if not _gui then
-			warn("[IYAI] GUI ran but no new ScreenGui found in PlayerGui.")
-		end
 	end
 
 	-- ── closeGUI ─────────────────────────────────────────────────────────────

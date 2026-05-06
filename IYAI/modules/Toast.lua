@@ -28,7 +28,7 @@ function Toast.init(template, container)
 		layout = Instance.new("UIListLayout", _container)
 	end
 	layout.FillDirection       = Enum.FillDirection.Vertical
-	layout.VerticalAlignment   = Enum.VerticalAlignment.Bottom
+	layout.VerticalAlignment   = Enum.VerticalAlignment.Top
 	layout.HorizontalAlignment = Enum.HorizontalAlignment.Right
 	layout.SortOrder           = Enum.SortOrder.LayoutOrder
 	layout.Padding             = UDim.new(0, 6)
