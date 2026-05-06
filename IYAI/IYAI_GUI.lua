@@ -205,10 +205,11 @@ local function fetchModelsFromOpenAIEndpoint(url, authKey)
 	end
 end
 
-local function fetchOpenRouterModels()  fetchModelsFromOpenAIEndpoint("https://openrouter.ai/api/v1/models",              "")             end
-local function fetchMistralModels()     fetchModelsFromOpenAIEndpoint("https://api.mistral.ai/v1/models",                 Config.apiKey)  end
-local function fetchGroqModels()        fetchModelsFromOpenAIEndpoint("https://api.groq.com/openai/v1/models",            Config.apiKey)  end
-local function fetchHuggingFaceModels() fetchModelsFromOpenAIEndpoint("https://router.huggingface.co/v1/models", Config.apiKey) end
+local function fetchOpenRouterModels()  fetchModelsFromOpenAIEndpoint("https://openrouter.ai/api/v1/models",                                    "")             end
+local function fetchMistralModels()     fetchModelsFromOpenAIEndpoint("https://api.mistral.ai/v1/models",                                    Config.apiKey)  end
+local function fetchGroqModels()        fetchModelsFromOpenAIEndpoint("https://api.groq.com/openai/v1/models",                               Config.apiKey)  end
+local function fetchHuggingFaceModels() fetchModelsFromOpenAIEndpoint("https://router.huggingface.co/v1/models",                             Config.apiKey)  end
+local function fetchGoogleModels()      fetchModelsFromOpenAIEndpoint("https://generativelanguage.googleapis.com/v1beta/openai/models",       Config.apiKey)  end
 
 local function autoTestOnStart()
 	task.spawn(function()
@@ -224,6 +225,8 @@ local function autoTestOnStart()
 			fetchModelsFromOpenAIEndpoint("https://gen.pollinations.ai/v1/models", Config.apiKey)
 		elseif Config.host == "HuggingFace" then
 			fetchHuggingFaceModels()
+		elseif Config.host == "Google AI Studio" then
+			fetchGoogleModels()
 		else
 			fetchOpenRouterModels()
 		end
@@ -279,6 +282,19 @@ local function autoTestOnStart()
 			task.delay(1, function() CurrentPage.Value = "Settings" end)
 		else
 			Toast.show("Connection Failed", "Could not reach Groq", "err", 5)
+			task.delay(1, function() CurrentPage.Value = "Settings" end)
+		end
+	elseif Config.host == "Google AI Studio" then
+		local res = Http.request("https://generativelanguage.googleapis.com/v1beta/openai/models", "GET", {
+			["Authorization"] = "Bearer " .. key,
+		})
+		if res and res.StatusCode == 200 then
+			Toast.show("Connected", "Google AI Studio key is valid", "ok", 3)
+		elseif res and res.StatusCode == 401 then
+			Toast.show("Invalid Key", "Google key rejected — update in Settings", "err", 5)
+			task.delay(1, function() CurrentPage.Value = "Settings" end)
+		else
+			Toast.show("Connection Failed", "Could not reach Google AI Studio", "err", 5)
 			task.delay(1, function() CurrentPage.Value = "Settings" end)
 		end
 	elseif Config.host == "Mistral" then
@@ -794,7 +810,7 @@ local function updateHostLabel(host)
 	HostTitle.Text = 'Host Provider  <font size="11" color="#A1A5A2">(' .. host .. ')</font>'
 end
 
-local ALL_HOSTS = {"OpenRouter", "Ollama", "Mistral", "Groq", "Pollinations", "HuggingFace"}
+local ALL_HOSTS = {"OpenRouter", "Ollama", "Mistral", "Groq", "Pollinations", "HuggingFace", "Google AI Studio"}
 local providerCache = {}
 for _, h in ipairs(ALL_HOSTS) do
 	local pd = Config.providerData and Config.providerData[h] or {}
@@ -819,7 +835,6 @@ selectedHost    = Config.host
 
 for _, b in pairs(HostButtons) do
 	if b:IsA("TextButton") then
-		if b.Text == "Google AI Studio" then b.Visible = false; continue end
 		b.BackgroundTransparency = b.Text == selectedHost and 0.9 or 1
 	end
 end
@@ -980,6 +995,10 @@ ConnectionButton.MouseButton1Click:Connect(function()
 		res = Http.request("https://router.huggingface.co/v1/models", "GET", {
 			["Authorization"] = "Bearer " .. APIKeyBox.Text,
 		})
+	elseif selectedHost == "Google AI Studio" then
+		res = Http.request("https://generativelanguage.googleapis.com/v1beta/openai/models", "GET", {
+			["Authorization"] = "Bearer " .. APIKeyBox.Text,
+		})
 	else
 		res = Http.request("https://openrouter.ai/api/v1/models", "GET", {
 			["Authorization"] = "Bearer " .. APIKeyBox.Text,
@@ -1083,6 +1102,20 @@ CredentialButton.MouseButton1Click:Connect(function()
 			Toast.show("Valid Token", "Logged in as " .. tostring(name), "ok", 3)
 		elseif res.StatusCode == 401 then
 			Toast.show("Invalid Token", "HuggingFace token rejected (401)", "err", 4)
+		else
+			Toast.show("Failed", "Status " .. res.StatusCode, "err", 4)
+		end
+	elseif selectedHost == "Google AI Studio" then
+		local res = Http.request("https://generativelanguage.googleapis.com/v1beta/openai/models", "GET", {
+			["Authorization"] = "Bearer " .. key,
+		})
+		CredentialButton.Text = "Credential"
+		if not res then
+			Toast.show("Failed", "No response from Google AI Studio", "err", 4)
+		elseif res.StatusCode == 200 then
+			Toast.show("Valid Key", "Google AI Studio key accepted", "ok", 3)
+		elseif res.StatusCode == 401 then
+			Toast.show("Invalid Key", "Google key rejected (401)", "err", 4)
 		else
 			Toast.show("Failed", "Status " .. res.StatusCode, "err", 4)
 		end
@@ -1251,9 +1284,10 @@ local function modalFetch()
 		fetchHuggingFaceModalSearch("")
 		return
 	else
-		local url = host == "Mistral"      and "https://api.mistral.ai/v1/models"
-			or    host == "Groq"           and "https://api.groq.com/openai/v1/models"
-			or    host == "Pollinations"   and "https://gen.pollinations.ai/v1/models"
+		local url = host == "Mistral"         and "https://api.mistral.ai/v1/models"
+			or    host == "Groq"              and "https://api.groq.com/openai/v1/models"
+			or    host == "Pollinations"      and "https://gen.pollinations.ai/v1/models"
+			or    host == "Google AI Studio"  and "https://generativelanguage.googleapis.com/v1beta/openai/models"
 			or    "https://openrouter.ai/api/v1/models"
 		local auth = host ~= "OpenRouter" and APIKeyBox.Text or ""
 		local res = Http.request(url, "GET", auth ~= "" and { ["Authorization"] = "Bearer " .. auth } or {})
@@ -1361,11 +1395,12 @@ end)
 local conversationHistory = {}
 
 local function buildUrl()
-	if Config.host == "Ollama"       then return Config.ollamaUrl .. "/api/chat" end
-	if Config.host == "Mistral"      then return "https://api.mistral.ai/v1/chat/completions" end
-	if Config.host == "Groq"         then return "https://api.groq.com/openai/v1/chat/completions" end
-	if Config.host == "Pollinations" then return "https://gen.pollinations.ai/v1/chat/completions" end
-	if Config.host == "HuggingFace"  then return "https://router.huggingface.co/v1/chat/completions" end
+	if Config.host == "Ollama"          then return Config.ollamaUrl .. "/api/chat" end
+	if Config.host == "Mistral"         then return "https://api.mistral.ai/v1/chat/completions" end
+	if Config.host == "Groq"            then return "https://api.groq.com/openai/v1/chat/completions" end
+	if Config.host == "Pollinations"    then return "https://gen.pollinations.ai/v1/chat/completions" end
+	if Config.host == "HuggingFace"     then return "https://router.huggingface.co/v1/chat/completions" end
+	if Config.host == "Google AI Studio" then return "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions" end
 	return "https://openrouter.ai/api/v1/chat/completions"
 end
 
