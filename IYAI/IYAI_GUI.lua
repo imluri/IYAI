@@ -165,6 +165,12 @@ local ModelBox_ref      = ModelBox  -- forward ref used in fetchOpenRouterModels
 ToastTemplate.Visible = false
 Toast.init(ToastTemplate, IYAIToastContainer)
 
+if propFns.loaded then
+	Toast.show("API Dump", "Roblox API dump loaded", "ok", 3)
+else
+	Toast.show("API Dump", "Failed to load API dump — props metadata unavailable", "warn", 5)
+end
+
 -- Version display + update detection
 local versionLabel = TopBar:FindFirstChild("VersionLabel")
 if versionLabel then versionLabel.Text = "v" .. VERSION end

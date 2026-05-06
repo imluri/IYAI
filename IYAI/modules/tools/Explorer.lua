@@ -1,5 +1,5 @@
 -- tools/Explorer.lua  |  Instance explorer tools
--- Returns function(Tools) — call it to register tools.
+-- Returns function(Tools, getProperties, getMethods) — call it to register tools.
 
 return function(Tools, getProperties, getMethods)
 
@@ -168,32 +168,64 @@ return function(Tools, getProperties, getMethods)
 			local inst, err = resolvePath(args.path)
 			if not inst then return "Error: " .. tostring(err) end
 			local lines = { inst.ClassName .. ' "' .. inst.Name .. '" @ ' .. inst:GetFullName() }
-			if inst:IsA("BasePart") then
-				lines[#lines+1] = "  Position     = " .. tostring(inst.Position)
-				lines[#lines+1] = "  Size         = " .. tostring(inst.Size)
-				lines[#lines+1] = "  Anchored     = " .. tostring(inst.Anchored)
-				lines[#lines+1] = "  CanCollide   = " .. tostring(inst.CanCollide)
-				lines[#lines+1] = "  Transparency = " .. tostring(inst.Transparency)
-				lines[#lines+1] = "  Material     = " .. tostring(inst.Material)
-			end
-			if inst:IsA("Model") then
-				local pp = inst.PrimaryPart
-				lines[#lines+1] = "  PrimaryPart  = " .. (pp and pp.Name or "nil")
+			local propDefs = getProperties(inst.ClassName)
+			if #propDefs > 0 then
+				for _, p in ipairs(propDefs) do
+					local ok, val = pcall(function() return inst[p.name] end)
+					if ok then
+						local tags = {}
+						if p.readOnly   then tags[#tags+1] = "readonly"   end
+						if p.deprecated then tags[#tags+1] = "deprecated" end
+						local tagStr = #tags > 0 and ("  [" .. table.concat(tags, ", ") .. "]") or ""
+						lines[#lines+1] = "  " .. p.name .. " (" .. p.valueType .. ") = " .. tostring(val) .. tagStr
+					end
+				end
 			end
 			if inst:IsA("LuaSourceContainer") then
-				local s = ""
-				pcall(function() s = inst.Source end)
-				lines[#lines+1] = "  Source: " .. #s .. " chars"
+				local src = ""
+				pcall(function() src = inst.Source end)
+				lines[#lines+1] = "  Source: " .. #src .. " chars"
 			end
-			if inst.ClassName:find("Value$") then
-				pcall(function() lines[#lines+1] = "  Value = " .. tostring(inst.Value) end)
-			end
-			for _, child in ipairs(inst:GetChildren()) do
-				lines[#lines+1] = "  " .. child.Name .. " (" .. child.ClassName .. ")"
+			local children = inst:GetChildren()
+			if #children > 0 then
+				lines[#lines+1] = "Children:"
+				for _, child in ipairs(children) do
+					lines[#lines+1] = "  " .. child.Name .. " (" .. child.ClassName .. ")"
+				end
 			end
 			return table.concat(lines, "\n")
 		end
-	})-- get_value: read any single property from an instance via pcall
+	})
+
+	-- list_methods: list all methods available on an instance's class
+	Tools.register({
+		group = "Explorer",
+		definition = {
+			type = "function",
+			["function"] = {
+				name        = "list_methods",
+				description = "List all methods available on an instance's class (including inherited). Use this before call_method when unsure what methods exist on a class.",
+				parameters  = {
+					type       = "object",
+					properties = {
+						path = { type = "string", description = "Instance path e.g. 'game.Players.LocalPlayer.Humanoid'" },
+					},
+					required = { "path" }
+				}
+			}
+		},
+		handler = function(args)
+			local inst, err = resolvePath(args.path)
+			if not inst then return "Error: " .. tostring(err) end
+			local methods = getMethods(inst.ClassName)
+			if #methods == 0 then
+				return inst.ClassName .. ": no methods found in API dump"
+			end
+			return inst.ClassName .. " methods (" .. #methods .. "):\n  " .. table.concat(methods, "\n  ")
+		end
+	})
+
+	-- get_value: read any single property from an instance via pcall
 	Tools.register({
 		group = "Explorer",
 		definition = {
