@@ -71,108 +71,162 @@ local _container = getHiddenContainer()
 if syn and syn.protect_gui then pcall(syn.protect_gui, G2L["1"]) end
 G2L["1"].Parent = _container
 
--- ── Named aliases ─────────────────────────────────────────────────────────────
+-- Named aliases (UI table) --------------------------------------------------
 
-local ScreenGui              = G2L["1"]
-local IYAI                   = G2L["e"]
-local ContentPages           = G2L["11"]
-local AgentPage              = G2L["12"]
-local ScrollingFrameMainChat = G2L["13"]
-local ListLayout             = G2L["14"]
-local ElementTemplate        = G2L["16"]
-local TotalElements          = G2L["44"]
-local isAssistantBusy        = G2L["45"]
-local InputFrame             = G2L["4b"]
-local TextBoxInput           = G2L["4c"]
-local SendButton             = G2L["50"]
-local StopButton             = G2L["52"]
-local ActionsFrame           = G2L["54"]
-local ClearButton            = G2L["56"]
-local SettingsPage           = G2L["57"]
-local Settings_SF            = G2L["58"]
-local APIKeyFrame            = G2L["59"]
-local APIKeyLabel            = G2L["5c"]
-local APIKeyBox              = G2L["5d"]
-local HostSelectFrame        = G2L["60"]
-local HostTitle              = G2L["61"]
-local HostFrame              = G2L["63"]
-local HostButtons            = HostFrame:GetChildren()
-local ModelSelectFrame       = G2L["81"]
-local ModelFrame             = G2L["84"]
-local ModelBox               = G2L["85"]
-local DropdownButton         = G2L["88"]
-local DropdownList           = Instance.new("Frame")  -- dropdown disabled; detached dummy
-local TestFrame              = G2L["8b"]
-local ConnectionButton       = G2L["8f"]
-local CredentialButton       = G2L["91"]
-local UnsavedChanges         = G2L["9b"]
-local TextLabel              = G2L["9d"]
-local SaveButton             = G2L["9f"]
-local RevertButton           = G2L["a1"]
-local CodePage               = G2L["a4"]
-local CodeSF                 = G2L["ab"]
-local LineLabel              = G2L["ad"]
-local CodeBox                = G2L["af"]
-local CodeActionsFrame       = G2L["a5"]
-local CodeClearButton        = G2L["a7"]
-local CodeCopyButton         = G2L["a8"]
-local RunButton              = G2L["a9"]
-local LeftSidebar            = G2L["c4"]
-local TopBar                 = G2L["d7"]
-local CloseButton            = G2L["d9"]
-local MinimizeButton         = G2L["dc"]
-local Highlight              = G2L["dd"]
-local IntroFrame             = G2L["f4"]
-local IYAIToastContainer     = G2L["f7"]
-local ToastTemplate          = G2L["f8"]
-local CurrentPage            = G2L["104"]
-local ModalFrame             = G2L["de"]
-local ModalInner             = G2L["e0"]
-local ModalCloseButton       = G2L["e2"]
-local SearchModelModal       = G2L["e3"]
-local ModalSearchBox         = G2L["e5"]
-local ModalSF                = G2L["e9"]
-local ExampleModelBtn        = G2L["ea"]
-local ModalSearchButton      = G2L["e8"]
-local ModalOpenButton        = G2L["88"]
-local MaxStepFrame           = G2L["94"]
-local MaxStepBox             = G2L["98"]
-local ToolsPage              = G2L["b1"]
-local ToolsSF                = G2L["b2"]
-local ToolsElementTemplate   = G2L["b5"]
-local ToolsGroupFrame        = G2L["b6"]  -- GroupFrame template
-local ToolsGroupInner        = G2L["b8"]  -- inner card Frame
-local ToolsGroupTitle        = G2L["b9"]  -- GroupTitle label
-local ToolsToolFrame         = G2L["bd"]  -- ToolFrame template
-local ToolsToolNameDesc      = G2L["c0"]  -- ToolNameDesc label
-local ToolsTotalElements     = G2L["c2"]
-local ToolResultViewModal    = G2L["ed"]
-local ToolResultSF           = G2L["ef"]
-local ToolResultTextBox      = G2L["f0"]
-local ModalTitleLabel        = G2L["f2"]
-
+local UI = {
+	ScreenGui              = G2L["1"],
+	IYAI                   = G2L["e"],
+	ContentPages           = G2L["11"],
+	AgentPage              = G2L["12"],
+	ScrollingFrameMainChat = G2L["13"],
+	ListLayout             = G2L["14"],
+	ElementTemplate        = G2L["16"],
+	TotalElements          = G2L["49"],
+	isAssistantBusy        = G2L["4a"],
+	InputFrame             = G2L["50"],
+	TextBoxInput           = G2L["51"],
+	SendButton             = G2L["55"],
+	StopButton             = G2L["57"],
+	ActionsFrame           = G2L["59"],
+	ClearButton            = G2L["5b"],
+	SettingsPage           = G2L["5c"],
+	Settings_SF            = G2L["5d"],
+	APIKeyFrame            = G2L["5e"],
+	APIKeyLabel            = G2L["61"],
+	APIKeyBox              = G2L["62"],
+	HostSelectFrame        = G2L["65"],
+	HostTitle              = G2L["66"],
+	HostFrame              = G2L["68"],
+	HostButtons            = G2L["68"]:GetChildren(),
+	ModelSelectFrame       = G2L["86"],
+	ModelFrame             = G2L["89"],
+	ModelBox               = G2L["8a"],
+	DropdownButton         = G2L["8d"],
+	DropdownList           = Instance.new("Frame"),
+	TestFrame              = G2L["8f"],
+	ConnectionButton       = G2L["92"],
+	CredentialButton       = G2L["99"],
+	ConnectionIconColor    = G2L["95"],
+	CredentialIconColor    = G2L["9c"],
+	UnsavedChanges         = G2L["a8"],
+	TextLabel              = G2L["aa"],
+	SaveButton             = G2L["ac"],
+	RevertButton           = G2L["ae"],
+	CodePage               = G2L["b1"],
+	CodeSF                 = G2L["b8"],
+	LineLabel              = G2L["bd"],
+	CodeBox                = G2L["ba"],
+	IntelLabel             = G2L["bc"],
+	CodeActionsFrame       = G2L["b2"],
+	CodeClearButton        = G2L["b4"],
+	CodeCopyButton         = G2L["b5"],
+	RunButton              = G2L["b6"],
+	LeftSidebar            = G2L["e8"],
+	TopBar                 = G2L["ff"],
+	CloseButton            = G2L["101"],
+	MinimizeButton         = G2L["104"],
+	Highlight              = G2L["105"],
+	IntroFrame             = G2L["11c"],
+	IYAIToastContainer     = G2L["11f"],
+	ToastTemplate          = G2L["120"],
+	CurrentPage            = G2L["12c"],
+	ModalFrame             = G2L["106"],
+	ModalInner             = G2L["108"],
+	ModalCloseButton       = G2L["10a"],
+	SearchModelModal       = G2L["10b"],
+	ModalSearchBox         = G2L["10d"],
+	ModalSF                = G2L["111"],
+	ExampleModelBtn        = G2L["112"],
+	ModalSearchButton      = G2L["110"],
+	ModalOpenButton        = G2L["8d"],
+	MaxStepFrame           = G2L["a0"],
+	MaxStepBox             = G2L["a4"],
+	ToolsPage              = G2L["bf"],
+	ToolsSF                = G2L["c0"],
+	ToolsElementTemplate   = G2L["c3"],
+	ToolsGroupFrame        = G2L["c4"],
+	ToolsGroupInner        = G2L["c6"],
+	ToolsGroupTitle        = G2L["c7"],
+	ToolsToolFrame         = G2L["cb"],
+	ToolsToolNameDesc      = G2L["ce"],
+	ToolsTotalElements     = G2L["d0"],
+	ToolResultViewModal    = G2L["115"],
+	ToolResultSF           = G2L["117"],
+	ToolResultTextBox      = G2L["118"],
+	ModalTitleLabel        = G2L["11a"],
+	StartupPageSF          = G2L["d5"],
+	StartupPageLayout      = G2L["d6"],
+	StartupElemTemplate    = G2L["d8"],
+	StartupGroupFrame      = G2L["d9"],
+	StartupGroupInner      = G2L["db"],
+	StartupGroupTitle      = G2L["dc"],
+	StartupToolFrame       = G2L["e0"],
+	StartupToolNameDesc    = G2L["e3"],
+	StartupTotalElems      = G2L["e5"],
+}
 -- ── Main logic ────────────────────────────────────────────────────────────────
 
-local VERSION           = G2L["105"] and G2L["105"].Value or ""
+local VERSION           = G2L["12d"] and G2L["12d"].Value or ""
 local Tween             = TweenInfo.new(0.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut)
+local COLOR_OK          = Color3.fromRGB(109, 217, 161)
+local COLOR_ERR         = Color3.fromRGB(171, 108, 108)
+local COLOR_IDLE        = Color3.fromRGB(41,  41,  41)
 local DefaultIYAISize   = UDim2.new(0, 600, 0, 400)
 local MinimizedIYAISize = UDim2.new(0, 100, 0, 25)
 local Minimized         = false
 local modelList         = {}
 local _loading          = false
-local ModelBox_ref      = ModelBox  -- forward ref used in fetchOpenRouterModels
+local ModelBox_ref      = UI.ModelBox  -- forward ref used in fetchOpenRouterModels
 
-ToastTemplate.Visible = false
-Toast.init(ToastTemplate, IYAIToastContainer)
+UI.ToastTemplate.Visible = false
+Toast.init(UI.ToastTemplate, UI.IYAIToastContainer)
+
+-- ── Startup page ──────────────────────────────────────────────────────────────
+
+local _startupGroup = nil
+local _startupInner = nil
+
+local function addStartupEvent(status, title, desc)
+	local colors = { ok = COLOR_OK, warn = Color3.fromRGB(171, 171, 0), err = COLOR_ERR }
+	if not _startupGroup then
+		_startupGroup = UI.StartupGroupFrame:Clone()
+		_startupInner = _startupGroup:FindFirstChild("Frame")
+			or _startupGroup:FindFirstChildWhichIsA("Frame")
+		local gt = _startupInner and _startupInner:FindFirstChild("GroupTitle")
+		if gt then gt.Text = "Startup Log" end
+		local tmpl = _startupInner and _startupInner:FindFirstChild("ToolFrame")
+		if tmpl then tmpl:Destroy() end
+		UI.StartupTotalElems.Value += 1
+		_startupGroup.LayoutOrder = UI.StartupTotalElems.Value
+		_startupGroup.Visible     = true
+		_startupGroup.Parent      = UI.StartupPageSF
+	end
+	local tf = UI.StartupToolFrame:Clone()
+	local ic = tf:FindFirstChild("IconColor")
+	local nd = tf:FindFirstChild("ToolNameDesc")
+	if ic then ic.BackgroundColor3 = colors[status] or colors.ok end
+	if nd then
+		nd.RichText = true
+		nd.Text = '<font weight="bold">'..title..'</font>  <font size="12" transparency="0.4">'..desc..'</font>'
+	end
+	tf.Visible = true
+	tf.Parent  = _startupInner
+	task.defer(function()
+		local lay = UI.StartupPageSF:FindFirstChildWhichIsA("UIListLayout")
+		if lay then UI.StartupPageSF.CanvasSize = UDim2.new(0,0,0, lay.AbsoluteContentSize.Y) end
+	end)
+end
 
 if propFns.loaded then
 	Toast.show("API Dump", "Roblox API dump loaded", "ok", 3)
+	addStartupEvent("ok", "API Dump", "Roblox API dump loaded — props and methods available")
 else
 	Toast.show("API Dump", "Failed to load API dump — props metadata unavailable", "warn", 5)
+	addStartupEvent("warn", "API Dump", "Failed to load — props metadata unavailable")
 end
 
 -- Version display + update detection
-local versionLabel = TopBar:FindFirstChild("VersionLabel")
+local versionLabel = UI.TopBar:FindFirstChild("VersionLabel")
 if versionLabel then versionLabel.Text = "v" .. VERSION end
 
 local VERSION_FILE = "iyai_version.txt"
@@ -206,8 +260,8 @@ local function fetchModelsFromOpenAIEndpoint(url, authKey)
 		table.insert(modelList, { name = m.id })
 	end
 	table.sort(modelList, function(a, b) return a.name < b.name end)
-	if ModelBox.Text == "" and #modelList > 0 then
-		_loading = true; ModelBox.Text = modelList[1].name; _loading = false
+	if UI.ModelBox.Text == "" and #modelList > 0 then
+		_loading = true; UI.ModelBox.Text = modelList[1].name; _loading = false
 	end
 end
 
@@ -240,7 +294,7 @@ local function autoTestOnStart()
 	local key = Config.apiKey
 	if key == "" and Config.host ~= "Ollama" then
 		Toast.show("No API Key", "Set your API key in Settings", "err", 5)
-		task.delay(1, function() CurrentPage.Value = "Settings" end)
+		task.delay(1, function() UI.CurrentPage.Value = "Settings" end)
 		return
 	end
 	if Config.host == "Ollama" then
@@ -249,7 +303,7 @@ local function autoTestOnStart()
 			Toast.show("Connected", "Ollama is reachable", "ok", 3)
 		else
 			Toast.show("Offline", "Cannot reach Ollama — check Settings", "err", 5)
-			task.delay(1, function() CurrentPage.Value = "Settings" end)
+			task.delay(1, function() UI.CurrentPage.Value = "Settings" end)
 		end
 	elseif Config.host == "Pollinations" then
 		local res = Http.request("https://gen.pollinations.ai/v1/models", "GET", {
@@ -259,10 +313,10 @@ local function autoTestOnStart()
 			Toast.show("Connected", "Pollinations key is valid", "ok", 3)
 		elseif res and res.StatusCode == 401 then
 			Toast.show("Invalid Key", "Pollinations key rejected — update in Settings", "err", 5)
-			task.delay(1, function() CurrentPage.Value = "Settings" end)
+			task.delay(1, function() UI.CurrentPage.Value = "Settings" end)
 		else
 			Toast.show("Connection Failed", "Could not reach Pollinations", "err", 5)
-			task.delay(1, function() CurrentPage.Value = "Settings" end)
+			task.delay(1, function() UI.CurrentPage.Value = "Settings" end)
 		end
 	elseif Config.host == "HuggingFace" then
 		local res = Http.request("https://router.huggingface.co/v1/models", "GET", {
@@ -272,10 +326,10 @@ local function autoTestOnStart()
 			Toast.show("Connected", "HuggingFace token is valid", "ok", 3)
 		elseif res and res.StatusCode == 401 then
 			Toast.show("Invalid Key", "HuggingFace token rejected — update in Settings", "err", 5)
-			task.delay(1, function() CurrentPage.Value = "Settings" end)
+			task.delay(1, function() UI.CurrentPage.Value = "Settings" end)
 		else
 			Toast.show("Connection Failed", "Could not reach HuggingFace", "err", 5)
-			task.delay(1, function() CurrentPage.Value = "Settings" end)
+			task.delay(1, function() UI.CurrentPage.Value = "Settings" end)
 		end
 	elseif Config.host == "Groq" then
 		local res = Http.request("https://api.groq.com/openai/v1/models", "GET", {
@@ -285,10 +339,10 @@ local function autoTestOnStart()
 			Toast.show("Connected", "Groq key is valid", "ok", 3)
 		elseif res and res.StatusCode == 401 then
 			Toast.show("Invalid Key", "Groq key rejected — update in Settings", "err", 5)
-			task.delay(1, function() CurrentPage.Value = "Settings" end)
+			task.delay(1, function() UI.CurrentPage.Value = "Settings" end)
 		else
 			Toast.show("Connection Failed", "Could not reach Groq", "err", 5)
-			task.delay(1, function() CurrentPage.Value = "Settings" end)
+			task.delay(1, function() UI.CurrentPage.Value = "Settings" end)
 		end
 	elseif Config.host == "Google AI Studio" then
 		local res = Http.request("https://generativelanguage.googleapis.com/v1beta/openai/models", "GET", {
@@ -298,10 +352,10 @@ local function autoTestOnStart()
 			Toast.show("Connected", "Google AI Studio key is valid", "ok", 3)
 		elseif res and res.StatusCode == 401 then
 			Toast.show("Invalid Key", "Google key rejected — update in Settings", "err", 5)
-			task.delay(1, function() CurrentPage.Value = "Settings" end)
+			task.delay(1, function() UI.CurrentPage.Value = "Settings" end)
 		else
 			Toast.show("Connection Failed", "Could not reach Google AI Studio", "err", 5)
-			task.delay(1, function() CurrentPage.Value = "Settings" end)
+			task.delay(1, function() UI.CurrentPage.Value = "Settings" end)
 		end
 	elseif Config.host == "Mistral" then
 		local res = Http.request("https://api.mistral.ai/v1/models", "GET", {
@@ -311,10 +365,10 @@ local function autoTestOnStart()
 			Toast.show("Connected", "Mistral key is valid", "ok", 3)
 		elseif res and res.StatusCode == 401 then
 			Toast.show("Invalid Key", "Mistral key rejected — update in Settings", "err", 5)
-			task.delay(1, function() CurrentPage.Value = "Settings" end)
+			task.delay(1, function() UI.CurrentPage.Value = "Settings" end)
 		else
 			Toast.show("Connection Failed", "Could not reach Mistral", "err", 5)
-			task.delay(1, function() CurrentPage.Value = "Settings" end)
+			task.delay(1, function() UI.CurrentPage.Value = "Settings" end)
 		end
 	else
 		local res = Http.request("https://openrouter.ai/api/v1/auth/key", "GET", {
@@ -324,123 +378,124 @@ local function autoTestOnStart()
 			Toast.show("Connected", "OpenRouter key is valid", "ok", 3)
 		elseif res and res.StatusCode == 401 then
 			Toast.show("Invalid Key", "API key rejected — update in Settings", "err", 5)
-			task.delay(1, function() CurrentPage.Value = "Settings" end)
+			task.delay(1, function() UI.CurrentPage.Value = "Settings" end)
 		else
 			Toast.show("Connection Failed", "Could not reach OpenRouter", "err", 5)
-			task.delay(1, function() CurrentPage.Value = "Settings" end)
+			task.delay(1, function() UI.CurrentPage.Value = "Settings" end)
 		end
 	end
 end
 
-IYAI.GroupTransparency = 1
-local fadeTween = TS:Create(IYAI, Tween, { GroupTransparency = 0 })
+UI.IYAI.GroupTransparency = 1
+local fadeTween = TS:Create(UI.IYAI, Tween, { GroupTransparency = 0 })
 fadeTween.Completed:Connect(function() task.spawn(autoTestOnStart) end)
 fadeTween:Play()
 
 task.spawn(function()
-	IntroFrame.Visible           = true
-	IntroFrame.GroupTransparency = 0
+	UI.IntroFrame.Visible           = true
+	UI.IntroFrame.GroupTransparency = 0
 	task.wait(2)
-	TS:Create(IntroFrame, TweenInfo.new(1), { GroupTransparency = 1 }):Play()
+	TS:Create(UI.IntroFrame, TweenInfo.new(1), { GroupTransparency = 1 }):Play()
 	task.wait(1)
-	IntroFrame.Visible = false
+	UI.IntroFrame.Visible = false
 end)
 
 -- ── Page routing ──────────────────────────────────────────────────────────────
 
 local function updatePage(page)
-	for _, v in pairs(ContentPages:GetChildren()) do
+	for _, v in pairs(UI.ContentPages:GetChildren()) do
 		v.Visible = (v.Name == page .. "Page")
 	end
 end
 
-CurrentPage.Changed:Connect(function(page) updatePage(page) end)
+UI.CurrentPage.Changed:Connect(function(page) updatePage(page) end)
 
 local SIDEBAR_OPEN   = UDim2.new(0, 150, 1, 0)
 local SIDEBAR_CLOSED = UDim2.new(0, 45,  1, 0)
 local sidebarTween   = TweenInfo.new(0.2, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
 
-LeftSidebar.MouseEnter:Connect(function()
-	TS:Create(LeftSidebar, sidebarTween, { Size = SIDEBAR_OPEN }):Play()
+UI.LeftSidebar.MouseEnter:Connect(function()
+	TS:Create(UI.LeftSidebar, sidebarTween, { Size = SIDEBAR_OPEN }):Play()
 end)
-LeftSidebar.MouseLeave:Connect(function()
-	TS:Create(LeftSidebar, sidebarTween, { Size = SIDEBAR_CLOSED }):Play()
+UI.LeftSidebar.MouseLeave:Connect(function()
+	TS:Create(UI.LeftSidebar, sidebarTween, { Size = SIDEBAR_CLOSED }):Play()
 end)
 
-LeftSidebar.Size = SIDEBAR_CLOSED
+UI.LeftSidebar.Size = SIDEBAR_CLOSED
 
-for _, v in pairs(LeftSidebar:GetChildren()) do
+for _, v in pairs(UI.LeftSidebar:GetChildren()) do
 	if not v:IsA("Frame") then continue end
 	local Hitbox = v:FindFirstChild("Hitbox")
 	if not Hitbox then continue end
 	local label   = v:FindFirstChild("TextLabel")
 	local tabName = label and label.Text or v.Name
-	Hitbox.MouseButton1Click:Connect(function() CurrentPage.Value = tabName end)
+	Hitbox.MouseButton1Click:Connect(function() UI.CurrentPage.Value = tabName end)
 end
 
-Highlight.Position = UDim2.new(0, 0, 0, 0)
-CurrentPage.Changed:Connect(function(page)
-	local target = LeftSidebar:FindFirstChild(page .. "ButtonFrame")
+UI.Highlight.Position = UDim2.new(0, 0, 0, 0)
+UI.CurrentPage.Changed:Connect(function(page)
+	local target = UI.LeftSidebar:FindFirstChild(page .. "ButtonFrame")
 	if not target then return end
-	TS:Create(Highlight, TweenInfo.new(0.1), {
+	TS:Create(UI.Highlight, TweenInfo.new(0.1), {
 		Position = UDim2.new(0, 0, 0,
-			target.AbsolutePosition.Y - LeftSidebar.AbsolutePosition.Y)
+			target.AbsolutePosition.Y - UI.LeftSidebar.AbsolutePosition.Y)
 	}):Play()
 end)
 
-CurrentPage.Value = "Agent"
+UI.CurrentPage.Value = "Agent"
 
 -- ── Greet frame ───────────────────────────────────────────────────────────────
 
-local GreetFrame      = ScrollingFrameMainChat:FindFirstChild("GreetFrame")
+local GreetFrame      = UI.ScrollingFrameMainChat:FindFirstChild("GreetFrame")
 local SetApiKeyButton = GreetFrame and GreetFrame:FindFirstChild("SetApiKeyButton")
 
 if SetApiKeyButton then
 	SetApiKeyButton.MouseButton1Click:Connect(function()
-		CurrentPage.Value = "Settings"
+		UI.CurrentPage.Value = "Settings"
 	end)
 end
 
 -- ── Agent page ────────────────────────────────────────────────────────────────
 
-ListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-	ScrollingFrameMainChat.CanvasSize = UDim2.new(0, 0, 0, ListLayout.AbsoluteContentSize.Y)
+UI.ListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+	UI.ScrollingFrameMainChat.CanvasSize = UDim2.new(0, 0, 0, UI.ListLayout.AbsoluteContentSize.Y)
 end)
 
 local function scrollBottom()
 	task.defer(function()
-		local h = ListLayout.AbsoluteContentSize.Y
-		ScrollingFrameMainChat.CanvasSize     = UDim2.new(0, 0, 0, h)
-		ScrollingFrameMainChat.CanvasPosition = Vector2.new(0, h)
+		local h = UI.ListLayout.AbsoluteContentSize.Y
+		UI.ScrollingFrameMainChat.CanvasSize     = UDim2.new(0, 0, 0, h)
+		UI.ScrollingFrameMainChat.CanvasPosition = Vector2.new(0, h)
 	end)
 end
 
 local function addElement(templateName, text, isLabel)
-	local clone = ElementTemplate:FindFirstChild(templateName):Clone()
+	local clone = UI.ElementTemplate:FindFirstChild(templateName):Clone()
 	if isLabel then clone.Text = text end
-	TotalElements.Value += 1
-	clone.LayoutOrder = TotalElements.Value
+	UI.TotalElements.Value += 1
+	clone.LayoutOrder = UI.TotalElements.Value
 	clone.Visible     = true
-	clone.Parent      = ScrollingFrameMainChat
+	clone.Parent      = UI.ScrollingFrameMainChat
 	scrollBottom()
 	return clone
 end
 
 local function addChat(text)
-	if text == "" or isAssistantBusy.Value then return end
+	if text == "" or UI.isAssistantBusy.Value then return end
 	if GreetFrame then GreetFrame.Visible = false end
-	local clone = ElementTemplate:FindFirstChild("UserMessageFrame"):Clone()
+	local clone = UI.ElementTemplate:FindFirstChild("UserMessageFrame"):Clone()
 	clone.Frame.UserMessage.Text = text
-	TotalElements.Value += 1
-	clone.LayoutOrder = TotalElements.Value
+	UI.TotalElements.Value += 1
+	clone.LayoutOrder = UI.TotalElements.Value
 	clone.Visible     = true
-	clone.Parent      = ScrollingFrameMainChat
+	clone.Parent      = UI.ScrollingFrameMainChat
 	scrollBottom()
 end
 
 local function addTaskFrame(kind)
 	local name = kind == "busy"      and "AgentTaskFrame (Tool busy)"
 		or kind == "succeeded" and "AgentTaskFrame (Tool succeeded)"
+		or kind == "retrying"  and "AgentTaskFrame (Retrying)"
 		or                          "AgentTaskFrame (Tool failed)"
 	return addElement(name, nil, false)
 end
@@ -511,7 +566,7 @@ local function addResponse(rawText, usage)
 					lastElem = elem
 				end
 			else
-				local frame = ElementTemplate:FindFirstChild("CodeblockFrame"):Clone()
+				local frame = UI.ElementTemplate:FindFirstChild("CodeblockFrame"):Clone()
 				local codeBox = frame:FindFirstChild("CodeBox", true)
 				if codeBox then codeBox.Text = seg.content end
 				local copyBtn = frame:FindFirstChild("CopyButton", true)
@@ -521,10 +576,10 @@ local function addResponse(rawText, usage)
 						pcall(setclipboard, capturedCode)
 					end)
 				end
-				TotalElements.Value += 1
-				frame.LayoutOrder = TotalElements.Value
+				UI.TotalElements.Value += 1
+				frame.LayoutOrder = UI.TotalElements.Value
 				frame.Visible = true
-				frame.Parent = ScrollingFrameMainChat
+				frame.Parent = UI.ScrollingFrameMainChat
 				lastElem = frame
 			end
 		end
@@ -544,41 +599,279 @@ local function addResponse(rawText, usage)
 	end
 end
 
-TextBoxInput:GetPropertyChangedSignal("Text"):Connect(function()
-	SendButton.ImageTransparency = TextBoxInput.Text == "" and 0.7 or 0
+UI.TextBoxInput:GetPropertyChangedSignal("Text"):Connect(function()
+	UI.SendButton.ImageTransparency = UI.TextBoxInput.Text == "" and 0.7 or 0
 end)
 
 -- ── Code page ─────────────────────────────────────────────────────────────────
 
 local function updateLineNumbers()
-	local lines = select(2, CodeBox.Text:gsub("\n", "\n")) + 1
+	local lines = select(2, UI.CodeBox.Text:gsub("\n", "\n")) + 1
 	local nums = table.create(lines)
 	for i = 1, lines do nums[i] = tostring(i) end
-	LineLabel.Text = table.concat(nums, "\n")
+	UI.LineLabel.Text = table.concat(nums, "\n")
+end
+
+-- ── Syntax highlighter ────────────────────────────────────────────────────────
+
+local _KW = {
+	["and"]=1,["or"]=1,["not"]=1,["if"]=1,["then"]=1,["else"]=1,["elseif"]=1,
+	["end"]=1,["do"]=1,["while"]=1,["for"]=1,["in"]=1,["repeat"]=1,["until"]=1,
+	["break"]=1,["continue"]=1,["return"]=1,["function"]=1,["local"]=1,
+	["self"]=1,["export"]=1,["type"]=1,["typeof"]=1,
+}
+local _BOOL = {["true"]=1,["false"]=1,["nil"]=1}
+local _GL = {
+	["game"]=1,["workspace"]=1,["script"]=1,["shared"]=1,["_G"]=1,["_VERSION"]=1,
+	["print"]=1,["warn"]=1,["error"]=1,["assert"]=1,["require"]=1,["tick"]=1,
+	["wait"]=1,["delay"]=1,["spawn"]=1,["pcall"]=1,["xpcall"]=1,["tonumber"]=1,
+	["tostring"]=1,["unpack"]=1,["next"]=1,["pairs"]=1,["ipairs"]=1,["select"]=1,
+	["getmetatable"]=1,["setmetatable"]=1,["rawget"]=1,["rawset"]=1,["rawlen"]=1,
+	["rawequal"]=1,["load"]=1,["loadstring"]=1,["collectgarbage"]=1,
+}
+local _LIB = {
+	["math"]=1,["string"]=1,["table"]=1,["task"]=1,["os"]=1,["debug"]=1,
+	["coroutine"]=1,["utf8"]=1,["bit32"]=1,["buffer"]=1,
+}
+local _CT = {
+	["Vector3"]=1,["Vector2"]=1,["CFrame"]=1,["Color3"]=1,["UDim"]=1,["UDim2"]=1,
+	["Instance"]=1,["Ray"]=1,["Rect"]=1,["Region3"]=1,["Enum"]=1,["Random"]=1,
+	["BrickColor"]=1,["TweenInfo"]=1,["NumberRange"]=1,["NumberSequence"]=1,
+	["ColorSequence"]=1,["PhysicalProperties"]=1,
+}
+local _CKW="#ab6c6c" local _CGL="#8FB4FF" local _CLIB="#8FB4FF"
+local _CCT="#8FB4FF" local _CSTR="#8EE9B6" local _CCOM="#6a9955"
+local _CNUM="#F2BA2A"
+
+local function _esc(s)
+	return (s:gsub("&","&amp;"):gsub("<","&lt;"):gsub(">","&gt;"))
+end
+local function _col(c,s) return '<font color="'..c..'">'..s..'</font>' end
+
+local function syntaxHighlight(code)
+	local out, i, n = {}, 1, #code
+	while i <= n do
+		local ch = code:sub(i,i)
+		if code:sub(i,i+1) == "--" then
+			-- long comment?
+			local lc = code:match("^%-%-%[=*%[", i)
+			if lc then
+				local lvl = #lc - 4
+				local close = "]"..string.rep("=",lvl).."]"
+				local j = code:find(close, i+#lc, true)
+				local e2 = j and (j+#close-1) or n
+				table.insert(out, _col(_CCOM, _esc(code:sub(i,e2)))); i = e2+1
+			else
+				local j = code:find("\n", i, true)
+				local e2 = j and (j-1) or n
+				table.insert(out, _col(_CCOM, _esc(code:sub(i,e2)))); i = e2+1
+			end
+		elseif ch == "[" then
+			local ls = code:match("^%[=*%[", i)
+			if ls then
+				local lvl = #ls - 2
+				local close = "]"..string.rep("=",lvl).."]"
+				local j = code:find(close, i+#ls, true)
+				local e2 = j and (j+#close-1) or n
+				table.insert(out, _col(_CSTR, _esc(code:sub(i,e2)))); i = e2+1
+			else table.insert(out, _esc(ch)); i = i+1 end
+		elseif ch == '"' or ch == "'" then
+			local j = i+1
+			while j <= n do
+				local c2 = code:sub(j,j)
+				if c2 == "\\" then j = j+2
+				elseif c2 == ch or c2 == "\n" then j = j+1; break
+				else j = j+1 end
+			end
+			table.insert(out, _col(_CSTR, _esc(code:sub(i,j-1)))); i = j
+		elseif ch:match("%d") or (ch=="." and i<n and code:sub(i+1,i+1):match("%d")) then
+			local num = code:match("^0[xX][%da-fA-F_]+",i)
+				or code:match("^%d[%d_]*%.?[%d_]*[eE]?[%+%-]?[%d_]*",i)
+				or code:match("^%.[%d_]+[eE]?[%+%-]?[%d_]*",i)
+				or ch
+			table.insert(out, _col(_CNUM, _esc(num))); i = i+#num
+		elseif ch:match("[%a_]") then
+			local word = code:match("^[%w_]+", i)
+			if     _KW[word]   then table.insert(out, _col(_CKW,  _esc(word)))
+			elseif _BOOL[word] then table.insert(out, _col(_CNUM, _esc(word)))
+			elseif _GL[word]   then table.insert(out, _col(_CGL,  _esc(word)))
+			elseif _LIB[word]  then table.insert(out, _col(_CLIB, _esc(word)))
+			elseif _CT[word]   then table.insert(out, _col(_CCT,  _esc(word)))
+			else                     table.insert(out, _esc(word)) end
+			i = i + #word
+		else table.insert(out, _esc(ch)); i = i+1 end
+	end
+	return table.concat(out)
+end
+
+local function updateHighlight()
+	local code = UI.CodeBox.Text
+	if UI.IntelLabel then
+		if code == "" then UI.IntelLabel.Text = ""; return end
+		local ok, result = pcall(syntaxHighlight, code)
+		if ok then UI.IntelLabel.Text = result end
+	end
 end
 
 updateLineNumbers()
-CodeBox:GetPropertyChangedSignal("Text"):Connect(function()
+updateHighlight()
+UI.CodeBox:GetPropertyChangedSignal("Text"):Connect(function()
 	updateLineNumbers()
-	if not CodeBox:IsFocused() then
-		CodeSF.CanvasPosition = Vector2.new(0, CodeSF.AbsoluteCanvasSize.Y)
+	updateHighlight()
+	if not UI.CodeBox:IsFocused() then
+		UI.CodeSF.CanvasPosition = Vector2.new(0, UI.CodeSF.AbsoluteCanvasSize.Y)
 	end
 end)
 
-CodeClearButton.MouseButton1Click:Connect(function()
-	CodeBox.Text = ""
+-- ── Custom caret (CodeBox has TextTransparency=1 so native caret is invisible) ──
+
+local _TXS         = game:GetService("TextService")
+local _caretTI     = TweenInfo.new(0.07, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+local _caretTween  = nil
+
+local CaretFrame = Instance.new("Frame")
+CaretFrame.Name              = "CustomCaret"
+CaretFrame.Size              = UDim2.new(0, 2, 0, 16)
+CaretFrame.BackgroundColor3  = Color3.fromRGB(204, 204, 204)
+CaretFrame.BorderSizePixel   = 0
+CaretFrame.ZIndex            = 20
+CaretFrame.Visible           = false
+CaretFrame.Parent            = UI.CodeBox
+do local c = Instance.new("UICorner", CaretFrame); c.CornerRadius = UDim.new(1, 0) end
+
+local function updateCaret()
+	local cursor = UI.CodeBox.CursorPosition
+	if cursor < 1 then return end
+	-- defer so Text and CursorPosition are both committed (fixes newline lag)
+	local text   = UI.CodeBox.Text
+	local before = text:sub(1, cursor - 1)
+	local lines  = before:split("\n")
+	local lineIdx  = #lines - 1  -- 0-based row
+	local lineText = lines[#lines]
+	local font     = UI.CodeBox.Font
+	local fontSize = UI.CodeBox.TextSize
+	local inf      = Vector2.new(9999, 9999)
+	local xOff     = _TXS:GetTextSize(lineText, fontSize, font, inf).X
+	local lineH    = _TXS:GetTextSize("Yq",     fontSize, font, inf).Y
+	local pad      = UI.CodeBox:FindFirstChildWhichIsA("UIPadding")
+	local padL     = pad and pad.PaddingLeft.Offset or 4
+	local padT     = pad and pad.PaddingTop.Offset  or 4
+	local target   = UDim2.new(0, padL + xOff - 6, 0, padT + lineIdx * lineH + 2)
+	CaretFrame.Size = UDim2.new(0, 1, 0, lineH)
+	if _caretTween then _caretTween:Cancel() end
+	_caretTween = TS:Create(CaretFrame, _caretTI, { Position = target })
+	_caretTween:Play()
+end
+
+local _caretTask = nil
+local function startBlink()
+	if _caretTask then task.cancel(_caretTask) end
+	_caretTask = task.spawn(function()
+		while UI.CodeBox:IsFocused() do
+			CaretFrame.BackgroundTransparency = 0
+			task.wait(0.53)
+			CaretFrame.BackgroundTransparency = 1
+			task.wait(0.53)
+		end
+		CaretFrame.Visible = false
+	end)
+end
+
+UI.CodeBox.Focused:Connect(function()
+	CaretFrame.Visible = true
+	task.defer(updateCaret)
+	startBlink()
+end)
+UI.CodeBox.FocusLost:Connect(function()
+	if _caretTask then task.cancel(_caretTask); _caretTask = nil end
+	CaretFrame.Visible = false
+end)
+UI.CodeBox:GetPropertyChangedSignal("CursorPosition"):Connect(function()
+	task.defer(updateCaret)
+	task.defer(updateSelection)
+	if UI.CodeBox:IsFocused() then startBlink() end
+end)
+UI.CodeBox:GetPropertyChangedSignal("Text"):Connect(function()
+	if UI.CodeBox:IsFocused() then task.defer(updateCaret) end
+	task.defer(updateSelection)
 end)
 
-CodeCopyButton.MouseButton1Click:Connect(function()
-	if CodeBox.Text == "" then return end
+-- ── Selection highlight ───────────────────────────────────────────────────────
+
+if UI.IntelLabel then UI.IntelLabel.ZIndex = 2 end  -- keep above selection frames
+
+local SEL_COLOR = Color3.fromRGB(38, 79, 120)
+local _selFrames = {}
+
+local function clearSelFrames()
+	for _, f in ipairs(_selFrames) do f:Destroy() end
+	_selFrames = {}
+end
+
+function updateSelection()
+	clearSelFrames()
+	local selStart = UI.CodeBox.SelectionStart
+	local cursor   = UI.CodeBox.CursorPosition
+	if selStart < 1 or cursor < 1 or selStart == cursor then return end
+
+	local s    = math.min(selStart, cursor)
+	local e    = math.max(selStart, cursor) - 1
+	local text = UI.CodeBox.Text
+	local font     = UI.CodeBox.Font
+	local fontSize = UI.CodeBox.TextSize
+	local inf      = Vector2.new(9999, 9999)
+	local pad      = UI.CodeBox:FindFirstChildWhichIsA("UIPadding")
+	local padL     = pad and pad.PaddingLeft.Offset or 4
+	local padT     = pad and pad.PaddingTop.Offset  or 4
+	local lineH    = _TXS:GetTextSize("Yq", fontSize, font, inf).Y
+
+	local lines         = text:split("\n")
+	local lineStartChar = 1
+	for lineIdx, lineText in ipairs(lines) do
+		local lineEndChar = lineStartChar + #lineText
+		local overlapS    = math.max(s, lineStartChar)
+		local overlapE    = math.min(e, lineEndChar - 1)
+		if overlapS <= overlapE then
+			local charsBefore   = overlapS - lineStartChar
+			local charsSelected = overlapE - overlapS + 1
+			local x1 = _TXS:GetTextSize(lineText:sub(1, charsBefore),                    fontSize, font, inf).X
+			local xW = _TXS:GetTextSize(lineText:sub(charsBefore + 1, charsBefore + charsSelected), fontSize, font, inf).X
+			-- extend slightly for newline character when selection spans to next line
+			if overlapE >= lineEndChar - 1 and lineIdx < #lines then
+				xW = xW + math.floor(fontSize * 0.35)
+			end
+			local f = Instance.new("Frame")
+			f.BackgroundColor3       = SEL_COLOR
+			f.BackgroundTransparency = 0.45
+			f.BorderSizePixel        = 0
+			f.ZIndex                 = 1
+			f.Size                   = UDim2.new(0, math.max(xW, 2), 0, lineH)
+			f.Position               = UDim2.new(0, padL + x1 - 5, 0, padT + (lineIdx - 1) * lineH + 2)
+			f.Parent                 = UI.CodeBox
+			table.insert(_selFrames, f)
+		end
+		lineStartChar = lineEndChar + 1
+	end
+end
+
+UI.CodeBox:GetPropertyChangedSignal("SelectionStart"):Connect(function()
+	task.defer(updateSelection)
+end)
+
+UI.CodeClearButton.MouseButton1Click:Connect(function()
+	UI.CodeBox.Text = ""
+end)
+
+UI.CodeCopyButton.MouseButton1Click:Connect(function()
+	if UI.CodeBox.Text == "" then return end
 	if type(setclipboard) == "function" then
-		setclipboard(CodeBox.Text)
+		setclipboard(UI.CodeBox.Text)
 		Toast.show("Copied", "Code copied to clipboard", "info", 2)
 	end
 end)
 
-RunButton.MouseButton1Click:Connect(function()
-	local code = CodeBox.Text
+UI.RunButton.MouseButton1Click:Connect(function()
+	local code = UI.CodeBox.Text
 	if code == "" then return end
 	local fn, compErr = loadstring(code)
 	if not fn then
@@ -593,7 +886,7 @@ RunButton.MouseButton1Click:Connect(function()
 	end
 end)
 
--- Code tools registered here so they share CodeBox closure
+-- Code tools registered here so they share UI.CodeBox closure
 local CODE_TOOL_GROUP = "Code"
 local function unescapeCode(s)
 	-- Models sometimes emit literal \n \t \r instead of real control chars
@@ -612,7 +905,7 @@ Tools.register({
 	},
 	handler = function(args)
 		local code = unescapeCode(args.code or "")
-		CodeBox.Text = code
+		UI.CodeBox.Text = code
 		local lines = select(2, code:gsub("\n", "\n")) + 1
 		local _, syntaxErr = loadstring(code)
 		if syntaxErr then
@@ -633,14 +926,14 @@ Tools.register({
 		}
 	},
 	handler = function(args)
-		local current = CodeBox.Text
+		local current = UI.CodeBox.Text
 		local search  = unescapeCode(args.search  or "")
 		local replace = unescapeCode(args.replace or "")
 		local escaped = search:gsub("([%(%)%.%%%+%-%*%?%[%^%$])", "%%%1")
 		if not current:find(escaped, 1, true) then return "Error: search text not found in code." end
 		local before = select(2, current:gsub("\n", "\n")) + 1
-		CodeBox.Text  = current:gsub(escaped, replace:gsub("%%", "%%%%"), 1)
-		local after   = select(2, CodeBox.Text:gsub("\n", "\n")) + 1
+		UI.CodeBox.Text  = current:gsub(escaped, replace:gsub("%%", "%%%%"), 1)
+		local after   = select(2, UI.CodeBox.Text:gsub("\n", "\n")) + 1
 		local diff    = after - before
 		return (diff >= 0 and "+" or "") .. diff .. " lines"
 	end
@@ -657,7 +950,7 @@ Tools.register({
 		}
 	},
 	handler = function()
-		local code = CodeBox.Text
+		local code = UI.CodeBox.Text
 		if code == "" then return "(editor is empty)" end
 		return tostring(select(2, code:gsub("\n", "\n")) + 1) .. " lines total"
 	end
@@ -674,7 +967,7 @@ Tools.register({
 		}
 	},
 	handler = function(args)
-		local lines = CodeBox.Text:split("\n")
+		local lines = UI.CodeBox.Text:split("\n")
 		local s = math.max(1, math.floor(args.start_line))
 		local e = math.min(#lines, math.floor(args.end_line))
 		if s > #lines then return "Error: start_line out of range (total " .. #lines .. " lines)" end
@@ -695,7 +988,7 @@ Tools.register({
 		}
 	},
 	handler = function(args)
-		local lines = CodeBox.Text:split("\n")
+		local lines = UI.CodeBox.Text:split("\n")
 		local s = math.max(1, math.floor(args.start_line))
 		local e = math.min(#lines, math.floor(args.end_line))
 		if s > #lines then return "Error: start_line out of range (total " .. #lines .. " lines)" end
@@ -705,8 +998,8 @@ Tools.register({
 		for i = 1, s - 1            do result[#result+1] = lines[i] end
 		for _, l in ipairs(newLines) do result[#result+1] = l end
 		for i = e + 1, #lines       do result[#result+1] = lines[i] end
-		CodeBox.Text = table.concat(result, "\n")
-		local diff = (select(2, CodeBox.Text:gsub("\n", "\n")) + 1) - before
+		UI.CodeBox.Text = table.concat(result, "\n")
+		local diff = (select(2, UI.CodeBox.Text:gsub("\n", "\n")) + 1) - before
 		return "Replaced lines " .. s .. "-" .. e .. " (" .. (diff >= 0 and "+" or "") .. diff .. " lines)"
 	end
 })
@@ -722,7 +1015,7 @@ Tools.register({
 		}
 	},
 	handler = function(args)
-		local lines = CodeBox.Text:split("\n")
+		local lines = UI.CodeBox.Text:split("\n")
 		local matches = {}
 		for i, line in ipairs(lines) do
 			if line:find(args.query, 1, true) then matches[#matches+1] = i .. ": " .. line end
@@ -759,7 +1052,7 @@ local function populateToolsPage()
 
 	for _, groupName in ipairs(groupOrder) do
 		local tools = groups[groupName]
-		local gf    = ToolsGroupFrame:Clone()
+		local gf    = UI.ToolsGroupFrame:Clone()
 		local inner = gf:FindFirstChild("Frame") or gf:FindFirstChildWhichIsA("Frame")
 		local title = inner and inner:FindFirstChild("GroupTitle")
 		local tf    = inner and inner:FindFirstChild("ToolFrame")
@@ -778,21 +1071,21 @@ local function populateToolsPage()
 
 		if tf then tf:Destroy() end
 		gf.Visible = true
-		gf.Parent  = ToolsSF
+		gf.Parent  = UI.ToolsSF
 	end
 
 	task.defer(function()
 		local h = 0
-		for _, c in ipairs(ToolsSF:GetChildren()) do
-			if c:IsA("GuiObject") and c ~= ToolsElementTemplate then
+		for _, c in ipairs(UI.ToolsSF:GetChildren()) do
+			if c:IsA("GuiObject") and c ~= UI.ToolsElementTemplate then
 				h = h + c.AbsoluteSize.Y + 8
 			end
 		end
-		ToolsSF.CanvasSize = UDim2.new(0, 0, 0, h)
+		UI.ToolsSF.CanvasSize = UDim2.new(0, 0, 0, h)
 	end)
 end
 
-CurrentPage.Changed:Connect(function(page)
+UI.CurrentPage.Changed:Connect(function(page)
 	if page == "Tools" then populateToolsPage() end
 end)
 
@@ -801,8 +1094,8 @@ end)
 local selectedHost = Config.host
 local dropdownOpen = false
 
-UnsavedChanges.Visible = false
-DropdownList.Visible   = false
+UI.UnsavedChanges.Visible = false
+UI.DropdownList.Visible   = false
 
 local function maskKey(key)
 	if key == "" then return "" end
@@ -811,9 +1104,9 @@ local function maskKey(key)
 end
 
 local function updateHostLabel(host)
-	if not HostTitle then return end
-	HostTitle.RichText = true
-	HostTitle.Text = 'Host Provider  <font size="11" color="#A1A5A2">(' .. host .. ')</font>'
+	if not UI.HostTitle then return end
+	UI.HostTitle.RichText = true
+	UI.HostTitle.Text = 'Host Provider  <font size="11" color="#A1A5A2">(' .. host .. ')</font>'
 end
 
 local ALL_HOSTS = {"OpenRouter", "Ollama", "Mistral", "Groq", "Pollinations", "HuggingFace", "Google AI Studio"}
@@ -829,17 +1122,17 @@ local _loadingKey = true
 
 local function applyProviderToUI(host)
 	local cached = providerCache[host] or {}
-	APIKeyBox.Text             = cached.key or ""
-	APIKeyBox.TextTransparency = 1
-	APIKeyLabel.Text           = maskKey(cached.key or "")
-	ModelBox.Text              = cached.model or ""
+	UI.APIKeyBox.Text             = cached.key or ""
+	UI.APIKeyBox.TextTransparency = 1
+	UI.APIKeyLabel.Text           = maskKey(cached.key or "")
+	UI.ModelBox.Text              = cached.model or ""
 end
 
 applyProviderToUI(Config.host)
-MaxStepBox.Text = tostring(Config.maxSteps)
+UI.MaxStepBox.Text = tostring(Config.maxSteps)
 selectedHost    = Config.host
 
-for _, b in pairs(HostButtons) do
+for _, b in pairs(UI.HostButtons) do
 	if b:IsA("TextButton") then
 		b.BackgroundTransparency = b.Text == selectedHost and 0.9 or 1
 	end
@@ -851,32 +1144,32 @@ _loadingKey = false
 
 local _apiKeyFocused = false
 
-APIKeyBox.Focused:Connect(function()
+UI.APIKeyBox.Focused:Connect(function()
 	_apiKeyFocused   = true
-	APIKeyLabel.Text = string.rep("•", #APIKeyBox.Text)
+	UI.APIKeyLabel.Text = string.rep("•", #UI.APIKeyBox.Text)
 end)
 
-APIKeyBox.FocusLost:Connect(function()
+UI.APIKeyBox.FocusLost:Connect(function()
 	_apiKeyFocused   = false
-	APIKeyLabel.Text = maskKey(APIKeyBox.Text)
-	if not _loadingKey then UnsavedChanges.Visible = true end
+	UI.APIKeyLabel.Text = maskKey(UI.APIKeyBox.Text)
+	if not _loadingKey then UI.UnsavedChanges.Visible = true end
 end)
 
-APIKeyBox:GetPropertyChangedSignal("Text"):Connect(function()
+UI.APIKeyBox:GetPropertyChangedSignal("Text"):Connect(function()
 	if _loadingKey then return end
-	UnsavedChanges.Visible = true
-	if _apiKeyFocused then APIKeyLabel.Text = string.rep("•", #APIKeyBox.Text) end
+	UI.UnsavedChanges.Visible = true
+	if _apiKeyFocused then UI.APIKeyLabel.Text = string.rep("•", #UI.APIKeyBox.Text) end
 end)
 
 local filteredList = {}
 
 local function closeDropdown()
 	dropdownOpen         = false
-	DropdownList.Visible = false
+	UI.DropdownList.Visible = false
 end
 
 local function populateDropdown(models)
-	for _, c in pairs(DropdownList:GetChildren()) do
+	for _, c in pairs(UI.DropdownList:GetChildren()) do
 		if c:IsA("TextButton") then c:Destroy() end
 	end
 	if #models == 0 then closeDropdown() return end
@@ -892,18 +1185,18 @@ local function populateDropdown(models)
 		btn.Size                   = UDim2.new(1, 0, 0, 28)
 		btn.LayoutOrder            = i
 		btn.TextXAlignment         = Enum.TextXAlignment.Left
-		btn.Parent                 = DropdownList
+		btn.Parent                 = UI.DropdownList
 		local pad = Instance.new("UIPadding", btn); pad.PaddingLeft = UDim.new(0, 10)
 		btn.MouseButton1Down:Connect(function()
-			ModelBox.Text          = m.name
-			UnsavedChanges.Visible = true
+			UI.ModelBox.Text          = m.name
+			UI.UnsavedChanges.Visible = true
 			closeDropdown()
 		end)
 		btn.MouseEnter:Connect(function() btn.TextColor3 = Color3.fromRGB(250, 250, 250) end)
 		btn.MouseLeave:Connect(function() btn.TextColor3 = Color3.fromRGB(161, 161, 170) end)
 	end
 	dropdownOpen         = true
-	DropdownList.Visible = true
+	UI.DropdownList.Visible = true
 end
 
 local function filterDropdown(query)
@@ -915,26 +1208,26 @@ local function filterDropdown(query)
 	populateDropdown(filteredList)
 end
 
-ModelBox:GetPropertyChangedSignal("Text"):Connect(function()
+UI.ModelBox:GetPropertyChangedSignal("Text"):Connect(function()
 	if _loading then return end
-	UnsavedChanges.Visible = true
-	if #modelList > 0 then filterDropdown(ModelBox.Text) end
+	UI.UnsavedChanges.Visible = true
+	if #modelList > 0 then filterDropdown(UI.ModelBox.Text) end
 end)
 
-MaxStepBox:GetPropertyChangedSignal("Text"):Connect(function()
+UI.MaxStepBox:GetPropertyChangedSignal("Text"):Connect(function()
 	if _loading then return end
-	UnsavedChanges.Visible = true
+	UI.UnsavedChanges.Visible = true
 end)
 
-DropdownButton.MouseButton1Click:Connect(function()
-	if dropdownOpen then closeDropdown() else filterDropdown(ModelBox.Text) end
+UI.DropdownButton.MouseButton1Click:Connect(function()
+	if dropdownOpen then closeDropdown() else filterDropdown(UI.ModelBox.Text) end
 end)
 
-ModelBox.Focused:Connect(function()
+UI.ModelBox.Focused:Connect(function()
 	if #modelList > 0 then filterDropdown("") end
 end)
 
-ModelBox.FocusLost:Connect(function()
+UI.ModelBox.FocusLost:Connect(function()
 	task.wait(0.15)
 	closeDropdown()
 end)
@@ -948,105 +1241,110 @@ local _uisBegan = UIS.InputBegan:Connect(function(input)
 		return mousePos.X >= pos.X and mousePos.X <= pos.X + size.X
 			and mousePos.Y >= pos.Y and mousePos.Y <= pos.Y + size.Y
 	end
-	if not inside(DropdownList) and not inside(ModelFrame) then closeDropdown() end
+	if not inside(UI.DropdownList) and not inside(UI.ModelFrame) then closeDropdown() end
 end)
 
 local function updateApiKeyVisibility(host)
-	if APIKeyFrame then
-		APIKeyFrame.Visible = host ~= "Ollama"
+	if UI.APIKeyFrame then
+		UI.APIKeyFrame.Visible = host ~= "Ollama"
 	end
 end
 
 updateApiKeyVisibility(selectedHost)
 
-for _, btn in pairs(HostButtons) do
+for _, btn in pairs(UI.HostButtons) do
 	if not btn:IsA("TextButton") then continue end
 	btn.MouseButton1Click:Connect(function()
 		-- Save current provider's unsaved key+model to cache
-		providerCache[selectedHost] = { key = APIKeyBox.Text, model = ModelBox.Text }
+		providerCache[selectedHost] = { key = UI.APIKeyBox.Text, model = UI.ModelBox.Text }
 		selectedHost = btn.Text
-		for _, b in pairs(HostButtons) do
+		for _, b in pairs(UI.HostButtons) do
 			if b:IsA("TextButton") then
 				b.BackgroundTransparency = b.Text == selectedHost and 0.9 or 1
 			end
 		end
+		UI.ConnectionIconColor.BackgroundColor3 = COLOR_IDLE
+		UI.CredentialIconColor.BackgroundColor3 = COLOR_IDLE
 		-- Restore new provider's key+model
 		_loading = true; _loadingKey = true
 		applyProviderToUI(selectedHost)
 		_loading = false; _loadingKey = false
 		updateApiKeyVisibility(selectedHost)
 		updateHostLabel(selectedHost)
-		UnsavedChanges.Visible = true
+		UI.UnsavedChanges.Visible = true
 	end)
 end
 
-ConnectionButton.MouseButton1Click:Connect(function()
-	ConnectionButton.Text = "Testing..."
+local function setConnStatus(ok)   UI.ConnectionIconColor.BackgroundColor3 = ok and COLOR_OK or COLOR_ERR end
+local function setCredStatus(ok)   UI.CredentialIconColor.BackgroundColor3 = ok and COLOR_OK or COLOR_ERR end
+
+UI.ConnectionButton.MouseButton1Click:Connect(function()
 	local res
 	if selectedHost == "Ollama" then
 		res = Http.request(Config.ollamaUrl .. "/api/tags", "GET", {})
 	elseif selectedHost == "Pollinations" then
 		res = Http.request("https://gen.pollinations.ai/v1/models", "GET", {
-			["Authorization"] = "Bearer " .. APIKeyBox.Text,
+			["Authorization"] = "Bearer " .. UI.APIKeyBox.Text,
 		})
 	elseif selectedHost == "Groq" then
 		res = Http.request("https://api.groq.com/openai/v1/models", "GET", {
-			["Authorization"] = "Bearer " .. APIKeyBox.Text,
+			["Authorization"] = "Bearer " .. UI.APIKeyBox.Text,
 		})
 	elseif selectedHost == "Mistral" then
 		res = Http.request("https://api.mistral.ai/v1/models", "GET", {
-			["Authorization"] = "Bearer " .. APIKeyBox.Text,
+			["Authorization"] = "Bearer " .. UI.APIKeyBox.Text,
 		})
 	elseif selectedHost == "HuggingFace" then
 		res = Http.request("https://router.huggingface.co/v1/models", "GET", {
-			["Authorization"] = "Bearer " .. APIKeyBox.Text,
+			["Authorization"] = "Bearer " .. UI.APIKeyBox.Text,
 		})
 	elseif selectedHost == "Google AI Studio" then
 		res = Http.request("https://generativelanguage.googleapis.com/v1beta/openai/models", "GET", {
-			["Authorization"] = "Bearer " .. APIKeyBox.Text,
+			["Authorization"] = "Bearer " .. UI.APIKeyBox.Text,
 		})
 	else
 		res = Http.request("https://openrouter.ai/api/v1/models", "GET", {
-			["Authorization"] = "Bearer " .. APIKeyBox.Text,
+			["Authorization"] = "Bearer " .. UI.APIKeyBox.Text,
 		})
 	end
-	ConnectionButton.Text = "Connection"
 	if not res or res.StatusCode ~= 200 then
+		setConnStatus(false)
 		Toast.show("Failed", "Could not reach " .. selectedHost, "err", 4)
 		return
 	end
+	setConnStatus(true)
 	Toast.show("Connected", selectedHost .. " is reachable", "ok", 3)
 	local ok, data = pcall(HS.JSONDecode, HS, res.Body)
 	if not ok then return end
 	if selectedHost == "Ollama" and data.models then
 		modelList = data.models
 		populateDropdown(data.models)
-		if ModelBox.Text == "" and #data.models > 0 then
-			_loading = true; ModelBox.Text = data.models[1].name; _loading = false
+		if UI.ModelBox.Text == "" and #data.models > 0 then
+			_loading = true; UI.ModelBox.Text = data.models[1].name; _loading = false
 		end
 	elseif selectedHost ~= "Ollama" and data.data then
 		modelList = {}
 		for _, m in ipairs(data.data) do table.insert(modelList, { name = m.id }) end
 		table.sort(modelList, function(a, b) return a.name < b.name end)
 		populateDropdown(modelList)
-		if ModelBox.Text == "" and #modelList > 0 then
-			_loading = true; ModelBox.Text = modelList[1].name; _loading = false
+		if UI.ModelBox.Text == "" and #modelList > 0 then
+			_loading = true; UI.ModelBox.Text = modelList[1].name; _loading = false
 		end
 	end
 end)
 
-CredentialButton.MouseButton1Click:Connect(function()
-	local key = APIKeyBox.Text
+UI.CredentialButton.MouseButton1Click:Connect(function()
+	local key = UI.APIKeyBox.Text
 	if selectedHost ~= "Ollama" and key == "" then
 		Toast.show("No API Key", "Enter an API key first", "err", 3) return
 	end
-	CredentialButton.Text = "Testing..."
 	if selectedHost == "Ollama" then
 		local res = Http.request(Config.ollamaUrl .. "/api/tags", "GET", {})
-		CredentialButton.Text = "Credential"
-		if res and res.StatusCode == 200 then
+			if res and res.StatusCode == 200 then
+			setCredStatus(true)
 			Toast.show("OK", "Ollama has no auth — connection is fine", "ok", 3)
 		else
+			setCredStatus(false)
 			Toast.show("Failed", "Could not reach Ollama", "err", 4)
 		end
 	elseif selectedHost == "Pollinations" then
@@ -1056,82 +1354,76 @@ CredentialButton.MouseButton1Click:Connect(function()
 			["Content-Type"]  = "application/json",
 			["Authorization"] = "Bearer " .. key,
 		}, body)
-		CredentialButton.Text = "Credential"
-		if not res then
-			Toast.show("Failed", "No response from Pollinations", "err", 4)
+			if not res then
+			setCredStatus(false); Toast.show("Failed", "No response from Pollinations", "err", 4)
 		elseif res.StatusCode == 200 then
-			Toast.show("Valid Key", "Pollinations key accepted", "ok", 3)
+			setCredStatus(true);  Toast.show("Valid Key", "Pollinations key accepted", "ok", 3)
 		elseif res.StatusCode == 401 then
-			Toast.show("Invalid Key", "Pollinations key rejected (401)", "err", 4)
+			setCredStatus(false); Toast.show("Invalid Key", "Pollinations key rejected (401)", "err", 4)
 		else
-			Toast.show("Failed", "Status " .. res.StatusCode, "err", 4)
+			setCredStatus(false); Toast.show("Failed", "Status " .. res.StatusCode, "err", 4)
 		end
 	elseif selectedHost == "Groq" then
 		local res = Http.request("https://api.groq.com/openai/v1/models", "GET", {
 			["Authorization"] = "Bearer " .. key,
 		})
-		CredentialButton.Text = "Credential"
-		if not res then
-			Toast.show("Failed", "No response from Groq", "err", 4)
+			if not res then
+			setCredStatus(false); Toast.show("Failed", "No response from Groq", "err", 4)
 		elseif res.StatusCode == 200 then
-			Toast.show("Valid Key", "Groq key accepted", "ok", 3)
+			setCredStatus(true);  Toast.show("Valid Key", "Groq key accepted", "ok", 3)
 		elseif res.StatusCode == 401 then
-			Toast.show("Invalid Key", "Groq key rejected (401)", "err", 4)
+			setCredStatus(false); Toast.show("Invalid Key", "Groq key rejected (401)", "err", 4)
 		else
-			Toast.show("Failed", "Status " .. res.StatusCode, "err", 4)
+			setCredStatus(false); Toast.show("Failed", "Status " .. res.StatusCode, "err", 4)
 		end
 	elseif selectedHost == "Mistral" then
 		local res = Http.request("https://api.mistral.ai/v1/models", "GET", {
 			["Authorization"] = "Bearer " .. key,
 		})
-		CredentialButton.Text = "Credential"
-		if not res then
-			Toast.show("Failed", "No response from Mistral", "err", 4)
+			if not res then
+			setCredStatus(false); Toast.show("Failed", "No response from Mistral", "err", 4)
 		elseif res.StatusCode == 200 then
-			Toast.show("Valid Key", "Mistral key accepted", "ok", 3)
+			setCredStatus(true);  Toast.show("Valid Key", "Mistral key accepted", "ok", 3)
 		elseif res.StatusCode == 401 then
-			Toast.show("Invalid Key", "Mistral key rejected (401)", "err", 4)
+			setCredStatus(false); Toast.show("Invalid Key", "Mistral key rejected (401)", "err", 4)
 		else
-			Toast.show("Failed", "Status " .. res.StatusCode, "err", 4)
+			setCredStatus(false); Toast.show("Failed", "Status " .. res.StatusCode, "err", 4)
 		end
 	elseif selectedHost == "HuggingFace" then
 		-- /api/whoami requires auth; /v1/models is public and always returns 200
 		local res = Http.request("https://huggingface.co/api/whoami", "GET", {
 			["Authorization"] = "Bearer " .. key,
 		})
-		CredentialButton.Text = "Credential"
-		if not res then
-			Toast.show("Failed", "No response from HuggingFace", "err", 4)
+			if not res then
+			setCredStatus(false); Toast.show("Failed", "No response from HuggingFace", "err", 4)
 		elseif res.StatusCode == 200 then
 			local ok, data = pcall(HS.JSONDecode, HS, res.Body)
 			local name = ok and data and (data.name or data.fullname) or "unknown"
-			Toast.show("Valid Token", "Logged in as " .. tostring(name), "ok", 3)
+			setCredStatus(true); Toast.show("Valid Token", "Logged in as " .. tostring(name), "ok", 3)
 		elseif res.StatusCode == 401 then
-			Toast.show("Invalid Token", "HuggingFace token rejected (401)", "err", 4)
+			setCredStatus(false); Toast.show("Invalid Token", "HuggingFace token rejected (401)", "err", 4)
 		else
-			Toast.show("Failed", "Status " .. res.StatusCode, "err", 4)
+			setCredStatus(false); Toast.show("Failed", "Status " .. res.StatusCode, "err", 4)
 		end
 	elseif selectedHost == "Google AI Studio" then
 		local res = Http.request("https://generativelanguage.googleapis.com/v1beta/openai/models", "GET", {
 			["Authorization"] = "Bearer " .. key,
 		})
-		CredentialButton.Text = "Credential"
-		if not res then
-			Toast.show("Failed", "No response from Google AI Studio", "err", 4)
+			if not res then
+			setCredStatus(false); Toast.show("Failed", "No response from Google AI Studio", "err", 4)
 		elseif res.StatusCode == 200 then
-			Toast.show("Valid Key", "Google AI Studio key accepted", "ok", 3)
+			setCredStatus(true);  Toast.show("Valid Key", "Google AI Studio key accepted", "ok", 3)
 		elseif res.StatusCode == 401 then
-			Toast.show("Invalid Key", "Google key rejected (401)", "err", 4)
+			setCredStatus(false); Toast.show("Invalid Key", "Google key rejected (401)", "err", 4)
 		else
-			Toast.show("Failed", "Status " .. res.StatusCode, "err", 4)
+			setCredStatus(false); Toast.show("Failed", "Status " .. res.StatusCode, "err", 4)
 		end
 	else
 		local res = Http.request("https://openrouter.ai/api/v1/auth/key", "GET", {
 			["Authorization"] = "Bearer " .. key,
 		})
-		CredentialButton.Text = "Credential"
-		if not res then
-			Toast.show("Failed", "No response from server", "err", 4)
+			if not res then
+			setCredStatus(false); Toast.show("Failed", "No response from server", "err", 4)
 		elseif res.StatusCode == 200 then
 			local ok, data = pcall(HS.JSONDecode, HS, res.Body)
 			if ok and data.data then
@@ -1141,31 +1433,31 @@ CredentialButton.MouseButton1Click:Connect(function()
 				local info  = limit
 					and string.format("$%.4f / $%.2f limit", usage, limit)
 					or  string.format("$%.4f used (no limit)", usage)
-				Toast.show("Valid Key", label .. " — " .. info, "ok", 5)
+				setCredStatus(true); Toast.show("Valid Key", label .. " — " .. info, "ok", 5)
 			else
-				Toast.show("Valid Key", "Credential accepted", "ok", 3)
+				setCredStatus(true); Toast.show("Valid Key", "Credential accepted", "ok", 3)
 			end
 		elseif res.StatusCode == 401 then
-			Toast.show("Invalid Key", "API key rejected (401)", "err", 4)
+			setCredStatus(false); Toast.show("Invalid Key", "API key rejected (401)", "err", 4)
 		else
-			Toast.show("Failed", "Status " .. res.StatusCode, "err", 4)
+			setCredStatus(false); Toast.show("Failed", "Status " .. res.StatusCode, "err", 4)
 		end
 	end
 end)
 
 local function saveSettings()
-	providerCache[selectedHost] = { key = APIKeyBox.Text, model = ModelBox.Text }
-	Config.apiKey       = APIKeyBox.Text
-	Config.model        = ModelBox.Text
+	providerCache[selectedHost] = { key = UI.APIKeyBox.Text, model = UI.ModelBox.Text }
+	Config.apiKey       = UI.APIKeyBox.Text
+	Config.model        = UI.ModelBox.Text
 	Config.host         = selectedHost
-	Config.maxSteps     = math.max(1, tonumber(MaxStepBox.Text) or 100)
+	Config.maxSteps     = math.max(1, tonumber(UI.MaxStepBox.Text) or 100)
 	Config.providerData = {}
 	for h, data in pairs(providerCache) do
 		Config.providerData[h] = { apiKey = data.key, model = data.model }
 	end
-	MaxStepBox.Text = tostring(Config.maxSteps)
+	UI.MaxStepBox.Text = tostring(Config.maxSteps)
 	Config.save()
-	UnsavedChanges.Visible = false
+	UI.UnsavedChanges.Visible = false
 	Toast.show("Saved", "Settings saved successfully", "ok", 2)
 end
 
@@ -1179,20 +1471,22 @@ local function revertSettings()
 	providerCache[Config.host] = { key = Config.apiKey, model = Config.model }
 	selectedHost = Config.host
 	applyProviderToUI(selectedHost)
-	MaxStepBox.Text = tostring(Config.maxSteps)
-	for _, b in pairs(HostButtons) do
+	UI.MaxStepBox.Text = tostring(Config.maxSteps)
+	for _, b in pairs(UI.HostButtons) do
 		if b:IsA("TextButton") then
 			b.BackgroundTransparency = b.Text == selectedHost and 0.9 or 1
 		end
 	end
 	updateApiKeyVisibility(selectedHost)
 	updateHostLabel(selectedHost)
+	UI.ConnectionIconColor.BackgroundColor3 = COLOR_IDLE
+	UI.CredentialIconColor.BackgroundColor3 = COLOR_IDLE
 	_loading = false; _loadingKey = false
-	UnsavedChanges.Visible = false
+	UI.UnsavedChanges.Visible = false
 end
 
-SaveButton.MouseButton1Click:Connect(saveSettings)
-RevertButton.MouseButton1Click:Connect(revertSettings)
+UI.SaveButton.MouseButton1Click:Connect(saveSettings)
+UI.RevertButton.MouseButton1Click:Connect(revertSettings)
 
 -- ── Model Select Modal ────────────────────────────────────────────────────────
 
@@ -1201,12 +1495,12 @@ local modalAllModels = {}
 local modalFiltered  = {}
 local modalRendered  = 0
 
-ModalFrame.Visible      = false
-ExampleModelBtn.Visible = false
+UI.ModalFrame.Visible      = false
+UI.ExampleModelBtn.Visible = false
 
 local function modalClearButtons()
-	for _, c in ipairs(ModalSF:GetChildren()) do
-		if c ~= ExampleModelBtn and not c:IsA("UIGridLayout") and not c:IsA("UIPadding") then
+	for _, c in ipairs(UI.ModalSF:GetChildren()) do
+		if c ~= UI.ExampleModelBtn and not c:IsA("UIGridLayout") and not c:IsA("UIPadding") then
 			c:Destroy()
 		end
 	end
@@ -1217,14 +1511,14 @@ local function modalRenderChunk()
 	local endIdx   = math.min(modalRendered + MODAL_CHUNK, #modalFiltered)
 	for i = startIdx, endIdx do
 		local m   = modalFiltered[i]
-		local btn = ExampleModelBtn:Clone()
+		local btn = UI.ExampleModelBtn:Clone()
 		btn.Text    = m.name
 		btn.Visible = true
-		btn.Parent  = ModalSF
+		btn.Parent  = UI.ModalSF
 		btn.MouseButton1Click:Connect(function()
-			_loading = true; ModelBox.Text = m.name; _loading = false
-			UnsavedChanges.Visible = true
-			ModalFrame.Visible = false
+			_loading = true; UI.ModelBox.Text = m.name; _loading = false
+			UI.UnsavedChanges.Visible = true
+			UI.ModalFrame.Visible = false
 		end)
 		if i % 20 == 0 then task.wait() end
 	end
@@ -1242,14 +1536,14 @@ local function modalApplyFilter(query)
 	modalRendered = 0
 	modalClearButtons()
 	modalRenderChunk()
-	ModalSF.CanvasPosition = Vector2.zero
+	UI.ModalSF.CanvasPosition = Vector2.zero
 end
 
-ModalSF:GetPropertyChangedSignal("CanvasPosition"):Connect(function()
+UI.ModalSF:GetPropertyChangedSignal("CanvasPosition"):Connect(function()
 	if modalRendered >= #modalFiltered then return end
-	local pos      = ModalSF.CanvasPosition.Y
-	local viewH    = ModalSF.AbsoluteSize.Y
-	local contentH = ModalSF.AbsoluteCanvasSize.Y
+	local pos      = UI.ModalSF.CanvasPosition.Y
+	local viewH    = UI.ModalSF.AbsoluteSize.Y
+	local contentH = UI.ModalSF.AbsoluteCanvasSize.Y
 	if pos + viewH >= contentH - 80 then
 		modalRenderChunk()
 	end
@@ -1260,7 +1554,7 @@ local function fetchHuggingFaceModalSearch(query)
 	if query and query ~= "" then
 		url = url .. "&search=" .. HS:UrlEncode(query)
 	end
-	local res = Http.request(url, "GET", { ["Authorization"] = "Bearer " .. APIKeyBox.Text })
+	local res = Http.request(url, "GET", { ["Authorization"] = "Bearer " .. UI.APIKeyBox.Text })
 	local ok, data = pcall(HS.JSONDecode, HS, res and res.Body or "")
 	modalAllModels = {}
 	if ok and type(data) == "table" then
@@ -1295,7 +1589,7 @@ local function modalFetch()
 			or    host == "Pollinations"      and "https://gen.pollinations.ai/v1/models"
 			or    host == "Google AI Studio"  and "https://generativelanguage.googleapis.com/v1beta/openai/models"
 			or    "https://openrouter.ai/api/v1/models"
-		local auth = host ~= "OpenRouter" and APIKeyBox.Text or ""
+		local auth = host ~= "OpenRouter" and UI.APIKeyBox.Text or ""
 		local res = Http.request(url, "GET", auth ~= "" and { ["Authorization"] = "Bearer " .. auth } or {})
 		local ok, data = pcall(HS.JSONDecode, HS, res and res.Body or "")
 		if ok and data and data.data then
@@ -1312,38 +1606,38 @@ local function modalFetch()
 end
 
 local function openModal()
-	if ModalTitleLabel then ModalTitleLabel.Text = "Select Model" end
-	SearchModelModal.Visible    = true
-	ToolResultViewModal.Visible = false
-	ModalFrame.Visible = true
-	if ModalSearchBox then ModalSearchBox.Text = "" end
+	if UI.ModalTitleLabel then UI.ModalTitleLabel.Text = "Select Model" end
+	UI.SearchModelModal.Visible    = true
+	UI.ToolResultViewModal.Visible = false
+	UI.ModalFrame.Visible = true
+	if UI.ModalSearchBox then UI.ModalSearchBox.Text = "" end
 	modalClearButtons()
 	task.spawn(modalFetch)
 end
 
 local function openToolResultModal(fullText)
-	if ModalTitleLabel then ModalTitleLabel.Text = "Tool Output" end
-	SearchModelModal.Visible    = false
-	ToolResultViewModal.Visible = true
-	ToolResultTextBox.Text      = fullText
-	ToolResultSF.CanvasPosition = Vector2.new(0, 0)
-	ModalFrame.Visible          = true
+	if UI.ModalTitleLabel then UI.ModalTitleLabel.Text = "Tool Output" end
+	UI.SearchModelModal.Visible    = false
+	UI.ToolResultViewModal.Visible = true
+	UI.ToolResultTextBox.Text      = fullText
+	UI.ToolResultSF.CanvasPosition = Vector2.new(0, 0)
+	UI.ModalFrame.Visible          = true
 	task.defer(function()
-		ToolResultSF.CanvasSize = UDim2.new(0, 0, 0, ToolResultTextBox.AbsoluteSize.Y + 20)
+		UI.ToolResultSF.CanvasSize = UDim2.new(0, 0, 0, UI.ToolResultTextBox.AbsoluteSize.Y + 20)
 	end)
 end
 
-ModalOpenButton.MouseButton1Click:Connect(openModal)
-ModalCloseButton.MouseButton1Click:Connect(function()
-	ModalFrame.Visible          = false
-	SearchModelModal.Visible    = true
-	ToolResultViewModal.Visible = false
+UI.ModalOpenButton.MouseButton1Click:Connect(openModal)
+UI.ModalCloseButton.MouseButton1Click:Connect(function()
+	UI.ModalFrame.Visible          = false
+	UI.SearchModelModal.Visible    = true
+	UI.ToolResultViewModal.Visible = false
 end)
 
 local _hfSearchTask = nil
-if ModalSearchBox then
-	ModalSearchBox:GetPropertyChangedSignal("Text"):Connect(function()
-		local query = ModalSearchBox.Text
+if UI.ModalSearchBox then
+	UI.ModalSearchBox:GetPropertyChangedSignal("Text"):Connect(function()
+		local query = UI.ModalSearchBox.Text
 		if selectedHost == "HuggingFace" then
 			if _hfSearchTask then task.cancel(_hfSearchTask); _hfSearchTask = nil end
 			_hfSearchTask = task.delay(0.4, function()
@@ -1355,9 +1649,9 @@ if ModalSearchBox then
 		end
 	end)
 end
-if ModalSearchButton then
-	ModalSearchButton.MouseButton1Click:Connect(function()
-		local query = ModalSearchBox and ModalSearchBox.Text or ""
+if UI.ModalSearchButton then
+	UI.ModalSearchButton.MouseButton1Click:Connect(function()
+		local query = UI.ModalSearchBox and UI.ModalSearchBox.Text or ""
 		if selectedHost == "HuggingFace" then
 			if _hfSearchTask then task.cancel(_hfSearchTask); _hfSearchTask = nil end
 			fetchHuggingFaceModalSearch(query)
@@ -1369,16 +1663,16 @@ end
 
 -- ── Window controls ───────────────────────────────────────────────────────────
 
-MinimizeButton.MouseButton1Click:Connect(function()
+UI.MinimizeButton.MouseButton1Click:Connect(function()
 	Minimized = not Minimized
-	local authorLabel = TopBar:FindFirstChild("AuthorLabel")
-	local versionLabel = TopBar:FindFirstChild("VersionLabel")
+	local authorLabel = UI.TopBar:FindFirstChild("AuthorLabel")
+	local versionLabel = UI.TopBar:FindFirstChild("VersionLabel")
 	if Minimized then
-		TS:Create(IYAI, Tween, { Size = MinimizedIYAISize }):Play()
+		TS:Create(UI.IYAI, Tween, { Size = MinimizedIYAISize }):Play()
 		if authorLabel  then TS:Create(authorLabel,  Tween, { TextTransparency = 1 }):Play() end
 		if versionLabel then TS:Create(versionLabel, Tween, { TextTransparency = 1 }):Play() end
 	else
-		TS:Create(IYAI, Tween, { Size = DefaultIYAISize }):Play()
+		TS:Create(UI.IYAI, Tween, { Size = DefaultIYAISize }):Play()
 		if authorLabel  then TS:Create(authorLabel,  Tween, { TextTransparency = 0.5 }):Play() end
 		if versionLabel then TS:Create(versionLabel, Tween, { TextTransparency = 0.5 }):Play() end
 	end
@@ -1386,13 +1680,13 @@ end)
 
 local _uisChanged, _uisEnded
 
-CloseButton.MouseButton1Click:Connect(function()
+UI.CloseButton.MouseButton1Click:Connect(function()
 	if _uisBegan  then _uisBegan:Disconnect()  end
 	if _uisChanged then _uisChanged:Disconnect() end
 	if _uisEnded   then _uisEnded:Disconnect()   end
-	TS:Create(IYAI, Tween, { GroupTransparency = 1 }):Play()
+	TS:Create(UI.IYAI, Tween, { GroupTransparency = 1 }):Play()
 	task.delay(0.5, function()
-		if ScreenGui and ScreenGui.Parent then ScreenGui:Destroy() end
+		if UI.ScreenGui and UI.ScreenGui.Parent then UI.ScreenGui:Destroy() end
 	end)
 end)
 
@@ -1423,13 +1717,17 @@ end
 local RETRY_ATTEMPTS = 3
 local RETRY_DELAY    = 4
 
-local function requestWithRetry(url, method, headers, body)
+local function requestWithRetry(url, method, headers, body, onRetry)
 	local res
 	for attempt = 1, RETRY_ATTEMPTS do
 		res = Http.request(url, method, headers, body)
 		if res and res.StatusCode ~= 429 then break end
 		if attempt < RETRY_ATTEMPTS then
-			Toast.show("Rate limited", "Retrying in " .. RETRY_DELAY .. "s… (" .. attempt .. "/" .. (RETRY_ATTEMPTS - 1) .. ")", "warn", RETRY_DELAY)
+			if onRetry then
+				onRetry(attempt, RETRY_ATTEMPTS - 1)
+			else
+				Toast.show("Rate limited", "Retrying in " .. RETRY_DELAY .. "s… (" .. attempt .. "/" .. (RETRY_ATTEMPTS - 1) .. ")", "warn", RETRY_DELAY)
+			end
 			task.wait(RETRY_DELAY)
 		end
 	end
@@ -1493,14 +1791,14 @@ end
 local agentAborted = false
 
 local function setBusy(state)
-	isAssistantBusy.Value        = state
-	SendButton.Visible           = not state
-	SendButton.ImageTransparency = TextBoxInput.Text == "" and 0.7 or 0
-	StopButton.Visible           = state == true
+	UI.isAssistantBusy.Value        = state
+	UI.SendButton.Visible           = not state
+	UI.SendButton.ImageTransparency = UI.TextBoxInput.Text == "" and 0.7 or 0
+	UI.StopButton.Visible           = state == true
 end
 
-StopButton.Visible = false
-StopButton.MouseButton1Click:Connect(function() agentAborted = true end)
+UI.StopButton.Visible = false
+UI.StopButton.MouseButton1Click:Connect(function() agentAborted = true end)
 
 local function plural(n, word, suffix)
 	return n .. " " .. word .. (n == 1 and "" or (suffix or "s"))
@@ -1590,16 +1888,16 @@ end
 
 -- ── Clear button ──────────────────────────────────────────────────────────────
 
-ClearButton.MouseButton1Click:Connect(function()
+UI.ClearButton.MouseButton1Click:Connect(function()
 	conversationHistory = {}
 	StepCount           = 0
-	TotalElements.Value = 0
-	for _, child in ipairs(ScrollingFrameMainChat:GetChildren()) do
-		if child:IsA("GuiObject") and child ~= ElementTemplate and child ~= GreetFrame then child:Destroy() end
+	UI.TotalElements.Value = 0
+	for _, child in ipairs(UI.ScrollingFrameMainChat:GetChildren()) do
+		if child:IsA("GuiObject") and child ~= UI.ElementTemplate and child ~= GreetFrame then child:Destroy() end
 	end
 	if GreetFrame then GreetFrame.Visible = true end
-	ScrollingFrameMainChat.CanvasSize     = UDim2.new(0, 0, 0, 0)
-	ScrollingFrameMainChat.CanvasPosition = Vector2.new(0, 0)
+	UI.ScrollingFrameMainChat.CanvasSize     = UDim2.new(0, 0, 0, 0)
+	UI.ScrollingFrameMainChat.CanvasPosition = Vector2.new(0, 0)
 end)
 
 -- ── Code agent ────────────────────────────────────────────────────────────────
@@ -1634,7 +1932,7 @@ local function runCodeAgent(userText)
 	StepCount    = 0
 	agentAborted = false
 	setBusy(true)
-	CurrentPage.Value = "Agent"
+	UI.CurrentPage.Value = "Agent"
 
 	local maxSteps = Config.maxSteps
 	table.insert(codeHistory, { role = "user", content = userText })
@@ -1726,7 +2024,7 @@ local function runCodeAgent(userText)
 	end
 
 	setBusy(false)
-	TextBoxInput:CaptureFocus()
+	UI.TextBoxInput:CaptureFocus()
 end
 
 -- ── Agent loop ────────────────────────────────────────────────────────────────
@@ -1760,8 +2058,8 @@ local function runAgentLoop(userText)
 		end
 		local lbl = genLabel()
 		if lbl then lbl.Text = "●" end
-		TotalElements.Value += 1
-		generatingFrame.LayoutOrder = TotalElements.Value
+		UI.TotalElements.Value += 1
+		generatingFrame.LayoutOrder = UI.TotalElements.Value
 		scrollBottom()
 	end
 
@@ -1775,7 +2073,15 @@ local function runAgentLoop(userText)
 
 		showGenerating()
 
-		local res = requestWithRetry(buildUrl(), "POST", buildHeaders(), buildBody())
+		local _retryFrame = nil
+		local function onRateLimit(attempt, maxAttempts)
+			if not _retryFrame then _retryFrame = addTaskFrame("retrying") end
+			local lbl = _retryFrame:FindFirstChildWhichIsA("TextLabel", true)
+			if lbl then lbl.Text = "Rate limited — retrying in " .. RETRY_DELAY .. "s (" .. attempt .. "/" .. maxAttempts .. ")" end
+		end
+
+		local res = requestWithRetry(buildUrl(), "POST", buildHeaders(), buildBody(), onRateLimit)
+		if _retryFrame then _retryFrame:Destroy(); _retryFrame = nil end
 		if isContextError(res) then
 			Toast.show("History trimmed", "Context too long — retrying with less history", "warn", 3)
 			res = requestWithRetry(buildUrl(), "POST", buildHeaders(), buildBody(trimHistory(conversationHistory)))
@@ -1839,8 +2145,8 @@ local function runAgentLoop(userText)
 
 		-- Keep generating frame below the step about to be added
 		if generatingFrame then
-			TotalElements.Value += 1
-			generatingFrame.LayoutOrder = TotalElements.Value + 100
+			UI.TotalElements.Value += 1
+			generatingFrame.LayoutOrder = UI.TotalElements.Value + 100
 		end
 
 		-- addStep()
@@ -1871,8 +2177,8 @@ local function runAgentLoop(userText)
 				if message ~= "" then
 					local lbl = genLabel()
 					if lbl then
-						TotalElements.Value += 1
-						generatingFrame.LayoutOrder = TotalElements.Value
+						UI.TotalElements.Value += 1
+						generatingFrame.LayoutOrder = UI.TotalElements.Value
 						typewriteInto(lbl, Prompt.stripMarkdown(message) .. (usage and "\n" or ""))
 						if usage then
 							local tokenLabel = generatingFrame:FindFirstChild("TokenCount", true)
@@ -1901,7 +2207,7 @@ local function runAgentLoop(userText)
 				or result:find("^Runtime error")
 			updateTaskFrame(taskFrame, failed and "failed" or "succeeded", result, fnName)
 			if not failed and CODE_WRITE_TOOLS[fnName] then
-				addPostAction("View Code →", function() CurrentPage.Value = "Code" end)
+				addPostAction("View Code →", function() UI.CurrentPage.Value = "Code" end)
 			end
 			table.insert(conversationHistory, {
 				role         = "tool",
@@ -1919,19 +2225,19 @@ local function runAgentLoop(userText)
 	end
 
 	setBusy(false)
-	TextBoxInput:CaptureFocus()
+	UI.TextBoxInput:CaptureFocus()
 end
 
 -- ── onSend ────────────────────────────────────────────────────────────────────
 
 local function onSend()
-	local text = TextBoxInput.Text
-	if text == "" or isAssistantBusy.Value then return end
-	TextBoxInput.Text = ""
+	local text = UI.TextBoxInput.Text
+	if text == "" or UI.isAssistantBusy.Value then return end
+	UI.TextBoxInput.Text = ""
 	addChat(text)
 	task.spawn(function()
 		local ok, err
-		if CurrentPage.Value == "Code" then
+		if UI.CurrentPage.Value == "Code" then
 			ok, err = pcall(runCodeAgent, text)
 		else
 			ok, err = pcall(runAgentLoop, text)
@@ -1944,8 +2250,8 @@ local function onSend()
 	end)
 end
 
-SendButton.MouseButton1Click:Connect(onSend)
-TextBoxInput.FocusLost:Connect(function(enterPressed)
+UI.SendButton.MouseButton1Click:Connect(onSend)
+UI.TextBoxInput.FocusLost:Connect(function(enterPressed)
 	if enterPressed then onSend() end
 end)
 
@@ -1955,18 +2261,18 @@ local dragging  = false
 local dragStart = nil
 local startPos  = nil
 
-TopBar.InputBegan:Connect(function(input)
+UI.TopBar.InputBegan:Connect(function(input)
 	if input.UserInputType == Enum.UserInputType.MouseButton1 then
 		dragging  = true
 		dragStart = input.Position
-		startPos  = IYAI.Position
+		startPos  = UI.IYAI.Position
 	end
 end)
 
 local _uisChanged = UIS.InputChanged:Connect(function(input)
 	if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
 		local delta   = input.Position - dragStart
-		IYAI.Position = UDim2.new(
+		UI.IYAI.Position = UDim2.new(
 			startPos.X.Scale, startPos.X.Offset + delta.X,
 			startPos.Y.Scale, startPos.Y.Offset + delta.Y
 		)
