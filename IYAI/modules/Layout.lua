@@ -1748,7 +1748,6 @@ G2L["b0"]["PaddingBottom"] = UDim.new(0, 10);
 
 -- StarterGui.IYAI.IYAI.Frame.ContentPages.CodePage
 G2L["b1"] = Instance.new("Frame", G2L["11"]);
-G2L["b1"]["Visible"] = false;
 G2L["b1"]["BorderSizePixel"] = 0;
 G2L["b1"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
 G2L["b1"]["Size"] = UDim2.new(1, 0, 1, 0);
@@ -1848,6 +1847,7 @@ G2L["b9"]["FillDirection"] = Enum.FillDirection.Horizontal;
 
 -- StarterGui.IYAI.IYAI.Frame.ContentPages.CodePage.ScrollingFrame.CodeBox
 G2L["ba"] = Instance.new("TextBox", G2L["b8"]);
+G2L["ba"]["CursorPosition"] = -1;
 G2L["ba"]["Name"] = [[CodeBox]];
 G2L["ba"]["TextXAlignment"] = Enum.TextXAlignment.Left;
 G2L["ba"]["BorderSizePixel"] = 0;
@@ -1886,7 +1886,7 @@ G2L["bc"]["BackgroundTransparency"] = 1;
 G2L["bc"]["RichText"] = true;
 G2L["bc"]["Size"] = UDim2.new(1, 0, 1, 0);
 G2L["bc"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-G2L["bc"]["Text"] = [[<font color="#DCDCAA">print</font><font color="#D4D4D4">(</font><font color="#CE9178">"Hello World"</font><font color="#D4D4D4">)</font>]];
+G2L["bc"]["Text"] = [[]];
 G2L["bc"]["AutomaticSize"] = Enum.AutomaticSize.XY;
 G2L["bc"]["Name"] = [[IntelLabel]];
 
@@ -3084,6 +3084,6 @@ G2L["12c"]["Name"] = [[CurrentPage]];
 -- StarterGui.IYAI.Version
 G2L["12d"] = Instance.new("StringValue", G2L["1"]);
 G2L["12d"]["Name"] = [[Version]];
-G2L["12d"]["Value"] = [[1.0.3]];
+G2L["12d"]["Value"] = [[1.0.3-ALPHA]];
 
 return G2L

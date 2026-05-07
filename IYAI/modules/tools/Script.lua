@@ -99,9 +99,20 @@ return function(Tools)
 			local fn, compErr = loadstring(code)
 			if not fn then return "Compile error: " .. tostring(compErr) end
 			setfenv(fn, env)
-			local ok, runErr = pcall(fn)
-			if not ok then
+			local done, runErr = false, nil
+			task.spawn(function()
+				local ok, err = pcall(fn)
+				if not ok then runErr = err end
+				done = true
+			end)
+			local elapsed = 0
+			while not done and elapsed < 3 do
+				task.wait(0.1); elapsed += 0.1
+			end
+			if runErr then
 				results[#results + 1] = "Runtime error: " .. tostring(runErr)
+			elseif not done then
+				results[#results + 1] = "(running in background — output so far shown above)"
 			end
 			return #results > 0 and table.concat(results, "\n") or "Done (no output)."
 		end
