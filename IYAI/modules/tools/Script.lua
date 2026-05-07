@@ -69,9 +69,18 @@ return function(Tools)
 			if code == "" then return "No code provided." end
 			local fn, compErr = loadstring(code)
 			if not fn then return "Compile error: " .. tostring(compErr) end
+			local captured = {}
+			local origPrint = print
+			print = function(...)
+				local parts = {}
+				for i = 1, select("#", ...) do parts[i] = tostring(select(i, ...)) end
+				captured[#captured + 1] = table.concat(parts, "\t")
+				origPrint(...)
+			end
 			local ok, runErr = pcall(fn)
+			print = origPrint
 			if not ok then return "Runtime error: " .. tostring(runErr) end
-			return "Done."
+			return #captured > 0 and table.concat(captured, "\n") or "Done. (no output)"
 		end
 	})
 
