@@ -62,7 +62,8 @@ return function(Http)
 			"  done(message)                        — call this when you have finished your task. Pass your final response as message. Always call this after using tools.",
 		}
 		if Http.ENV == "syn" or Http.ENV == "executor" then
-			tools[#tools+1] = "  run(code)                 — execute Lua; ALWAYS use print() for output. NEVER run code with infinite loops or long task.wait() chains — use write_code() for those instead."
+			tools[#tools+1] = "  run()                     — execute the code currently in the code editor. Always use write_code() first, then run(). NEVER use for infinite loops."
+			tools[#tools+1] = "  run_once(code)            — execute a one-time Lua snippet without touching the editor. Use for quick checks or print() output. NEVER use for infinite loops."
 			tools[#tools+1] = "  iy_status()                — check if Infinite Yield is loaded. Call this first before using iy_cmd."
 			tools[#tools+1] = "  iy_cmd(command)            — execute an IY command if IY is loaded, or a direct Lua fallback for simple ones (speed, jumppower, health)"
 			tools[#tools+1] = "  list_iy_cmds(filter?, plugin?) — list available IY commands, filtered by command name and/or plugin name"

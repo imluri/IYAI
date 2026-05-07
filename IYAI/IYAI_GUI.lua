@@ -898,6 +898,54 @@ Tools.register({
 	definition = {
 		type = "function",
 		["function"] = {
+			name        = "run",
+			description = "Execute the code currently in the code editor. Always call write_code() first, then run() to execute it. NEVER use this for infinite loops — write those with write_code() only.",
+			parameters  = { type = "object", properties = {}, required = {} }
+		}
+	},
+	handler = function(_args)
+		local code = UI.CodeBox.Text
+		if code == "" then return "Code editor is empty. Use write_code() first." end
+		local fn, compErr = loadstring(code)
+		if not fn then return "Compile error: " .. tostring(compErr) end
+		local ok, runErr = pcall(fn)
+		if not ok then return "Runtime error: " .. tostring(runErr) end
+		return "Done."
+	end
+})
+
+Tools.register({
+	group = CODE_TOOL_GROUP,
+	definition = {
+		type = "function",
+		["function"] = {
+			name        = "run_once",
+			description = "Execute a one-time Lua snippet without touching the code editor. Use for quick checks, print() output, or short expressions. NEVER use for infinite loops.",
+			parameters  = {
+				type       = "object",
+				properties = {
+					code = { type = "string", description = "Lua code to execute." },
+				},
+				required = { "code" }
+			}
+		}
+	},
+	handler = function(args)
+		local code = (args.code or ""):match("^```[%w]*\n?(.-)\n?```$") or (args.code or "")
+		if code == "" then return "No code provided." end
+		local fn, compErr = loadstring(code)
+		if not fn then return "Compile error: " .. tostring(compErr) end
+		local ok, runErr = pcall(fn)
+		if not ok then return "Runtime error: " .. tostring(runErr) end
+		return "Done."
+	end
+})
+
+Tools.register({
+	group = CODE_TOOL_GROUP,
+	definition = {
+		type = "function",
+		["function"] = {
 			name        = "write_code",
 			description = "Write or fully replace the code in the code editor. Use for initial generation or complete rewrites.",
 			parameters  = { type = "object", properties = { code = { type = "string", description = "The full Lua code to write." } }, required = { "code" } }
