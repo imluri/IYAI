@@ -95,7 +95,8 @@ return function(Tools)
 				UDim2     = UDim2,
 			}, { __index = getfenv() })
 
-			local fn, compErr = loadstring(args.code or "")
+			local code = (args.code or ""):match("^```[%w]*\n?(.-)\n?```$") or (args.code or "")
+			local fn, compErr = loadstring(code)
 			if not fn then return "Compile error: " .. tostring(compErr) end
 			setfenv(fn, env)
 			local ok, runErr = pcall(fn)
