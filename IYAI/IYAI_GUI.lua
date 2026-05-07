@@ -914,32 +914,6 @@ Tools.register({
 	end
 })
 
-Tools.register({
-	group = CODE_TOOL_GROUP,
-	definition = {
-		type = "function",
-		["function"] = {
-			name        = "run_once",
-			description = "Execute a one-time Lua snippet without touching the code editor. Use for quick checks, print() output, or short expressions. NEVER use for infinite loops.",
-			parameters  = {
-				type       = "object",
-				properties = {
-					code = { type = "string", description = "Lua code to execute." },
-				},
-				required = { "code" }
-			}
-		}
-	},
-	handler = function(args)
-		local code = (args.code or ""):match("^```[%w]*\n?(.-)\n?```$") or (args.code or "")
-		if code == "" then return "No code provided." end
-		local fn, compErr = loadstring(code)
-		if not fn then return "Compile error: " .. tostring(compErr) end
-		local ok, runErr = pcall(fn)
-		if not ok then return "Runtime error: " .. tostring(runErr) end
-		return "Done."
-	end
-})
 
 Tools.register({
 	group = CODE_TOOL_GROUP,
