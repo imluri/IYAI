@@ -97,7 +97,7 @@ return function(Http)
 			rules[#rules+1] = "- For IY commands: call iy_cmd() directly. If the exact command name is unclear, use list_iy_cmds(filter) first — never guess. Executor functions like saveinstance are not IY commands."
 			rules[#rules+1] = "- To toggle off an IY command, try 'no'/'un' prefix (noesp, unfly). Exception: noclip toggles off with 'clip'."
 			rules[#rules+1] = "- The debug library is available: debug.getupvalue, debug.setupvalue, debug.getmetatable, debug.getinfo, debug.traceback, etc. Use via run_once() to inspect closures, upvalues, metatables, and runtime state that props()/tree() can't reach."
-			rules[#rules+1] = "- If you are unsure whether a specific executor function is available and cannot run code to check, tell the user to run a UNC test for that function (e.g. `print(type(someFunc))`) rather than assuming it exists or failing silently."
+			rules[#rules+1] = "- If unsure whether a specific executor function is available, use run_once() to check (e.g. print(type(someFunc))) before using it. Never assume availability."
 		end
 		return table.concat(rules, "\n")
 	end
