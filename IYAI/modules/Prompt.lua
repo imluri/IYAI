@@ -100,7 +100,7 @@ return function(Http)
 		return table.concat(rules, "\n")
 	end
 
-	function Prompt.build(includeContext)
+	function Prompt.build(includeContext, userPrompt)
 		local lines = {
 			"You are IYAI, an AI plugin by urluri for Roblox games and Infinite Yield (a Roblox executor tool).",
 			"You help users inspect instances, run code, and modify the game world using live data from your tools.",
@@ -117,6 +117,14 @@ return function(Http)
 			lines[#lines+1] = "## Current game context"
 			local ok, ctx = pcall(getGameContext)
 			lines[#lines+1] = ok and ctx or "(context unavailable)"
+		end
+		if type(userPrompt) == "string" and userPrompt ~= "" then
+			lines[#lines+1] = ""
+			lines[#lines+1] = "---"
+			lines[#lines+1] = "## User Instructions"
+			lines[#lines+1] = "The following instructions were set by the user. Apply them in all responses while keeping your core identity, tools, and rules above intact."
+			lines[#lines+1] = ""
+			lines[#lines+1] = userPrompt
 		end
 		return table.concat(lines, "\n")
 	end

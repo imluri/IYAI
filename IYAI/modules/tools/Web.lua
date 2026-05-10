@@ -118,7 +118,7 @@ return function(Tools, Http)
 				lines[#lines+1] = i .. ". " .. r.title
 				lines[#lines+1] = "   " .. r.url
 				if r.snippet and r.snippet ~= "" then
-					lines[#lines+1] = "   " .. r.snippet:sub(1, 250)
+					lines[#lines+1] = "   " .. r.snippet
 				end
 			end
 			return table.concat(lines, "\n")
@@ -137,8 +137,7 @@ return function(Tools, Http)
 				parameters  = {
 					type       = "object",
 					properties = {
-						url     = { type = "string",  description = "The URL to fetch" },
-						max_chars = { type = "integer", description = "Maximum characters to return (default 4000)" },
+						url = { type = "string", description = "The URL to fetch" },
 					},
 					required = {"url"}
 				}
@@ -146,8 +145,7 @@ return function(Tools, Http)
 		},
 		handler = function(args)
 			if not Http then return "Error: Http module unavailable" end
-			local url      = tostring(args.url or "")
-			local maxChars = tonumber(args.max_chars) or 4000
+			local url = tostring(args.url or "")
 			if url == "" then return "Error: url is required" end
 
 			local res = Http.request(url, "GET", {
@@ -175,13 +173,7 @@ return function(Tools, Http)
 			html = html:match("^%s*(.-)%s*$") or ""
 
 			if #html == 0 then return "No readable content found at: " .. url end
-
-			local truncated = #html > maxChars
-			local text = html:sub(1, maxChars)
-			if truncated then
-				text = text .. "\n\n[Truncated — " .. #html .. " total chars. Use max_chars to read more.]"
-			end
-			return text
+			return html
 		end
 	})
 

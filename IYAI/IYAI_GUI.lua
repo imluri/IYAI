@@ -83,90 +83,110 @@ local UI = {
 	ElementTemplate        = G2L["16"],
 	TotalElements          = G2L["49"],
 	isAssistantBusy        = G2L["4a"],
-	InputFrame             = G2L["50"],
-	TextBoxInput           = G2L["51"],
-	SendButton             = G2L["55"],
-	StopButton             = G2L["57"],
-	ActionsFrame           = G2L["59"],
-	ClearButton            = G2L["5b"],
-	SettingsPage           = G2L["5c"],
-	Settings_SF            = G2L["5d"],
-	APIKeyFrame            = G2L["5e"],
+	InputFrame             = G2L["51"],
+	TextBoxInput           = G2L["52"],
+	SendButton             = G2L["56"],
+	StopButton             = G2L["58"],
+	ActionsFrame           = G2L["5a"],
+	ClearButton            = G2L["5c"],
+	SettingsPage           = G2L["5d"],
+	Settings_SF            = G2L["5e"],
+	APIKeyFrame            = G2L["5f"],
 	APIKeyLabel            = G2L["61"],
 	APIKeyBox              = G2L["62"],
-	HostSelectFrame        = G2L["65"],
-	HostTitle              = G2L["66"],
+	HostSelectFrame        = G2L["66"],
+	HostTitle              = G2L["67"],
 	HostFrame              = G2L["68"],
 	HostButtons            = G2L["68"]:GetChildren(),
-	ModelSelectFrame       = G2L["86"],
+	ModelSelectFrame       = G2L["87"],
 	ModelFrame             = G2L["89"],
 	ModelBox               = G2L["8a"],
 	DropdownButton         = G2L["8d"],
 	DropdownList           = Instance.new("Frame"),
-	TestFrame              = G2L["8f"],
-	ConnectionButton       = G2L["92"],
-	CredentialButton       = G2L["99"],
-	ConnectionIconColor    = G2L["95"],
-	CredentialIconColor    = G2L["9c"],
-	UnsavedChanges         = G2L["a8"],
-	TextLabel              = G2L["aa"],
-	SaveButton             = G2L["ac"],
-	RevertButton           = G2L["ae"],
-	CodePage               = G2L["b1"],
-	CodeSF                 = G2L["b8"],
-	LineLabel              = G2L["bd"],
-	CodeBox                = G2L["ba"],
-	IntelLabel             = G2L["bc"],
-	CodeActionsFrame       = G2L["b2"],
-	CodeClearButton        = G2L["b4"],
-	CodeCopyButton         = G2L["b5"],
-	RunButton              = G2L["b6"],
-	LeftSidebar            = G2L["e8"],
-	TopBar                 = G2L["ff"],
-	CloseButton            = G2L["101"],
-	MinimizeButton         = G2L["104"],
-	Highlight              = G2L["105"],
-	IntroFrame             = G2L["11c"],
-	IYAIToastContainer     = G2L["11f"],
-	ToastTemplate          = G2L["120"],
-	CurrentPage            = G2L["12c"],
-	ModalFrame             = G2L["106"],
-	ModalInner             = G2L["108"],
-	ModalCloseButton       = G2L["10a"],
-	SearchModelModal       = G2L["10b"],
-	ModalSearchBox         = G2L["10d"],
-	ModalSF                = G2L["111"],
-	ExampleModelBtn        = G2L["112"],
-	ModalSearchButton      = G2L["110"],
+	TestFrame              = G2L["90"],
+	ConnectionButton       = G2L["93"],
+	CredentialButton       = G2L["9a"],
+	ConnectionIconColor    = G2L["96"],
+	CredentialIconColor    = G2L["9d"],
+	UnsavedChanges         = G2L["b6"],
+	TextLabel              = G2L["b8"],
+	SaveButton             = G2L["ba"],
+	RevertButton           = G2L["bc"],
+	CodePage               = G2L["bf"],
+	CodeSF                 = G2L["c6"],
+	LineLabel              = G2L["cb"],
+	CodeBox                = G2L["c8"],
+	IntelLabel             = G2L["ca"],
+	CodeActionsFrame       = G2L["c0"],
+	CodeClearButton        = G2L["c2"],
+	CodeCopyButton         = G2L["c3"],
+	RunButton              = G2L["c4"],
+	LeftSidebar            = G2L["121"],
+	TopBar                 = G2L["13c"],
+	CloseButton            = G2L["13e"],
+	MinimizeButton         = G2L["141"],
+	Highlight              = G2L["142"],
+	IntroFrame             = G2L["165"],
+	IYAIToastContainer     = G2L["168"],
+	ToastTemplate          = G2L["169"],
+	CurrentPage            = G2L["175"],
+	ModalFrame             = G2L["143"],
+	ModalInner             = G2L["145"],
+	ModalCloseButton       = G2L["147"],
+	SearchModelModal       = G2L["148"],
+	ModalSearchBox         = G2L["14a"],
+	ModalSF                = G2L["14e"],
+	ExampleModelBtn        = G2L["14f"],
+	ModalSearchButton      = G2L["14d"],
 	ModalOpenButton        = G2L["8d"],
-	MaxStepFrame           = G2L["a0"],
+	MaxStepFrame           = G2L["a1"],
 	MaxStepBox             = G2L["a4"],
-	ToolsPage              = G2L["bf"],
-	ToolsSF                = G2L["c0"],
+	ToolsPage              = G2L["cd"],
+	ToolsSF                = G2L["ce"],
 	ToolsElementTemplate   = G2L["c3"],
-	ToolsGroupFrame        = G2L["c4"],
-	ToolsGroupInner        = G2L["c6"],
+	ToolsGroupFrame        = G2L["d2"],
+	ToolsGroupInner        = G2L["d4"],
 	ToolsGroupTitle        = G2L["c7"],
-	ToolsToolFrame         = G2L["cb"],
+	ToolsToolFrame         = G2L["d9"],
 	ToolsToolNameDesc      = G2L["ce"],
 	ToolsTotalElements     = G2L["d0"],
-	ToolResultViewModal    = G2L["115"],
-	ToolResultSF           = G2L["117"],
-	ToolResultTextBox      = G2L["118"],
-	ModalTitleLabel        = G2L["11a"],
-	StartupPageSF          = G2L["d5"],
-	StartupPageLayout      = G2L["d6"],
+	ToolResultViewModal    = G2L["152"],
+	ToolResultSF           = G2L["154"],
+	ToolResultTextBox      = G2L["155"],
+	ModalTitleLabel        = G2L["15a"],
+	StartupPageSF          = G2L["e3"],
+	StartupPageLayout      = G2L["e4"],
 	StartupElemTemplate    = G2L["d8"],
-	StartupGroupFrame      = G2L["d9"],
+	StartupGroupFrame      = G2L["e7"],
 	StartupGroupInner      = G2L["db"],
-	StartupGroupTitle      = G2L["dc"],
-	StartupToolFrame       = G2L["e0"],
-	StartupToolNameDesc    = G2L["e3"],
-	StartupTotalElems      = G2L["e5"],
+	StartupGroupTitle      = G2L["ea"],
+	StartupToolFrame       = G2L["ee"],
+	StartupToolNameDesc    = G2L["f1"],
+	StartupTotalElems      = G2L["f3"],
+	-- History page
+	HistoryPage            = G2L["f6"],
+	HistorySF              = G2L["f7"],
+	HistoryTemplate        = G2L["fb"],
+	HistoryToolFrame       = G2L["104"],
+	HistoryTotalElements   = G2L["11e"],
+	HistoryPageTip         = G2L["11f"],
+	HistoryButtonFrame     = G2L["138"],
+	-- New elements
+	OpenConversationHistoryButton = G2L["50"],
+	MaxStepResetButton     = G2L["a7"],
+	TemperatureBox         = G2L["ad"],
+	TemperatureResetButton = G2L["b0"],
+	SystemPromptFrame      = G2L["b2"],
+	SystemPromptButton     = G2L["b4"],
+	SystemPromptModal      = G2L["15c"],
+	SystemPromptSF         = G2L["15e"],
+	SystemPromptTextBox    = G2L["15f"],
+	SystemPromptResetButton = G2L["163"],
+	SystemPromptSaveButton  = G2L["164"],
 }
 -- ── Main logic ────────────────────────────────────────────────────────────────
 
-local VERSION           = G2L["12d"] and G2L["12d"].Value or ""
+local VERSION           = G2L["176"] and G2L["176"].Value or ""
 local Tween             = TweenInfo.new(0.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut)
 local COLOR_OK          = Color3.fromRGB(109, 217, 161)
 local COLOR_ERR         = Color3.fromRGB(171, 108, 108)
@@ -455,6 +475,10 @@ if SetApiKeyButton then
 	end)
 end
 
+UI.OpenConversationHistoryButton.MouseButton1Click:Connect(function()
+	UI.CurrentPage.Value = "History"
+end)
+
 -- ── Agent page ────────────────────────────────────────────────────────────────
 
 UI.ListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
@@ -467,6 +491,16 @@ local function scrollBottom()
 		UI.ScrollingFrameMainChat.CanvasSize     = UDim2.new(0, 0, 0, h)
 		UI.ScrollingFrameMainChat.CanvasPosition = Vector2.new(0, h)
 	end)
+end
+
+local currentSessionId = nil
+local currentRenders   = nil
+local isReplaying      = false
+
+local function recordRender(entry)
+	if currentRenders and not isReplaying then
+		table.insert(currentRenders, entry)
+	end
 end
 
 local function addElement(templateName, text, isLabel)
@@ -490,6 +524,7 @@ local function addChat(text)
 	clone.Visible     = true
 	clone.Parent      = UI.ScrollingFrameMainChat
 	scrollBottom()
+	recordRender({t = "user", text = text})
 end
 
 local function addTaskFrame(kind)
@@ -506,11 +541,18 @@ local function addStep()
 	addElement("StepN", "Step " .. StepCount, true)
 end
 
-local function addThinking(text) addElement("AssistantThinking", text, true) end
+local function addThinking(text)
+	addElement("AssistantThinking", text, true)
+	recordRender({t = "think", text = text})
+end
 
 local TYPEWRITER_SPEED = 3
 
 local function typewriteInto(element, text)
+	if isReplaying then
+		if element and element.Parent then element.Text = text end
+		return
+	end
 	local len = string.len(text)
 	local i = 0
 	while i < len do
@@ -597,6 +639,7 @@ local function addResponse(rawText, usage)
 			end
 		end
 	end
+	recordRender({t = "ai", text = rawText})
 end
 
 UI.TextBoxInput:GetPropertyChangedSignal("Text"):Connect(function()
@@ -1151,7 +1194,8 @@ local function applyProviderToUI(host)
 end
 
 applyProviderToUI(Config.host)
-UI.MaxStepBox.Text = tostring(Config.maxSteps)
+UI.MaxStepBox.Text     = tostring(Config.maxSteps)
+UI.TemperatureBox.Text = tostring(Config.temperature)
 selectedHost    = Config.host
 
 for _, b in pairs(UI.HostButtons) do
@@ -1238,6 +1282,21 @@ end)
 
 UI.MaxStepBox:GetPropertyChangedSignal("Text"):Connect(function()
 	if _loading then return end
+	UI.UnsavedChanges.Visible = true
+end)
+
+UI.TemperatureBox:GetPropertyChangedSignal("Text"):Connect(function()
+	if _loading then return end
+	UI.UnsavedChanges.Visible = true
+end)
+
+UI.MaxStepResetButton.MouseButton1Click:Connect(function()
+	UI.MaxStepBox.Text = "100"
+	UI.UnsavedChanges.Visible = true
+end)
+
+UI.TemperatureResetButton.MouseButton1Click:Connect(function()
+	UI.TemperatureBox.Text = "1"
 	UI.UnsavedChanges.Visible = true
 end)
 
@@ -1473,11 +1532,13 @@ local function saveSettings()
 	Config.model        = UI.ModelBox.Text
 	Config.host         = selectedHost
 	Config.maxSteps     = math.max(1, tonumber(UI.MaxStepBox.Text) or 100)
+	Config.temperature  = math.clamp(tonumber(UI.TemperatureBox.Text) or 1.0, 0, 2)
 	Config.providerData = {}
 	for h, data in pairs(providerCache) do
 		Config.providerData[h] = { apiKey = data.key, model = data.model }
 	end
-	UI.MaxStepBox.Text = tostring(Config.maxSteps)
+	UI.MaxStepBox.Text      = tostring(Config.maxSteps)
+	UI.TemperatureBox.Text  = tostring(Config.temperature)
 	Config.save()
 	UI.UnsavedChanges.Visible = false
 	Toast.show("Saved", "Settings saved successfully", "ok", 2)
@@ -1493,7 +1554,8 @@ local function revertSettings()
 	providerCache[Config.host] = { key = Config.apiKey, model = Config.model }
 	selectedHost = Config.host
 	applyProviderToUI(selectedHost)
-	UI.MaxStepBox.Text = tostring(Config.maxSteps)
+	UI.MaxStepBox.Text     = tostring(Config.maxSteps)
+	UI.TemperatureBox.Text = tostring(Config.temperature)
 	for _, b in pairs(UI.HostButtons) do
 		if b:IsA("TextButton") then
 			b.BackgroundTransparency = b.Text == selectedHost and 0.9 or 1
@@ -1631,6 +1693,7 @@ local function openModal()
 	if UI.ModalTitleLabel then UI.ModalTitleLabel.Text = "Select Model" end
 	UI.SearchModelModal.Visible    = true
 	UI.ToolResultViewModal.Visible = false
+	UI.SystemPromptModal.Visible   = false
 	UI.ModalFrame.Visible = true
 	if UI.ModalSearchBox then UI.ModalSearchBox.Text = "" end
 	modalClearButtons()
@@ -1641,6 +1704,7 @@ local function openToolResultModal(fullText)
 	if UI.ModalTitleLabel then UI.ModalTitleLabel.Text = "Tool Output" end
 	UI.SearchModelModal.Visible    = false
 	UI.ToolResultViewModal.Visible = true
+	UI.SystemPromptModal.Visible   = false
 	UI.ToolResultTextBox.Text      = fullText
 	UI.ToolResultSF.CanvasPosition = Vector2.new(0, 0)
 	UI.ModalFrame.Visible          = true
@@ -1649,11 +1713,36 @@ local function openToolResultModal(fullText)
 	end)
 end
 
+local function openSystemPromptModal()
+	if UI.ModalTitleLabel then UI.ModalTitleLabel.Text = "System Prompt" end
+	UI.SearchModelModal.Visible    = false
+	UI.ToolResultViewModal.Visible = false
+	UI.SystemPromptModal.Visible   = true
+	UI.SystemPromptTextBox.TextEditable   = true
+	UI.SystemPromptTextBox.Text           = Config.userSystemPrompt
+	UI.SystemPromptTextBox.PlaceholderText = Prompt.build(false)
+	UI.ModalFrame.Visible = true
+end
+
 UI.ModalOpenButton.MouseButton1Click:Connect(openModal)
 UI.ModalCloseButton.MouseButton1Click:Connect(function()
 	UI.ModalFrame.Visible          = false
 	UI.SearchModelModal.Visible    = true
 	UI.ToolResultViewModal.Visible = false
+	UI.SystemPromptModal.Visible   = false
+end)
+
+UI.SystemPromptButton.MouseButton1Click:Connect(openSystemPromptModal)
+
+UI.SystemPromptSaveButton.MouseButton1Click:Connect(function()
+	Config.userSystemPrompt = UI.SystemPromptTextBox.Text
+	Config.save()
+	UI.ModalFrame.Visible        = false
+	UI.SystemPromptModal.Visible = false
+end)
+
+UI.SystemPromptResetButton.MouseButton1Click:Connect(function()
+	UI.SystemPromptTextBox.Text = ""
 end)
 
 local _hfSearchTask = nil
@@ -1775,16 +1864,17 @@ local function isContextError(res)
 end
 
 local function buildMessages(history)
-	local msgs = {{ role = "system", content = Prompt.build(true) }}
+	local msgs = {{ role = "system", content = Prompt.build(true, Config.userSystemPrompt) }}
 	for _, m in ipairs(history or conversationHistory) do table.insert(msgs, m) end
 	return msgs
 end
 
 local function buildBody(history)
 	local body = {
-		model    = Config.model,
-		messages = buildMessages(history),
-		stream   = false,
+		model       = Config.model,
+		messages    = buildMessages(history),
+		stream      = false,
+		temperature = Config.temperature,
 	}
 	local defs = Tools.getDefinitions()
 	if #defs > 0 then
@@ -1808,6 +1898,39 @@ local function parseMessage(responseBody)
 	return msg, data.usage, nil
 end
 
+-- ── Session persistence ───────────────────────────────────────────────────────
+
+local sessions      = {}
+local nextSessionId = 1
+
+local HISTORY_FILE    = "IYAI_conversations.json"
+local toolNameToGroup = {}
+
+for _, entry in ipairs(Tools.getDefinitions()) do
+	local fn = entry.definition and entry.definition["function"]
+	if fn and fn.name and entry.group then
+		toolNameToGroup[fn.name] = entry.group
+	end
+end
+
+local function saveSessionsToFile()
+	if not writefile then return end
+	local ok, json = pcall(HS.JSONEncode, HS, { sessions = sessions, nextId = nextSessionId })
+	if ok then pcall(writefile, HISTORY_FILE, json) end
+end
+
+local function loadSessionsFromFile()
+	if not readfile then return end
+	local ok, content = pcall(readfile, HISTORY_FILE)
+	if not ok or not content or content == "" then return end
+	local ok2, data = pcall(HS.JSONDecode, HS, content)
+	if not ok2 or type(data) ~= "table" then return end
+	if type(data.sessions) == "table" then sessions = data.sessions end
+	if type(data.nextId) == "number" then nextSessionId = data.nextId end
+end
+
+loadSessionsFromFile()
+
 -- ── UI helpers ────────────────────────────────────────────────────────────────
 
 local agentAborted = false
@@ -1817,6 +1940,33 @@ local function setBusy(state)
 	UI.SendButton.Visible           = not state
 	UI.SendButton.ImageTransparency = UI.TextBoxInput.Text == "" and 0.7 or 0
 	UI.StopButton.Visible           = state == true
+
+	if not state and currentSessionId then
+		for _, s in ipairs(sessions) do
+			if s.id == currentSessionId then
+				s.messages       = { table.unpack(conversationHistory) }
+				s.lastMessageAt  = os.time()
+				local count = 0
+				for _, m in ipairs(conversationHistory) do
+					if m.role == "user" or m.role == "assistant" then count += 1 end
+				end
+				s.msgCount = count
+				local groupSet, groups = {}, {}
+				for _, m in ipairs(conversationHistory) do
+					if m.role == "tool" and m.name then
+						local g = toolNameToGroup[m.name]
+						if g and not groupSet[g] then
+							groupSet[g] = true
+							table.insert(groups, g)
+						end
+					end
+				end
+				s.tools = groups
+				break
+			end
+		end
+		saveSessionsToFile()
+	end
 end
 
 UI.StopButton.Visible = false
@@ -1908,9 +2058,77 @@ local function updateCodeStatus(frame, diffText, succeeded)
 	end
 end
 
--- ── Clear button ──────────────────────────────────────────────────────────────
+-- ── History page ──────────────────────────────────────────────────────────────
 
-UI.ClearButton.MouseButton1Click:Connect(function()
+local TOOL_COLORS = {
+	Script   = Color3.fromRGB(109, 217, 161),
+	Web      = Color3.fromRGB(86,  156, 214),
+	Explorer = Color3.fromRGB(255, 198, 102),
+	IY       = Color3.fromRGB(171, 108, 108),
+}
+
+local function saveCurrentSession()
+	if #conversationHistory == 0 then return end
+	local firstUser = ""
+	for _, m in ipairs(conversationHistory) do
+		if m.role == "user" then firstUser = m.content; break end
+	end
+	local title = firstUser ~= "" and (firstUser:sub(1, 45) .. (#firstUser > 45 and "..." or "")) or "Conversation"
+	local msgCount = 0
+	for _, m in ipairs(conversationHistory) do
+		if m.role ~= "system" then msgCount += 1 end
+	end
+	table.insert(sessions, 1, {
+		id        = nextSessionId,
+		title     = title,
+		timestamp = os.time(),
+		msgCount  = msgCount,
+		tools     = {},
+		messages  = { table.unpack(conversationHistory) },
+	})
+	nextSessionId += 1
+end
+
+local function replayRenders(renderList)
+	isReplaying = true
+	StepCount = 0
+	UI.TotalElements.Value = 0
+	for _, child in ipairs(UI.ScrollingFrameMainChat:GetChildren()) do
+		if child:IsA("GuiObject") and child ~= UI.ElementTemplate and child ~= GreetFrame then
+			child:Destroy()
+		end
+	end
+	if GreetFrame then GreetFrame.Visible = false end
+
+	for _, r in ipairs(renderList) do
+		if r.t == "user" then
+			local clone = UI.ElementTemplate:FindFirstChild("UserMessageFrame"):Clone()
+			clone.Frame.UserMessage.Text = r.text
+			UI.TotalElements.Value += 1
+			clone.LayoutOrder = UI.TotalElements.Value
+			clone.Visible = true
+			clone.Parent  = UI.ScrollingFrameMainChat
+		elseif r.t == "ai" then
+			addResponse(r.text, nil)
+		elseif r.t == "think" then
+			addThinking(r.text)
+		elseif r.t == "tool" then
+			local taskFrame = addTaskFrame(r.ok and "succeeded" or "failed")
+			local lbl = taskFrame:FindFirstChildWhichIsA("TextLabel", true)
+			if lbl then lbl.Text = r.name or "" end
+			updateTaskFrame(taskFrame, r.ok and "succeeded" or "failed", r.result or "", r.name or "")
+		elseif r.t == "stop" then
+			addElement("AbortText", "Stopped by user.", true)
+		end
+	end
+
+	isReplaying = false
+	scrollBottom()
+end
+
+local function clearChat()
+	currentSessionId = nil
+	currentRenders   = nil
 	conversationHistory = {}
 	StepCount           = 0
 	UI.TotalElements.Value = 0
@@ -1920,7 +2138,106 @@ UI.ClearButton.MouseButton1Click:Connect(function()
 	if GreetFrame then GreetFrame.Visible = true end
 	UI.ScrollingFrameMainChat.CanvasSize     = UDim2.new(0, 0, 0, 0)
 	UI.ScrollingFrameMainChat.CanvasPosition = Vector2.new(0, 0)
+end
+
+local function renderHistoryPage()
+	for _, child in ipairs(UI.HistorySF:GetChildren()) do
+		if child.Name == "GroupFrame" then child:Destroy() end
+	end
+
+	if #sessions == 0 then
+		UI.HistoryPageTip.Text = "No conversation history yet."
+		return
+	end
+	UI.HistoryPageTip.Text = "Conversation history"
+
+	for idx, session in ipairs(sessions) do
+		local card  = UI.HistoryTemplate:Clone()
+		local inner = card:FindFirstChild("Frame")
+		local left  = inner and inner:FindFirstChild("Left")
+		local right = inner and inner:FindFirstChild("Right")
+
+		if left then
+			local top      = left:FindFirstChild("TopRowFrame")
+			local titleLbl = top  and top:FindFirstChild("TitleLabel")
+			local activeTag = top and top:FindFirstChild("ActiveTagFrame")
+			local countLbl = left:FindFirstChild("MessageCountLabel")
+			local timeLbl  = left:FindFirstChild("TimestampLabel")
+			local toolsRow = left:FindFirstChild("ToolsRowFrame")
+
+			if titleLbl  then titleLbl.Text  = session.title end
+			if countLbl  then countLbl.Text  = session.msgCount .. " message" .. (session.msgCount == 1 and "" or "s") end
+			if timeLbl then
+				local created = os.date("%b %d %I:%M %p", session.timestamp)
+				local lastLine = ""
+				if session.lastMessageAt then
+					lastLine = "\nLast message at " .. os.date("%b %d %I:%M %p", session.lastMessageAt)
+				end
+				timeLbl.Text = "Created at " .. created .. lastLine
+			end
+			if activeTag then activeTag.Visible = (session.id == currentSessionId) end
+
+			if toolsRow then
+				for _, ch in ipairs(toolsRow:GetChildren()) do
+					if ch.Name == "ToolFrame" then ch:Destroy() end
+				end
+				for _, group in ipairs(session.tools) do
+					local badge    = UI.HistoryToolFrame:Clone()
+					local iconDot  = badge:FindFirstChild("IconColor")
+					local nameLbl  = badge:FindFirstChild("ToolName")
+					if iconDot then iconDot.BackgroundColor3 = TOOL_COLORS[group] or COLOR_OK end
+					if nameLbl then nameLbl.Text = group end
+					badge.Visible = true
+					badge.Parent  = toolsRow
+				end
+			end
+		end
+
+		if right then
+			local sid       = session.id
+			local loadBtn   = right:FindFirstChild("LoadButton")
+			local deleteBtn = right:FindFirstChild("DeleteButton")
+
+			if loadBtn then
+				loadBtn.MouseButton1Click:Connect(function()
+					conversationHistory = { table.unpack(session.messages) }
+					currentSessionId    = session.id
+					currentRenders      = session.renders
+					UI.CurrentPage.Value = "Agent"
+					task.defer(function() replayRenders(session.renders) end)
+				end)
+			end
+			if deleteBtn then
+				deleteBtn.MouseButton1Click:Connect(function()
+					local wasActive = (sid == currentSessionId)
+					for i, s in ipairs(sessions) do
+						if s.id == sid then table.remove(sessions, i); break end
+					end
+					if wasActive then clearChat() end
+					saveSessionsToFile()
+					renderHistoryPage()
+				end)
+			end
+		end
+
+		card.LayoutOrder = idx
+		card.Visible     = true
+		card.Parent      = UI.HistorySF
+	end
+
+	task.defer(function()
+		local lay = UI.HistorySF:FindFirstChildWhichIsA("UIListLayout")
+		if lay then UI.HistorySF.CanvasSize = UDim2.new(0, 0, 0, lay.AbsoluteContentSize.Y + 10) end
+	end)
+end
+
+UI.CurrentPage.Changed:Connect(function(page)
+	if page == "History" then renderHistoryPage() end
 end)
+
+-- ── Clear button ──────────────────────────────────────────────────────────────
+
+UI.ClearButton.MouseButton1Click:Connect(clearChat)
 
 -- ── Code agent ────────────────────────────────────────────────────────────────
 
@@ -2089,6 +2406,7 @@ local function runAgentLoop(userText)
 		if agentAborted then
 			if generatingFrame then generatingFrame:Destroy(); generatingFrame = nil end
 			addElement("AbortText", "Stopped by user.", true)
+			recordRender({t = "stop"})
 			break
 		end
 		stepsDone += 1
@@ -2150,6 +2468,7 @@ local function runAgentLoop(userText)
 						tokenLabel.Visible = true
 					end
 				end
+				recordRender({t = "ai", text = Prompt.stripMarkdown(rawContent)})
 			else
 				if generatingFrame then generatingFrame:Destroy(); generatingFrame = nil end
 				addResponse(rawContent, usage)
@@ -2209,6 +2528,7 @@ local function runAgentLoop(userText)
 								tokenLabel.Visible = true
 							end
 						end
+						recordRender({t = "ai", text = Prompt.stripMarkdown(message)})
 						generatingFrame = nil
 					else
 						addResponse(message, usage)
@@ -2228,6 +2548,7 @@ local function runAgentLoop(userText)
 				or result:find("^Error") or result:find("^Compile error")
 				or result:find("^Runtime error")
 			updateTaskFrame(taskFrame, failed and "failed" or "succeeded", result, fnName)
+			recordRender({t = "tool", name = fnName, result = result, ok = not failed})
 			if not failed and CODE_WRITE_TOOLS[fnName] then
 				addPostAction("View Code →", function() UI.CurrentPage.Value = "Code" end)
 			end
@@ -2256,6 +2577,26 @@ local function onSend()
 	local text = UI.TextBoxInput.Text
 	if text == "" or UI.isAssistantBusy.Value then return end
 	UI.TextBoxInput.Text = ""
+
+	if #conversationHistory == 0 and currentSessionId == nil then
+		local title = text:sub(1, 45) .. (#text > 45 and "..." or "")
+		local sid = nextSessionId
+		nextSessionId += 1
+		local renders = {}
+		local newSession = {
+			id        = sid,
+			title     = title,
+			timestamp = os.time(),
+			msgCount  = 0,
+			tools     = {},
+			messages  = {},
+			renders   = renders,
+		}
+		table.insert(sessions, 1, newSession)
+		currentSessionId = sid
+		currentRenders   = renders
+	end
+
 	addChat(text)
 	task.spawn(function()
 		local ok, err
