@@ -65,7 +65,7 @@ return function(Tools)
 		end
 	})
 
-	-- decompile: decompile script using lua.expert API
+	-- decompile_luaexpert: decompile script using lua.expert API
 	Tools.register({
 		group = "Script",
 		definition = {
