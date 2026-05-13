@@ -1,14 +1,10 @@
 # IYAI
--# Made by urluri
 
 An AI assistant plugin for Infinite Yield. Talk to it in plain English and it'll inspect instances, read properties, run code, and modify the game world using live data from your session.
 
 ## Commands
 `;ai` (alias: `;iyai`)
 Opens or closes the IYAI window.
-
-## Features
-The plugin has three pages accessible from the left sidebar:
 
 ### Agent
 Chat with the AI. It has access to tools it can call on its own:
