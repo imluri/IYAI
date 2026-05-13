@@ -5,10 +5,12 @@
 local RunService = game:GetService("RunService")
 local RS         = game:GetService("ReplicatedStorage")
 
+local requestImpl = request or (http and http.request) or http_request or (fluxus and fluxus.request)
+
 local ENV = (function()
-	if syn and syn.request   then return "syn"      end
-	if request               then return "executor"  end
-	if RunService:IsStudio() then return "studio"    end
+	if syn and syn.request      then return "syn"      end
+	if requestImpl              then return "executor"  end
+	if RunService:IsStudio()    then return "studio"    end
 	return "unknown"
 end)()
 
@@ -27,7 +29,10 @@ function Http.request(url, method, headers, body)
 		local ok, res = pcall(syn.request, options)
 		return ok and res or nil
 	elseif ENV == "executor" then
-		local ok, res = pcall(request, options)
+		if not requestImpl then
+			return nil
+		end
+		local ok, res = pcall(requestImpl, options)
 		return ok and res or nil
 	end
 
