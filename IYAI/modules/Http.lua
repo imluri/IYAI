@@ -18,12 +18,16 @@ local Http = {}
 Http.ENV = ENV
 
 function Http.request(url, method, headers, body)
+	local httpMethod = (method or "GET"):upper()
 	local options = {
 		Url     = url,
-		Method  = method  or "GET",
+		Method  = httpMethod,
 		Headers = headers or {},
-		Body    = body    or "",
 	}
+
+	if body and body ~= "" and httpMethod ~= "GET" and httpMethod ~= "HEAD" then
+		options.Body = body
+	end
 
 	if ENV == "syn" then
 		local ok, res = pcall(syn.request, options)
