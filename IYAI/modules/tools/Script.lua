@@ -1,9 +1,12 @@
 -- tools/Script.lua  |  Script-related tools
 -- Returns function(Tools) — call it to register source and run.
 
-return function(Tools)
+return function(Tools, Http)
 
-	local Http = require(gethui():WaitForChild("IYAI"):WaitForChild("Http"))
+	if not Http then
+        warn("IYAI Script Tool Error: Http not provided")
+        return
+    end
 
 	-- Base64 Encoder Implementation
 	local b64chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
