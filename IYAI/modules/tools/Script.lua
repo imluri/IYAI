@@ -3,7 +3,7 @@
 
 return function(Tools)
 
-	local Http = require(game.ReplicatedStorage.IYAI.modules.Http)
+	local Http = require(script.Parent.Parent:WaitForChild("Http"))
 
 	-- Base64 Encoder Implementation
 	local b64chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
