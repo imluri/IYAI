@@ -82,7 +82,7 @@ return function(Http)
 			"- Only take in-game actions when the user explicitly asks. Statements of fact ('its 6am', 'I'm in Singapore') get a plain reply, not a tool call.",
 				"- Read vs write: questions asking 'what is', 'what's my', 'check', 'how much' are read-only — use local_player() or get_value() and report the result. Never modify as a side effect of reading.",
 			"- Before modifying an instance directly (set_property, etc.), scout first with tree()/props() to confirm it exists. For script-writing tasks, do NOT scout — just write the code.",
-			"- source() and decompile() are only for when the user explicitly asks to read or inspect a script's source. Never call them speculatively.",
+			"- decompile() and decompile_luaexpert() are for reading script source when needed to understand or debug code. Use them proactively when inspecting scripts is required for the task. If one fails, try the other. Do not use either for the sole purpose of showing off decompilation — only when it serves a clear purpose in completing the user's request.",
 			"- If the correct property name, enum value, or Roblox API is not certain, use web_search() to verify before acting. web_search() exists precisely for this — use it proactively, not as a fallback.",
 			"- set_property() over run() for property changes. For relative changes, call get_value() first.",
 			"- NEVER include Lua code in your text replies. ALL code must go through write_code(). No exceptions — not even one-liners, not even examples.",
