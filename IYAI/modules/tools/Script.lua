@@ -3,7 +3,26 @@
 
 return function(Tools)
 
-	local Http = require(script.Parent.Parent:WaitForChild("Http"))
+	local Http
+	local success, result = pcall(function()
+		if script and script.Parent and script.Parent.Parent then
+			return require(script.Parent.Parent:WaitForChild("Http"))
+		end
+		-- Fallback: Search for the IYAI root folder if script is nil
+		local root = game:GetService("CoreGui"):FindFirstChild("IYAI") or 
+		             game:GetService("RobloxReplicatedStorage"):FindFirstChild("IYAI")
+		if root then
+			return require(root:WaitForChild("Http"))
+		end
+		error("Could not find IYAI Root folder.")
+	end)
+
+	if success then
+		Http = result
+	else
+		warn("IYAI Script Tool Error: " .. tostring(result))
+		return -- Exit if Http cannot be loaded
+	end
 
 	-- Base64 Encoder Implementation
 	local b64chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
