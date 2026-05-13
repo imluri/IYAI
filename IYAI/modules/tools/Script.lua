@@ -71,7 +71,7 @@ return function(Tools)
 		definition = {
 			type = "function",
 			["function"] = {
-				name        = "decompile",
+				name        = "decompile_luaexpert",
 				description = "Decompile a Script, LocalScript, or ModuleScript using the lua.expert API.",
 				parameters  = {
 					type       = "object",
