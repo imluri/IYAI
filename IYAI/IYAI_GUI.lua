@@ -45,12 +45,12 @@ local nl = string.char(10)
 local function markdownToRichText(text, baseSize)
 	baseSize = baseSize or 14
 
-	-- Strip any Roblox rich-text tags the model may have written literally,
-	-- then escape remaining stray < > so they don't break Roblox's parser.
+	-- Strip any literal rich-text tags, then escape remaining characters safely
 	text = text:gsub("</?[A-Za-z][^>]*>", "")
 	text = text:gsub("&", "&amp;"):gsub("<", "&lt;"):gsub(">", "&gt;")
 
 	local function inline(s)
+		if not s or s == "" then return "" end
 		s = s:gsub("`([^`]+)`",       '<font color="rgb(255,100,100)" face="GothamMono">%1</font>')
 		s = s:gsub("%*%*%*(.-)%*%*%*", '<font face="GothamBold"><i>%1</i></font>')
 		s = s:gsub("%*%*(.-)%*%*",     '<font face="GothamBold">%1</font>')
@@ -84,19 +84,25 @@ local function markdownToRichText(text, baseSize)
 			-- skip table rows
 		elseif line:match("^%-%-%-+%s*$") or line:match("^%*%*%*+%s*$") or line:match("^___+%s*$") then
 			out[#out+1] = "────────────────────"
-		elseif line:match("^###%s") then
-			out[#out+1] = '<font size="'..hs[3]..'" face="GothamBold">'..inline(line:match("^###%s+(.+)$") or "")..'</font>'
-		elseif line:match("^##%s") then
-			out[#out+1] = '<font size="'..hs[2]..'" face="GothamBold">'..inline(line:match("^##%s+(.+)$") or "")..'</font>'
-		elseif line:match("^#%s") then
-			out[#out+1] = '<font size="'..hs[1]..'" face="GothamBold">'..inline(line:match("^#%s+(.+)$") or "")..'</font>'
+		elseif line:match("^###") then
+			local content = line:gsub("^###%s*", "")
+			out[#out+1] = '<font size="'..hs[3]..'" face="GothamBold">'..inline(content).'</font>'
+		elseif line:match("^##") then
+			local content = line:gsub("^##%s*", "")
+			out[#out+1] = '<font size="'..hs[2]..'" face="GothamBold">'..inline(content).'</font>'
+		elseif line:match("^#") then
+			local content = line:gsub("^#%s*", "")
+			out[#out+1] = '<font size="'..hs[1]..'" face="GothamBold">'..inline(content).'</font>'
 		elseif line:match("^>") then
-			out[#out+1] = '<font color="rgb(150,200,150)">▍ '..inline(line:match("^>%s?(.*)$") or "")..'</font>'
-		elseif line:match("^%s*[-*+]%s") then
-			out[#out+1] = '<font face="GothamBold">  •</font>  '..inline(line:match("^%s*[-*+]%s+(.+)$") or "")
-		elseif line:match("^%s*%d+%.%s") then
-			local n, content = line:match("^%s*(%d+)%.%s+(.+)$")
-			out[#out+1] = "  "..(n or "1")..". "..inline(content or "")
+			local content = line:gsub("^>%s*", "")
+			out[#out+1] = '<font color="rgb(150,200,150)">▍ '..inline(content)..'</font>'
+		elseif line:match("^%s*[-*+]") then
+			local content = line:gsub("^%s*[-*+]%s*", "")
+			out[#out+1] = '<font face="GothamBold">  •</font>  '..inline(content)
+		elseif line:match("^%s*%d+%.") then
+			local n = line:match("^%s*(%d+)%.") or "1"
+			local content = line:gsub("^%s*%d+%.%s*", "")
+			out[#out+1] = "  "..n..". "..inline(content)
 		else
 			out[#out+1] = inline(line)
 		end
@@ -2870,14 +2876,15 @@ local function startBridgePoll()
 	pollLoopAlive = true
 	task.spawn(function()
 		while bridgeActive do
-			task.wait(0.25)
-			if not bridgeActive then break end
-			if UI.isAssistantBusy.Value then continue end
+			-- long-poll: bridge holds this request until a message arrives (up to 15s)
 			local ok, res = pcall(http_request, {
 				Url    = BRIDGE_URL .. "/roblox/poll",
 				Method = "GET",
 			})
-			if ok and res and res.StatusCode == 200 and res.Body and res.Body ~= "null" then
+			if not bridgeActive then break end
+			if not ok then
+				task.wait(1)  -- back off on network error
+			elseif res and res.StatusCode == 200 and res.Body and res.Body ~= "null" then
 				local ok2, msg = pcall(HS.JSONDecode, HS, res.Body)
 				if ok2 and msg then
 					if msg.type == "chat" and type(msg.text) == "string" and msg.text ~= "" then
@@ -2900,6 +2907,7 @@ local function startBridgePoll()
 					end
 				end
 			end
+			-- null response = timeout, loop immediately for next long-poll
 		end
 		pollLoopAlive = false
 	end)
