@@ -45,6 +45,9 @@ local nl = string.char(10)
 local function markdownToRichText(text, baseSize)
 	baseSize = baseSize or 14
 
+	-- Strip any Roblox rich-text tags the model may have written literally,
+	-- then escape remaining stray < > so they don't break Roblox's parser.
+	text = text:gsub("</?[A-Za-z][^>]*>", "")
 	text = text:gsub("&", "&amp;"):gsub("<", "&lt;"):gsub(">", "&gt;")
 
 	local function inline(s)
@@ -2862,7 +2865,7 @@ local function startBridgePoll()
 	if not http_request then return end
 	task.spawn(function()
 		while true do
-			task.wait(1)
+			task.wait(0.25)
 			if UI.isAssistantBusy.Value then continue end
 			local ok, res = pcall(http_request, {
 				Url    = BRIDGE_URL .. "/roblox/poll",
