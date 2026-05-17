@@ -86,13 +86,13 @@ local function markdownToRichText(text, baseSize)
 			out[#out+1] = "────────────────────"
 		elseif line:match("^###") then
 			local content = line:gsub("^###%s*", "")
-			out[#out+1] = '<font size="'..hs[3]..'" face="GothamBold">'..inline(content).'</font>'
+			out[#out+1] = '<font size="'..hs[3]..'" face="GothamBold">'..inline(content)..'</font>'
 		elseif line:match("^##") then
 			local content = line:gsub("^##%s*", "")
-			out[#out+1] = '<font size="'..hs[2]..'" face="GothamBold">'..inline(content).'</font>'
+			out[#out+1] = '<font size="'..hs[2]..'" face="GothamBold">'..inline(content)..'</font>'
 		elseif line:match("^#") then
 			local content = line:gsub("^#%s*", "")
-			out[#out+1] = '<font size="'..hs[1]..'" face="GothamBold">'..inline(content).'</font>'
+			out[#out+1] = '<font size="'..hs[1]..'" face="GothamBold">'..inline(content)..'</font>'
 		elseif line:match("^>") then
 			local content = line:gsub("^>%s*", "")
 			out[#out+1] = '<font color="rgb(150,200,150)">▍ '..inline(content)..'</font>'
