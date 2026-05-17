@@ -41,6 +41,66 @@ loadMod("modules/tools/Script.lua")(Tools, Http)
 loadMod("modules/tools/IY.lua")(Tools)
 loadMod("modules/tools/Web.lua")(Tools, Http)
 local Prompt = loadMod("modules/Prompt.lua")(Http)
+local nl = string.char(10)
+local function markdownToRichText(text, baseSize)
+	baseSize = baseSize or 14
+
+	text = text:gsub("&", "&amp;"):gsub("<", "&lt;"):gsub(">", "&gt;")
+
+	local function inline(s)
+		s = s:gsub("`([^`]+)`",       '<font color="rgb(255,100,100)" face="GothamMono">%1</font>')
+		s = s:gsub("%*%*%*(.-)%*%*%*", '<font face="GothamBold"><i>%1</i></font>')
+		s = s:gsub("%*%*(.-)%*%*",     '<font face="GothamBold">%1</font>')
+		s = s:gsub("%*(.-)%*",         "<i>%1</i>")
+		s = s:gsub("~~(.-)~~",         "<s>%1</s>")
+		s = s:gsub("__(.-)__",         "<u>%1</u>")
+		s = s:gsub("!%[.-%]%(.-%)",    "")
+		s = s:gsub("%[(.-)%]%(.-%)",   "%1")
+		return s
+	end
+
+	local hs = {
+		tostring(math.floor(baseSize * 1.5)),
+		tostring(math.floor(baseSize * 1.3)),
+		tostring(math.floor(baseSize * 1.15)),
+	}
+
+	local out, inCode, codeBuf = {}, false, {}
+
+	for line in (text .. "\n"):gmatch("([^\n]*)\n") do
+		if line:match("^```") then
+			if not inCode then
+				inCode, codeBuf = true, {}
+			else
+				out[#out+1] = '<font color="rgb(180,180,180)" face="GothamMono">' .. table.concat(codeBuf, "\n") .. '</font>'
+				inCode = false
+			end
+		elseif inCode then
+			codeBuf[#codeBuf+1] = line
+		elseif line:match("^%s*|") then
+			-- skip table rows
+		elseif line:match("^%-%-%-+%s*$") or line:match("^%*%*%*+%s*$") or line:match("^___+%s*$") then
+			out[#out+1] = "────────────────────"
+		elseif line:match("^###%s") then
+			out[#out+1] = '<font size="'..hs[3]..'" face="GothamBold">'..inline(line:match("^###%s+(.+)$") or "")..'</font>'
+		elseif line:match("^##%s") then
+			out[#out+1] = '<font size="'..hs[2]..'" face="GothamBold">'..inline(line:match("^##%s+(.+)$") or "")..'</font>'
+		elseif line:match("^#%s") then
+			out[#out+1] = '<font size="'..hs[1]..'" face="GothamBold">'..inline(line:match("^#%s+(.+)$") or "")..'</font>'
+		elseif line:match("^>") then
+			out[#out+1] = '<font color="rgb(150,200,150)">▍ '..inline(line:match("^>%s?(.*)$") or "")..'</font>'
+		elseif line:match("^%s*[-*+]%s") then
+			out[#out+1] = '<font face="GothamBold">  •</font>  '..inline(line:match("^%s*[-*+]%s+(.+)$") or "")
+		elseif line:match("^%s*%d+%.%s") then
+			local n, content = line:match("^%s*(%d+)%.%s+(.+)$")
+			out[#out+1] = "  "..(n or "1")..". "..inline(content or "")
+		else
+			out[#out+1] = inline(line)
+		end
+	end
+
+	return table.concat(out, "\n")
+end
 
 local TS  = game:GetService("TweenService")
 local UIS = game:GetService("UserInputService")
@@ -83,110 +143,128 @@ local UI = {
 	ElementTemplate        = G2L["16"],
 	TotalElements          = G2L["49"],
 	isAssistantBusy        = G2L["4a"],
-	InputFrame             = G2L["51"],
-	TextBoxInput           = G2L["52"],
-	SendButton             = G2L["56"],
-	StopButton             = G2L["58"],
-	ActionsFrame           = G2L["5a"],
-	ClearButton            = G2L["5c"],
-	SettingsPage           = G2L["5d"],
-	Settings_SF            = G2L["5e"],
-	APIKeyFrame            = G2L["5f"],
-	APIKeyLabel            = G2L["61"],
-	APIKeyBox              = G2L["62"],
-	HostSelectFrame        = G2L["66"],
-	HostTitle              = G2L["67"],
-	HostFrame              = G2L["68"],
-	HostButtons            = G2L["68"]:GetChildren(),
-	ModelSelectFrame       = G2L["87"],
-	ModelFrame             = G2L["89"],
-	ModelBox               = G2L["8a"],
-	DropdownButton         = G2L["8d"],
+	InputFrame             = G2L["52"],
+	TextBoxInput           = G2L["53"],
+	SendButton             = G2L["57"],
+	StopButton             = G2L["59"],
+	ActionsFrame           = G2L["5b"],
+	ClearButton            = G2L["5d"],
+	SettingsPage           = G2L["5e"],
+	Settings_SF            = G2L["5f"],
+	APIKeyFrame            = G2L["60"],
+	APIKeyLabel            = G2L["62"],
+	APIKeyBox              = G2L["63"],
+	HostSelectFrame        = G2L["67"],
+	HostTitle              = G2L["68"],
+	HostFrame              = G2L["69"],
+	HostButtons            = G2L["69"]:GetChildren(),
+	ModelSelectFrame       = G2L["88"],
+	ModelFrame             = G2L["8a"],
+	ModelBox               = G2L["8b"],
+	DropdownButton         = G2L["8e"],
 	DropdownList           = Instance.new("Frame"),
-	TestFrame              = G2L["90"],
-	ConnectionButton       = G2L["93"],
-	CredentialButton       = G2L["9a"],
-	ConnectionIconColor    = G2L["96"],
-	CredentialIconColor    = G2L["9d"],
-	UnsavedChanges         = G2L["b6"],
-	TextLabel              = G2L["b8"],
-	SaveButton             = G2L["ba"],
-	RevertButton           = G2L["bc"],
-	CodePage               = G2L["bf"],
-	CodeSF                 = G2L["c6"],
-	LineLabel              = G2L["cb"],
-	CodeBox                = G2L["c8"],
-	IntelLabel             = G2L["ca"],
-	CodeActionsFrame       = G2L["c0"],
-	CodeClearButton        = G2L["c2"],
-	CodeCopyButton         = G2L["c3"],
-	RunButton              = G2L["c4"],
-	LeftSidebar            = G2L["121"],
-	TopBar                 = G2L["13c"],
-	CloseButton            = G2L["13e"],
-	MinimizeButton         = G2L["141"],
-	Highlight              = G2L["142"],
-	IntroFrame             = G2L["165"],
-	IYAIToastContainer     = G2L["168"],
-	ToastTemplate          = G2L["169"],
-	CurrentPage            = G2L["175"],
-	ModalFrame             = G2L["143"],
-	ModalInner             = G2L["145"],
-	ModalCloseButton       = G2L["147"],
-	SearchModelModal       = G2L["148"],
-	ModalSearchBox         = G2L["14a"],
-	ModalSF                = G2L["14e"],
-	ExampleModelBtn        = G2L["14f"],
-	ModalSearchButton      = G2L["14d"],
-	ModalOpenButton        = G2L["8d"],
-	MaxStepFrame           = G2L["a1"],
-	MaxStepBox             = G2L["a4"],
-	ToolsPage              = G2L["cd"],
-	ToolsSF                = G2L["ce"],
+	TestFrame              = G2L["91"],
+	ConnectionButton       = G2L["94"],
+	CredentialButton       = G2L["9b"],
+	ConnectionIconColor    = G2L["97"],
+	CredentialIconColor    = G2L["9e"],
+	UnsavedChanges         = G2L["b7"],
+	TextLabel              = G2L["b9"],
+	SaveButton             = G2L["bb"],
+	RevertButton           = G2L["bd"],
+	CodePage               = G2L["c0"],
+	CodeSF                 = G2L["c7"],
+	LineLabel              = G2L["cc"],
+	CodeBox                = G2L["c9"],
+	IntelLabel             = G2L["cb"],
+	CodeActionsFrame       = G2L["c1"],
+	CodeClearButton        = G2L["c3"],
+	CodeCopyButton         = G2L["c4"],
+	RunButton              = G2L["c5"],
+	LeftSidebar            = G2L["154"],
+	TopBar                 = G2L["178"],
+	CloseButton            = G2L["17a"],
+	MinimizeButton         = G2L["17d"],
+	Highlight              = G2L["17e"],
+	IntroFrame             = G2L["1a3"],
+	IYAIToastContainer     = G2L["1a6"],
+	ToastTemplate          = G2L["1a7"],
+	CurrentPage            = G2L["1b3"],
+	ModalFrame             = G2L["17f"],
+	ModalInner             = G2L["181"],
+	ModalCloseButton       = G2L["183"],
+	SearchModelModal       = G2L["184"],
+	ModalSearchBox         = G2L["186"],
+	ModalSF                = G2L["18a"],
+	ExampleModelBtn        = G2L["18b"],
+	ModalSearchButton      = G2L["189"],
+	ModalOpenButton        = G2L["8e"],
+	MaxStepFrame           = G2L["a2"],
+	MaxStepBox             = G2L["a5"],
+	ToolsPage              = G2L["ce"],
+	ToolsSF                = G2L["cf"],
 	ToolsElementTemplate   = G2L["c3"],
-	ToolsGroupFrame        = G2L["d2"],
-	ToolsGroupInner        = G2L["d4"],
+	ToolsGroupFrame        = G2L["d3"],
+	ToolsGroupInner        = G2L["d5"],
 	ToolsGroupTitle        = G2L["c7"],
-	ToolsToolFrame         = G2L["d9"],
+	ToolsToolFrame         = G2L["da"],
 	ToolsToolNameDesc      = G2L["ce"],
 	ToolsTotalElements     = G2L["d0"],
-	ToolResultViewModal    = G2L["152"],
-	ToolResultSF           = G2L["154"],
-	ToolResultTextBox      = G2L["155"],
-	ModalTitleLabel        = G2L["15a"],
-	StartupPageSF          = G2L["e3"],
-	StartupPageLayout      = G2L["e4"],
-	StartupElemTemplate    = G2L["d8"],
-	StartupGroupFrame      = G2L["e7"],
-	StartupGroupInner      = G2L["db"],
-	StartupGroupTitle      = G2L["ea"],
-	StartupToolFrame       = G2L["ee"],
-	StartupToolNameDesc    = G2L["f1"],
-	StartupTotalElems      = G2L["f3"],
+	ToolResultViewModal    = G2L["18e"],
+	ToolResultSF           = G2L["190"],
+	ToolResultTextBox      = G2L["191"],
+	ModalTitleLabel        = G2L["193"],
+	StartupPageSF          = G2L["e4"],
+	StartupPageLayout      = G2L["e5"],
+	StartupElemTemplate    = G2L["e7"],
+	StartupGroupFrame      = G2L["e8"],
+	StartupGroupInner      = G2L["ea"],
+	StartupGroupTitle      = G2L["eb"],
+	StartupToolFrame       = G2L["ef"],
+	StartupToolNameDesc    = G2L["f2"],
+	StartupTotalElems      = G2L["f4"],
 	-- History page
-	HistoryPage            = G2L["f6"],
-	HistorySF              = G2L["f7"],
-	HistoryTemplate        = G2L["fb"],
-	HistoryToolFrame       = G2L["104"],
-	HistoryTotalElements   = G2L["11e"],
-	HistoryPageTip         = G2L["11f"],
-	HistoryButtonFrame     = G2L["138"],
+	HistoryPage            = G2L["f7"],
+	HistorySF              = G2L["f8"],
+	HistoryTemplate        = G2L["fc"],
+	HistoryToolFrame       = G2L["105"],
+	HistoryTotalElements   = G2L["11f"],
+	HistoryPageTip         = G2L["120"],
+	HistoryButtonFrame     = G2L["16b"],
 	-- New elements
 	OpenConversationHistoryButton = G2L["50"],
-	MaxStepResetButton     = G2L["a7"],
-	TemperatureBox         = G2L["ad"],
-	TemperatureResetButton = G2L["b0"],
-	SystemPromptFrame      = G2L["b2"],
-	SystemPromptButton     = G2L["b4"],
-	SystemPromptModal      = G2L["15c"],
-	SystemPromptSF         = G2L["15e"],
-	SystemPromptTextBox    = G2L["15f"],
-	SystemPromptResetButton = G2L["163"],
-	SystemPromptSaveButton  = G2L["164"],
+	MaxStepResetButton     = G2L["a8"],
+	TemperatureBox         = G2L["ae"],
+	TemperatureResetButton = G2L["b1"],
+	SystemPromptFrame      = G2L["b3"],
+	SystemPromptButton     = G2L["b5"],
+	SystemPromptModal      = G2L["195"],
+	SystemPromptSF         = G2L["197"],
+	SystemPromptTextBox    = G2L["198"],
+	SystemPromptResetButton = G2L["19c"],
+	SystemPromptSaveButton  = G2L["19d"],
+	-- Browser page
+	BrowserPage            = G2L["122"],
+	BrowserDotYou          = G2L["128"],
+	BrowserDotBridge       = G2L["12f"],
+	BrowserDotWeb          = G2L["135"],
+	BrowserIconBridge      = G2L["12d"],
+	BrowserLabelBridge     = G2L["12e"],
+	BrowserIconWeb         = G2L["133"],
+	BrowserLabelWeb        = G2L["134"],
+	BrowserGrad1           = G2L["13d"],
+	BrowserGrad2           = G2L["141"],
+	BrowserInstructions    = G2L["142"],
+	BrowserLogsModal       = G2L["19e"],
+	BrowserLogsTextBox     = G2L["1a1"],
+	ConnectToBrowserButton = G2L["51"],
+	ForceRefreshButton     = G2L["152"],
+	OpenBrowserLogsButton  = G2L["150"],
+	BrowserButtonHitbox    = G2L["172"],
 }
 -- ── Main logic ────────────────────────────────────────────────────────────────
 
-local VERSION           = G2L["176"] and G2L["176"].Value or ""
+local VERSION           = G2L["1b4"] and G2L["1b4"].Value or ""
 local Tween             = TweenInfo.new(0.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut)
 local COLOR_OK          = Color3.fromRGB(109, 217, 161)
 local COLOR_ERR         = Color3.fromRGB(171, 108, 108)
@@ -227,7 +305,7 @@ local function addStartupEvent(status, title, desc)
 	if ic then ic.BackgroundColor3 = colors[status] or colors.ok end
 	if nd then
 		nd.RichText = true
-		nd.Text = '<font weight="bold">'..title..'</font>  <font size="12" transparency="0.4">'..desc..'</font>'
+		nd.Text = '<font face="GothamBold">'..title..'</font>  <font size="12" transparency="0.4">'..desc..'</font>'
 	end
 	tf.Visible = true
 	tf.Parent  = _startupInner
@@ -549,6 +627,7 @@ end
 local TYPEWRITER_SPEED = 3
 
 local function typewriteInto(element, text)
+	if element then element.RichText = true end
 	if isReplaying then
 		if element and element.Parent then element.Text = text end
 		return
@@ -558,7 +637,9 @@ local function typewriteInto(element, text)
 	while i < len do
 		if not element or not element.Parent then break end
 		i = math.min(i + TYPEWRITER_SPEED, len)
-		element.Text = string.sub(text, 1, i)
+		local partial = string.sub(text, 1, i)
+		partial = partial:gsub("<[^>]*$", "")
+		element.Text = partial
 		scrollBottom()
 		task.wait()
 	end
@@ -592,19 +673,31 @@ local function addResponse(rawText, usage)
 	local segments = splitCodeBlocks(rawText)
 	local lastElem
 
+	local function findContentLabel(elem)
+		if elem:IsA("TextLabel") and elem.Name ~= "TokenCount" then return elem end
+		for _, d in ipairs(elem:GetDescendants()) do
+			if d:IsA("TextLabel") and d.Name ~= "TokenCount" then return d end
+		end
+	end
+
 	if #segments == 1 and segments[1].type == "text" then
 		local elem = addElement("AssistantResponse", "", false)
-		local textLabel = elem:IsA("TextLabel") and elem or elem:FindFirstChildWhichIsA("TextLabel", true)
-		if textLabel then typewriteInto(textLabel, Prompt.stripMarkdown(segments[1].content) .. (usage and "\n" or "")) end
+		local textLabel = findContentLabel(elem)
+		if textLabel then
+			typewriteInto(textLabel, markdownToRichText(segments[1].content) .. (usage and "\n" or ""))
+		end
 		lastElem = elem
 	else
 		for _, seg in ipairs(segments) do
 			if seg.type == "text" then
-				local stripped = Prompt.stripMarkdown(seg.content):match("^%s*(.-)%s*$")
+				local stripped = markdownToRichText(seg.content):match("^%s*(.-)%s*$")
 				if stripped ~= "" then
 					local elem = addElement("AssistantResponse", "", false)
-					local textLabel = elem:IsA("TextLabel") and elem or elem:FindFirstChildWhichIsA("TextLabel", true)
-					if textLabel then textLabel.Text = stripped end
+					local textLabel = findContentLabel(elem)
+					if textLabel then
+						textLabel.RichText = true
+						textLabel.Text = stripped
+					end
 					lastElem = elem
 				end
 			else
@@ -994,13 +1087,16 @@ Tools.register({
 		local current = UI.CodeBox.Text
 		local search  = unescapeCode(args.search  or "")
 		local replace = unescapeCode(args.replace or "")
+		if not current:find(search, 1, true) then return "Error: search text not found in code." end
 		local escaped = search:gsub("([%(%)%.%%%+%-%*%?%[%^%$])", "%%%1")
-		if not current:find(escaped, 1, true) then return "Error: search text not found in code." end
-		local before = select(2, current:gsub("\n", "\n")) + 1
-		UI.CodeBox.Text  = current:gsub(escaped, replace:gsub("%%", "%%%%"), 1)
-		local after   = select(2, UI.CodeBox.Text:gsub("\n", "\n")) + 1
-		local diff    = after - before
-		return (diff >= 0 and "+" or "") .. diff .. " lines"
+		local before  = select(2, current:gsub("\n", "\n")) + 1
+		local newCode = current:gsub(escaped, replace:gsub("%%", "%%%%"), 1)
+		UI.CodeBox.Text = newCode
+		local after = select(2, newCode:gsub("\n", "\n")) + 1
+		local diff  = after - before
+		local _, syntaxErr = loadstring(newCode)
+		local suffix = syntaxErr and (" — Syntax error: " .. tostring(syntaxErr)) or ""
+		return (diff >= 0 and "+" or "") .. diff .. " lines" .. suffix
 	end
 })
 
@@ -1063,9 +1159,12 @@ Tools.register({
 		for i = 1, s - 1            do result[#result+1] = lines[i] end
 		for _, l in ipairs(newLines) do result[#result+1] = l end
 		for i = e + 1, #lines       do result[#result+1] = lines[i] end
-		UI.CodeBox.Text = table.concat(result, "\n")
-		local diff = (select(2, UI.CodeBox.Text:gsub("\n", "\n")) + 1) - before
-		return "Replaced lines " .. s .. "-" .. e .. " (" .. (diff >= 0 and "+" or "") .. diff .. " lines)"
+		local newCode = table.concat(result, "\n")
+		UI.CodeBox.Text = newCode
+		local diff = (select(2, newCode:gsub("\n", "\n")) + 1) - before
+		local _, syntaxErr = loadstring(newCode)
+		local suffix = syntaxErr and (" — Syntax error: " .. tostring(syntaxErr)) or ""
+		return "Replaced lines " .. s .. "-" .. e .. " (" .. (diff >= 0 and "+" or "") .. diff .. " lines)" .. suffix
 	end
 })
 
@@ -1155,6 +1254,8 @@ UI.CurrentPage.Changed:Connect(function(page)
 end)
 
 -- ── Settings page ─────────────────────────────────────────────────────────────
+
+local _onSettingsSaved  -- forward-declared; wired to sendSyncState after bridge section loads
 
 local selectedHost = Config.host
 local dropdownOpen = false
@@ -1542,6 +1643,7 @@ local function saveSettings()
 	Config.save()
 	UI.UnsavedChanges.Visible = false
 	Toast.show("Saved", "Settings saved successfully", "ok", 2)
+	if _onSettingsSaved then task.spawn(_onSettingsSaved) end
 end
 
 local function revertSettings()
@@ -1694,6 +1796,7 @@ local function openModal()
 	UI.SearchModelModal.Visible    = true
 	UI.ToolResultViewModal.Visible = false
 	UI.SystemPromptModal.Visible   = false
+	UI.BrowserLogsModal.Visible    = false
 	UI.ModalFrame.Visible = true
 	if UI.ModalSearchBox then UI.ModalSearchBox.Text = "" end
 	modalClearButtons()
@@ -1705,6 +1808,7 @@ local function openToolResultModal(fullText)
 	UI.SearchModelModal.Visible    = false
 	UI.ToolResultViewModal.Visible = true
 	UI.SystemPromptModal.Visible   = false
+	UI.BrowserLogsModal.Visible    = false
 	UI.ToolResultTextBox.Text      = fullText
 	UI.ToolResultSF.CanvasPosition = Vector2.new(0, 0)
 	UI.ModalFrame.Visible          = true
@@ -1718,6 +1822,7 @@ local function openSystemPromptModal()
 	UI.SearchModelModal.Visible    = false
 	UI.ToolResultViewModal.Visible = false
 	UI.SystemPromptModal.Visible   = true
+	UI.BrowserLogsModal.Visible    = false
 	UI.SystemPromptTextBox.TextEditable   = true
 	UI.SystemPromptTextBox.Text           = Config.userSystemPrompt
 	UI.SystemPromptTextBox.PlaceholderText = Prompt.build(false)
@@ -1782,7 +1887,12 @@ UI.MinimizeButton.MouseButton1Click:Connect(function()
 		TS:Create(UI.IYAI, Tween, { Size = MinimizedIYAISize }):Play()
 		if authorLabel  then TS:Create(authorLabel,  Tween, { TextTransparency = 1 }):Play() end
 		if versionLabel then TS:Create(versionLabel, Tween, { TextTransparency = 1 }):Play() end
+		task.delay(0.15, function()
+			UI.ContentPages.Visible = false
+			UI.ModalFrame.Visible   = false
+		end)
 	else
+		UI.ContentPages.Visible = true
 		TS:Create(UI.IYAI, Tween, { Size = DefaultIYAISize }):Play()
 		if authorLabel  then TS:Create(authorLabel,  Tween, { TextTransparency = 0.5 }):Play() end
 		if versionLabel then TS:Create(versionLabel, Tween, { TextTransparency = 0.5 }):Play() end
@@ -2366,6 +2476,22 @@ local function runCodeAgent(userText)
 	UI.TextBoxInput:CaptureFocus()
 end
 
+-- ── Web Bridge (defined here so runAgentLoop can call bridgePost) ─────────────
+
+local BRIDGE_URL = "http://127.0.0.1:7402"
+
+local function bridgePost(path, data)
+	if not http_request then return end
+	local ok, json = pcall(HS.JSONEncode, HS, data)
+	if not ok then return end
+	pcall(http_request, {
+		Url     = BRIDGE_URL .. path,
+		Method  = "POST",
+		Headers = { ["Content-Type"] = "application/json" },
+		Body    = json,
+	})
+end
+
 -- ── Agent loop ────────────────────────────────────────────────────────────────
 
 local function runAgentLoop(userText)
@@ -2430,11 +2556,13 @@ local function runAgentLoop(userText)
 			if generatingFrame then generatingFrame:Destroy(); generatingFrame = nil end
 			local statusStr = res and tostring(res.StatusCode) or "no response"
 			local errBody   = res and res.Body or "(no response)"
+			local errSummary = errBody:match('"message"%s*:%s*"([^"]+)"') or errBody:match("^[^\n]+") or errBody
 			local errFrame  = addTaskFrame("failed")
 			local lbl = errFrame:FindFirstChildWhichIsA("TextLabel", true)
 			if lbl then
 				lbl.RichText = true
-				lbl.Text = "Request failed (" .. statusStr .. ")  " .. '<font size="12" color="#A1A5A2"><u>Open</u></font>'
+				lbl.Text = "Request failed (" .. statusStr .. "): " .. '<font color="#FF8888">' .. markdownToRichText(errSummary) .. '</font>'
+					.. '  <font size="12" color="#A1A5A2"><u>Details</u></font>'
 				lbl.InputBegan:Connect(function(input)
 					if input.UserInputType == Enum.UserInputType.MouseButton1 then
 						openToolResultModal(errBody)
@@ -2460,7 +2588,8 @@ local function runAgentLoop(userText)
 			local rawContent = msg.content or ""
 			local lbl = genLabel()
 			if lbl and rawContent ~= "" then
-				typewriteInto(lbl, Prompt.stripMarkdown(rawContent) .. (usage and "\n" or ""))
+				lbl.RichText = true
+				typewriteInto(lbl, markdownToRichText(rawContent) .. (usage and "\n" or ""))
 				if usage then
 					local tokenLabel = generatingFrame:FindFirstChild("TokenCount", true)
 					if tokenLabel then
@@ -2468,13 +2597,14 @@ local function runAgentLoop(userText)
 						tokenLabel.Visible = true
 					end
 				end
-				recordRender({t = "ai", text = Prompt.stripMarkdown(rawContent)})
+				recordRender({t = "ai", text = rawContent})
 			else
 				if generatingFrame then generatingFrame:Destroy(); generatingFrame = nil end
 				addResponse(rawContent, usage)
 			end
 			generatingFrame = nil
 			table.insert(conversationHistory, { role = "assistant", content = Prompt.stripMarkdown(rawContent) })
+			if rawContent ~= "" then bridgePost("/roblox/result", { type = "chat", text = rawContent }) end
 			break
 		end
 
@@ -2482,6 +2612,7 @@ local function runAgentLoop(userText)
 		if msg.content and msg.content ~= "" then
 			if generatingFrame then generatingFrame:Destroy(); generatingFrame = nil end
 			addResponse(msg.content)
+			bridgePost("/roblox/result", { type = "chat", text = msg.content })
 		end
 
 		-- Keep generating frame below the step about to be added
@@ -2520,20 +2651,22 @@ local function runAgentLoop(userText)
 					if lbl then
 						UI.TotalElements.Value += 1
 						generatingFrame.LayoutOrder = UI.TotalElements.Value
-						typewriteInto(lbl, Prompt.stripMarkdown(message) .. (usage and "\n" or ""))
+						lbl.RichText = true
+						typewriteInto(lbl, markdownToRichText(message) .. (usage and "\n" or ""))
 						if usage then
-							local tokenLabel = generatingFrame:FindFirstChild("TokenCount", true)
-							if tokenLabel then
-								tokenLabel.Text    = Config.model .. "  ↑ " .. (usage.prompt_tokens or 0) .. "  ↓ " .. (usage.completion_tokens or 0)
-								tokenLabel.Visible = true
-							end
+						 local tokenLabel = generatingFrame:FindFirstChild("TokenCount", true)
+						 if tokenLabel then
+						  tokenLabel.Text    = Config.model .. "  ↑ " .. (usage.prompt_tokens or 0) .. "  ↓ " .. (usage.completion_tokens or 0)
+						 tokenLabel.Visible = true
 						end
-						recordRender({t = "ai", text = Prompt.stripMarkdown(message)})
+						end
+						recordRender({t = "ai", text = message})
 						generatingFrame = nil
-					else
+						else
 						addResponse(message, usage)
-					end
-					table.insert(conversationHistory, { role = "assistant", content = Prompt.stripMarkdown(message) })
+						end
+						table.insert(conversationHistory, { role = "assistant", content = message })
+						bridgePost("/roblox/result", { type = "chat", text = message })
 				end
 				if generatingFrame then generatingFrame:Destroy(); generatingFrame = nil end
 				agentDone = true
@@ -2543,11 +2676,13 @@ local function runAgentLoop(userText)
 			local taskFrame = addTaskFrame("busy")
 			local lbl = taskFrame:FindFirstChildWhichIsA("TextLabel", true)
 			if lbl then lbl.Text = fnName end
+			bridgePost("/roblox/result", { type = "tool_start", name = fnName })
 			local result = Tools.run(fnName, fnArgs)
 			local failed = result:find("^Tool error") or result:find("^Unknown tool")
 				or result:find("^Error") or result:find("^Compile error")
 				or result:find("^Runtime error")
 			updateTaskFrame(taskFrame, failed and "failed" or "succeeded", result, fnName)
+			bridgePost("/roblox/result", { type = "tool_result", name = fnName, result = result, ok = not failed })
 			recordRender({t = "tool", name = fnName, result = result, ok = not failed})
 			if not failed and CODE_WRITE_TOOLS[fnName] then
 				addPostAction("View Code →", function() UI.CurrentPage.Value = "Code" end)
@@ -2571,12 +2706,201 @@ local function runAgentLoop(userText)
 	UI.TextBoxInput:CaptureFocus()
 end
 
+-- ── Instance registry for browser explorer ───────────────────────────────────
+
+local _instById  = setmetatable({}, { __mode = "v" })
+local _instToId  = setmetatable({}, { __mode = "k" })
+local _nextInstId = 0
+
+local function getInstId(inst)
+	if _instToId[inst] then return _instToId[inst] end
+	_nextInstId += 1
+	_instToId[inst] = _nextInstId
+	_instById[_nextInstId] = inst
+	return _nextInstId
+end
+
+local function instToNode(inst, depth)
+	local children = inst:GetChildren()
+	local node = { id = getInstId(inst), name = inst.Name, cls = inst.ClassName }
+	if #children > 0 then
+		if depth > 0 then
+			node.children = {}
+			for _, child in ipairs(children) do
+				table.insert(node.children, instToNode(child, depth - 1))
+			end
+		else
+			node.lazy = true
+		end
+	end
+	return node
+end
+
+local function sendGameTree()
+	local tree = {}
+	for _, svc in ipairs(game:GetChildren()) do
+		table.insert(tree, instToNode(svc, 0))
+	end
+	bridgePost("/roblox/result", { type = "tree", data = tree })
+end
+
+local function sendChildren(id)
+	local inst = _instById[id]
+	local children = {}
+	if inst then
+		for _, child in ipairs(inst:GetChildren()) do
+			table.insert(children, instToNode(child, 0))
+		end
+	end
+	bridgePost("/roblox/result", { type = "children", id = id, data = children })
+end
+
+local function serializePropValue(val)
+	local t = typeof(val)
+	if t == "number" then
+		return math.floor(val) == val and tostring(math.floor(val)) or string.format("%.4g", val)
+	elseif t == "boolean" or t == "string" then
+		return tostring(val)
+	elseif t == "Vector3" then
+		return string.format("%.3g, %.3g, %.3g", val.X, val.Y, val.Z)
+	elseif t == "Vector2" then
+		return string.format("%.3g, %.3g", val.X, val.Y)
+	elseif t == "Color3" then
+		return string.format("rgb(%d, %d, %d)", math.round(val.R*255), math.round(val.G*255), math.round(val.B*255))
+	elseif t == "CFrame" then
+		local p = val.Position
+		return string.format("%.3g, %.3g, %.3g", p.X, p.Y, p.Z)
+	elseif t == "UDim2" then
+		return string.format("{%.3g, %d}, {%.3g, %d}", val.X.Scale, val.X.Offset, val.Y.Scale, val.Y.Offset)
+	elseif t == "UDim" then
+		return string.format("%.3g, %d", val.Scale, val.Offset)
+	elseif t == "EnumItem" then
+		return tostring(val)
+	elseif t == "Instance" then
+		return val.Name
+	else
+		return tostring(val)
+	end
+end
+
+local function sendProps(id, propNames)
+	local inst = _instById[id]
+	if not inst then
+		bridgePost("/roblox/result", { type = "props", id = id, cls = "", data = {} })
+		return
+	end
+	local data = {}
+	for _, name in ipairs(propNames) do
+		local ok, val = pcall(function() return inst[name] end)
+		if ok and val ~= nil then
+			local ok2, sv = pcall(serializePropValue, val)
+			data[name] = ok2 and sv or "?"
+		end
+	end
+	bridgePost("/roblox/result", { type = "props", id = id, cls = inst.ClassName, data = data })
+end
+
+-- ── Bridge state sync ─────────────────────────────────────────────────────────
+
+local onSend  -- forward declaration; defined after startBridgePoll
+
+local function sendSyncState()
+	local toolList = {}
+	for _, entry in ipairs(Tools.getDefinitions()) do
+		local fn = entry.definition and entry.definition["function"]
+		if fn and fn.name ~= "done" then
+			table.insert(toolList, { name = fn.name, desc = fn.description or "", group = entry.group or "Other" })
+		end
+	end
+
+	local sessionList = {}
+	for _, s in ipairs(sessions) do
+		table.insert(sessionList, {
+			id        = s.id,
+			title     = s.title,
+			timestamp = s.timestamp,
+			msgCount  = s.msgCount or #s.messages,
+		})
+	end
+
+	bridgePost("/roblox/result", {
+		type     = "sync_state",
+		config   = { host = Config.host, model = Config.model, apiKey = Config.apiKey },
+		tools    = toolList,
+		sessions = sessionList,
+		activeId = currentSessionId,
+		history  = conversationHistory,
+	})
+end
+
+_onSettingsSaved = sendSyncState  -- wire forward declaration now that sendSyncState exists
+
+local function handleSettingsUpdate(data)
+	if type(data.host)   == "string" and data.host   ~= "" then Config.host   = data.host   end
+	if type(data.model)  == "string" and data.model  ~= "" then Config.model  = data.model  end
+	if type(data.apiKey) == "string"                        then Config.apiKey = data.apiKey end
+	Config.save()
+	Toast.show("Synced", "Settings updated from browser", "ok", 2)
+end
+
+local function handleLoadSession(id)
+	for _, s in ipairs(sessions) do
+		if s.id == id then
+			currentSessionId   = s.id
+			currentRenders     = s.renders
+			conversationHistory = { table.unpack(s.messages) }
+			bridgePost("/roblox/result", { type = "session_loaded", id = id, history = s.messages })
+			return
+		end
+	end
+	bridgePost("/roblox/result", { type = "session_loaded", id = id, history = {} })
+end
+
+-- ── Bridge poll ───────────────────────────────────────────────────────────────
+
+local function startBridgePoll()
+	if not http_request then return end
+	task.spawn(function()
+		while true do
+			task.wait(1)
+			if UI.isAssistantBusy.Value then continue end
+			local ok, res = pcall(http_request, {
+				Url    = BRIDGE_URL .. "/roblox/poll",
+				Method = "GET",
+			})
+			if ok and res and res.StatusCode == 200 and res.Body and res.Body ~= "null" then
+				local ok2, msg = pcall(HS.JSONDecode, HS, res.Body)
+				if ok2 and msg then
+					if msg.type == "chat" and type(msg.text) == "string" and msg.text ~= "" then
+						onSend(msg.text)
+					elseif msg.type == "get_tree" then
+						task.spawn(sendGameTree)
+					elseif msg.type == "get_children" and msg.id then
+						task.spawn(sendChildren, msg.id)
+					elseif msg.type == "get_props" and msg.id then
+						local captured = msg
+						task.spawn(function() sendProps(captured.id, captured.props or {}) end)
+					elseif msg.type == "get_state" then
+						task.spawn(sendSyncState)
+					elseif msg.type == "settings_update" then
+						local captured = msg
+						task.spawn(function() handleSettingsUpdate(captured) end)
+					elseif msg.type == "load_session" and msg.id then
+						local captured = msg.id
+						task.spawn(function() handleLoadSession(captured) end)
+					end
+				end
+			end
+		end
+	end)
+end
+
 -- ── onSend ────────────────────────────────────────────────────────────────────
 
-local function onSend()
-	local text = UI.TextBoxInput.Text
+onSend = function(webText)
+	local text = webText or UI.TextBoxInput.Text
 	if text == "" or UI.isAssistantBusy.Value then return end
-	UI.TextBoxInput.Text = ""
+	if not webText then UI.TextBoxInput.Text = "" end
 
 	if #conversationHistory == 0 and currentSessionId == nil then
 		local title = text:sub(1, 45) .. (#text > 45 and "..." or "")
@@ -2613,9 +2937,114 @@ local function onSend()
 	end)
 end
 
-UI.SendButton.MouseButton1Click:Connect(onSend)
+UI.SendButton.MouseButton1Click:Connect(function() onSend() end)
 UI.TextBoxInput.FocusLost:Connect(function(enterPressed)
 	if enterPressed then onSend() end
+end)
+
+startBridgePoll()
+
+-- ── Browser page ──────────────────────────────────────────────────────────────
+
+local browserLogs = {}
+local function bridgeLog(msg)
+	table.insert(browserLogs, os.date("[%H:%M:%S] ") .. msg)
+	if #browserLogs > 200 then table.remove(browserLogs, 1) end
+end
+
+-- You dot is always green — the plugin is the local end
+UI.BrowserDotYou.BackgroundColor3 = COLOR_OK
+
+-- Shimmer: sweep UIGradient offset from -1 to +1, loop forever
+local shimmerTI = TweenInfo.new(1.5, Enum.EasingStyle.Linear, Enum.EasingDirection.Out, -1, false, 0.4)
+TS:Create(UI.BrowserGrad1, shimmerTI, { Offset = Vector2.new(1, 0) }):Play()
+TS:Create(UI.BrowserGrad2, shimmerTI, { Offset = Vector2.new(1, 0) }):Play()
+
+-- Wire all CopyButtons in the instructions area
+for _, btn in ipairs(UI.BrowserInstructions:GetDescendants()) do
+	if btn.Name == "CopyButton" and btn:IsA("TextButton") then
+		local val = btn:FindFirstChildWhichIsA("StringValue")
+		if val then
+			btn.MouseButton1Click:Connect(function()
+				pcall(setclipboard, val.Value)
+				Toast.show("Copied", val.Value, "ok", 2)
+			end)
+		end
+	end
+end
+
+local function setDotState(dot, icon, label, connected)
+	dot.BackgroundColor3         = connected and COLOR_OK or COLOR_ERR
+	icon.ImageTransparency       = connected and 0 or 0.6
+	label.TextTransparency       = connected and 0 or 0.6
+end
+
+local SHIMMER_DIM   = NumberSequence.new{ NumberSequenceKeypoint.new(0, 1), NumberSequenceKeypoint.new(0.5, 0.9), NumberSequenceKeypoint.new(1, 1) }
+local SHIMMER_FULL  = NumberSequence.new{ NumberSequenceKeypoint.new(0, 1), NumberSequenceKeypoint.new(0.5, 0),   NumberSequenceKeypoint.new(1, 1) }
+local shimmerTweenI = TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+
+local function setShimmer(full)
+	-- UIGradient Transparency can't be tweened directly; swap instantly
+	UI.BrowserGrad1.Transparency = full and SHIMMER_FULL or SHIMMER_DIM
+	UI.BrowserGrad2.Transparency = full and SHIMMER_FULL or SHIMMER_DIM
+end
+
+local function checkBridgeStatus()
+	if not http_request then return end
+	local ok, res = pcall(http_request, { Url = BRIDGE_URL .. "/ping", Method = "GET" })
+	local bridgeOk = ok and res and res.StatusCode == 200
+	setDotState(UI.BrowserDotBridge, UI.BrowserIconBridge, UI.BrowserLabelBridge, bridgeOk)
+	if bridgeOk then
+		bridgeLog("Bridge OK")
+		local ok2, res2 = pcall(http_request, { Url = BRIDGE_URL .. "/status", Method = "GET" })
+		if ok2 and res2 and res2.StatusCode == 200 then
+			local ok3, data = pcall(HS.JSONDecode, HS, res2.Body)
+			local webOk = ok3 and data and data.browser == true
+			setDotState(UI.BrowserDotWeb, UI.BrowserIconWeb, UI.BrowserLabelWeb, webOk)
+			setShimmer(webOk)
+			bridgeLog("Web " .. (webOk and "connected" or "not connected"))
+		else
+			setDotState(UI.BrowserDotWeb, UI.BrowserIconWeb, UI.BrowserLabelWeb, false)
+			setShimmer(false)
+		end
+	else
+		bridgeLog("Bridge unreachable")
+		setDotState(UI.BrowserDotWeb, UI.BrowserIconWeb, UI.BrowserLabelWeb, false)
+		setShimmer(false)
+	end
+end
+
+-- Status dots (start red/dimmed until first check)
+setDotState(UI.BrowserDotBridge, UI.BrowserIconBridge, UI.BrowserLabelBridge, false)
+setDotState(UI.BrowserDotWeb,    UI.BrowserIconWeb,    UI.BrowserLabelWeb,    false)
+
+UI.CurrentPage.Changed:Connect(function(page)
+	if page == "Browser" then task.spawn(checkBridgeStatus) end
+end)
+
+task.spawn(function()
+	while true do
+		task.wait(5)
+		if UI.CurrentPage.Value == "Browser" then task.spawn(checkBridgeStatus) end
+	end
+end)
+
+UI.ForceRefreshButton.MouseButton1Click:Connect(function()
+	task.spawn(checkBridgeStatus)
+end)
+
+UI.OpenBrowserLogsButton.MouseButton1Click:Connect(function()
+	if UI.ModalTitleLabel then UI.ModalTitleLabel.Text = "Bridge Logs" end
+	UI.SearchModelModal.Visible    = false
+	UI.ToolResultViewModal.Visible = false
+	UI.SystemPromptModal.Visible   = false
+	UI.BrowserLogsModal.Visible    = true
+	UI.BrowserLogsTextBox.Text     = #browserLogs > 0 and table.concat(browserLogs, "\n") or "(no logs yet)"
+	UI.ModalFrame.Visible          = true
+end)
+
+UI.ConnectToBrowserButton.MouseButton1Click:Connect(function()
+	UI.CurrentPage.Value = "Browser"
 end)
 
 -- ── Drag ──────────────────────────────────────────────────────────────────────

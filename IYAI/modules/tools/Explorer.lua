@@ -594,33 +594,62 @@ return function(Tools, getProperties, getMethods)
 			type = "function",
 			["function"] = {
 				name        = "decompile",
-				description = "Decompile a Script, LocalScript, or ModuleScript back to Lua source. Only works in executor environments that provide a decompile() global. Not available in Roblox Studio.",
+				description = "Decompile a Script, LocalScript, or ModuleScript back to Lua source. Uses lua.expert API (supports Lua v9+) when bytecode access is available, falling back to the executor's native decompiler. Not available in Roblox Studio.",
 				parameters  = {
 					type       = "object",
 					properties = {
-						path    = { type = "string",  description = "Instance path e.g. 'game.Workspace.MyScript'" },
-						mode    = { type = "string",  description = "Decompile mode (optional, executor-specific — e.g. 'default')" },
-						timeout = { type = "number",  description = "Timeout in seconds (optional)" },
+						path    = { type = "string", description = "Instance path e.g. 'game.Workspace.MyScript'" },
 					},
 					required = { "path" }
 				}
 			}
 		},
 		handler = function(args)
-			if type(decompile) ~= "function" then
-				return "decompile() is not available in this environment. This tool only works inside an executor (e.g. Synapse, KRNL). In Roblox Studio, use source() instead to read unobfuscated scripts."
-			end
 			local inst, err = resolvePath(args.path)
 			if not inst then return "Error: " .. tostring(err) end
 			if not (inst:IsA("BaseScript") or inst:IsA("ModuleScript")) then
 				return "Error: " .. inst.ClassName .. " is not a script instance."
 			end
-			local ok, result
-			if args.mode ~= nil or args.timeout ~= nil then
-				ok, result = pcall(decompile, inst, args.mode, args.timeout)
-			else
-				ok, result = pcall(decompile, inst)
+
+			-- Prefer lua.expert (Lua v9+ compatible) over executor's native decompiler (konstant-based)
+			if type(getscriptbytecode) == "function" then
+				local okBc, bytecode = pcall(getscriptbytecode, inst)
+				if okBc and bytecode and bytecode ~= "" then
+					local b64 = rawget(getfenv and getfenv(0) or _G, "base64_encode") or function(data)
+						local b = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
+						return ((data:gsub('.', function(x)
+							local r, byte = '', x:byte()
+							for i = 8, 1, -1 do r = r .. (byte % 2^i - byte % 2^(i-1) > 0 and '1' or '0') end
+							return r
+						end) .. '0000'):gsub('%d%d%d?%d?%d?%d?', function(x)
+							if #x < 6 then return '' end
+							local c = 0
+							for i = 1, 6 do c = c + (x:sub(i,i) == '1' and 2^(6-i) or 0) end
+							return b:sub(c+1, c+1)
+						end) .. ({ '', '==', '=' })[#data % 3 + 1])
+					end
+					local HS = game:GetService("HttpService")
+					local okReq, res = pcall(request, {
+						Url     = "https://api.lua.expert/decompile",
+						Method  = "POST",
+						Headers = { ["content-type"] = "application/json" },
+						Body    = HS:JSONEncode({ script = b64(bytecode) }),
+					})
+					if okReq and res and res.StatusCode == 200 and res.Body and res.Body ~= "" then
+						return res.Body
+					end
+					-- API failed — note it and fall through to native
+					if not okReq or not res then
+						return "lua.expert API request failed. Native decompiler also unavailable — ensure executor has decompile()."
+					end
+				end
 			end
+
+			-- Fallback: executor's native decompile (konstant-based, may not support Lua v9)
+			if type(decompile) ~= "function" then
+				return "decompile() is not available. Use source() in Studio to read unobfuscated scripts."
+			end
+			local ok, result = pcall(decompile, inst)
 			if not ok then return "Decompile failed: " .. tostring(result) end
 			if not result or result == "" then return "Decompile returned empty output." end
 			return result
