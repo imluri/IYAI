@@ -96,9 +96,9 @@ def browser_send():
 
 @app.route('/roblox/poll')
 def roblox_poll():
-    """Long-poll: holds the connection until a message arrives (up to 15s)."""
+    """Short long-poll: holds up to 2s so executor connections never time out."""
     try:
-        msg = to_roblox.get(timeout=15)
+        msg = to_roblox.get(timeout=2)
         return jsonify(msg)
     except Empty:
         return jsonify(None)

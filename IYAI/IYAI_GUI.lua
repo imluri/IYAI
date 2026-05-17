@@ -279,7 +279,7 @@ local COLOR_OK          = Color3.fromRGB(109, 217, 161)
 local COLOR_ERR         = Color3.fromRGB(171, 108, 108)
 local COLOR_IDLE        = Color3.fromRGB(41,  41,  41)
 local DefaultIYAISize   = UDim2.new(0, 600, 0, 400)
-local MinimizedIYAISize = UDim2.new(0, 100, 0, 25)
+local MinimizedIYAISize = UDim2.new(0, 160, 0, 25)
 local Minimized         = false
 local modelList         = {}
 local _loading          = false
@@ -634,6 +634,20 @@ local function addThinking(text)
 end
 
 local TYPEWRITER_SPEED = 3
+local RICH_TAGS = {"font", "i", "s", "u", "b", "stroke"}
+
+local function balanceRichTags(s)
+	s = s:gsub("<[^>]*$", "")  -- strip trailing incomplete tag syntax (e.g. "<fon")
+	-- strip any opening tag whose closing tag hasn't arrived yet
+	for _, tag in ipairs(RICH_TAGS) do
+		local openPat  = "<" .. tag
+		local closePat = "</" .. tag
+		while select(2, s:gsub(openPat, "")) > select(2, s:gsub(closePat, "")) do
+			s = s:match("^(.*)<" .. tag) or ""
+		end
+	end
+	return s
+end
 
 local function typewriteInto(element, text)
 	if element then element.RichText = true end
@@ -646,12 +660,11 @@ local function typewriteInto(element, text)
 	while i < len do
 		if not element or not element.Parent then break end
 		i = math.min(i + TYPEWRITER_SPEED, len)
-		local partial = string.sub(text, 1, i)
-		partial = partial:gsub("<[^>]*$", "")
-		element.Text = partial
+		element.Text = balanceRichTags(string.sub(text, 1, i))
 		scrollBottom()
 		task.wait()
 	end
+	if element and element.Parent then element.Text = text end
 end
 
 local function splitCodeBlocks(text)
@@ -3005,6 +3018,8 @@ local function setShimmer(full)
 	UI.BrowserGrad2.Transparency = full and SHIMMER_FULL or SHIMMER_DIM
 end
 
+local prevWebOk = false
+
 local function checkBridgeStatus()
 	if not http_request then return end
 	local ok, res = pcall(http_request, { Url = BRIDGE_URL .. "/ping", Method = "GET" })
@@ -3012,17 +3027,21 @@ local function checkBridgeStatus()
 	setDotState(UI.BrowserDotBridge, UI.BrowserIconBridge, UI.BrowserLabelBridge, bridgeOk)
 	if bridgeOk then
 		bridgeLog("Bridge OK")
+		local webOk = false
 		local ok2, res2 = pcall(http_request, { Url = BRIDGE_URL .. "/status", Method = "GET" })
 		if ok2 and res2 and res2.StatusCode == 200 then
 			local ok3, data = pcall(HS.JSONDecode, HS, res2.Body)
-			local webOk = ok3 and data and data.browser == true
-			setDotState(UI.BrowserDotWeb, UI.BrowserIconWeb, UI.BrowserLabelWeb, webOk)
-			setShimmer(webOk)
+			webOk = ok3 and data and data.browser == true
 			bridgeLog("Web " .. (webOk and "connected" or "not connected"))
-		else
-			setDotState(UI.BrowserDotWeb, UI.BrowserIconWeb, UI.BrowserLabelWeb, false)
-			setShimmer(false)
 		end
+		setDotState(UI.BrowserDotWeb, UI.BrowserIconWeb, UI.BrowserLabelWeb, webOk)
+		setShimmer(webOk)
+		-- Push tree + state the moment a browser client appears
+		if webOk and not prevWebOk then
+			task.spawn(sendGameTree)
+			task.spawn(sendSyncState)
+		end
+		prevWebOk = webOk
 		if not bridgeActive then
 			bridgeActive = true
 			startBridgePoll()
@@ -3030,6 +3049,7 @@ local function checkBridgeStatus()
 	else
 		bridgeLog("Bridge unreachable")
 		bridgeActive = false
+		prevWebOk = false
 		setDotState(UI.BrowserDotWeb, UI.BrowserIconWeb, UI.BrowserLabelWeb, false)
 		setShimmer(false)
 	end
@@ -3043,10 +3063,14 @@ UI.CurrentPage.Changed:Connect(function(page)
 	if page == "Browser" then task.spawn(checkBridgeStatus) end
 end)
 
+-- Run once shortly after startup so the poll loop begins immediately
+task.delay(1, checkBridgeStatus)
+
+-- Periodic check: always run, not just when on Browser page
 task.spawn(function()
 	while true do
 		task.wait(5)
-		if UI.CurrentPage.Value == "Browser" then task.spawn(checkBridgeStatus) end
+		task.spawn(checkBridgeStatus)
 	end
 end)
 

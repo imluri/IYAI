@@ -58,7 +58,7 @@ function Read-Body($ctx) {
 # Deferred long-poll state
 $pendingPollCtx   = $null
 $pendingPollStart = [DateTime]::MinValue
-$POLL_TIMEOUT_SEC = 15
+$POLL_TIMEOUT_SEC = 2
 
 function Flush-PendingPoll {
     if ($null -eq $script:pendingPollCtx) { return }
