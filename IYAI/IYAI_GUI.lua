@@ -2861,11 +2861,17 @@ end
 
 -- ── Bridge poll ───────────────────────────────────────────────────────────────
 
+local bridgeActive  = false   -- true only while bridge is reachable
+local pollLoopAlive = false   -- prevents duplicate loops
+
 local function startBridgePoll()
 	if not http_request then return end
+	if pollLoopAlive then return end
+	pollLoopAlive = true
 	task.spawn(function()
-		while true do
+		while bridgeActive do
 			task.wait(0.25)
+			if not bridgeActive then break end
 			if UI.isAssistantBusy.Value then continue end
 			local ok, res = pcall(http_request, {
 				Url    = BRIDGE_URL .. "/roblox/poll",
@@ -2895,6 +2901,7 @@ local function startBridgePoll()
 				end
 			end
 		end
+		pollLoopAlive = false
 	end)
 end
 
@@ -2944,8 +2951,6 @@ UI.SendButton.MouseButton1Click:Connect(function() onSend() end)
 UI.TextBoxInput.FocusLost:Connect(function(enterPressed)
 	if enterPressed then onSend() end
 end)
-
-startBridgePoll()
 
 -- ── Browser page ──────────────────────────────────────────────────────────────
 
@@ -3010,8 +3015,13 @@ local function checkBridgeStatus()
 			setDotState(UI.BrowserDotWeb, UI.BrowserIconWeb, UI.BrowserLabelWeb, false)
 			setShimmer(false)
 		end
+		if not bridgeActive then
+			bridgeActive = true
+			startBridgePoll()
+		end
 	else
 		bridgeLog("Bridge unreachable")
+		bridgeActive = false
 		setDotState(UI.BrowserDotWeb, UI.BrowserIconWeb, UI.BrowserLabelWeb, false)
 		setShimmer(false)
 	end
