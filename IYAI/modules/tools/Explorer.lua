@@ -647,7 +647,7 @@ return function(Tools, getProperties, getMethods)
 
 			-- Fallback: executor's native decompile (konstant-based, may not support Lua v9)
 			if type(decompile) ~= "function" then
-				return "decompile() is not available. Use source() in Studio to read unobfuscated scripts."
+				return "decompile() is not available in this environment."
 			end
 			local ok, result = pcall(decompile, inst)
 			if not ok then return "Decompile failed: " .. tostring(result) end

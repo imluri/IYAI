@@ -2845,7 +2845,7 @@ local CODE_SYSTEM = table.concat({
 	"Never rewrite the entire file if you only need to change a small section.",
 	"",
 	"Use write_code only for new scripts or complete rewrites (editor is empty or user asks for a full rewrite).",
-	"Use any game inspection tools (tree, props, source, etc.) to gather context before coding.",
+	"Use any game inspection tools (tree, props, decompile, etc.) to gather context before coding.",
 	"After the task is done, briefly explain what you did and what the output was. Plain text only, no markdown.",
 	"Do not ask clarifying questions — make a reasonable attempt and explain your assumptions.",
 }, "\n")

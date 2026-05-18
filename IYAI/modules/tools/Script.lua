@@ -16,37 +16,6 @@ return function(Tools)
 		return inst
 	end
 
-	-- source: read script source
-	Tools.register({
-		group = "Script",
-		definition = {
-			type = "function",
-			["function"] = {
-				name        = "source",
-				description = "Get the Lua source of a Script, LocalScript, or ModuleScript.",
-				parameters  = {
-					type       = "object",
-					properties = {
-						path = { type = "string", description = "Full path to the script" },
-					},
-					required = { "path" }
-				}
-			}
-		},
-		handler = function(args)
-			local inst, err = resolvePath(args.path)
-			if not inst then return "Error: " .. tostring(err) end
-			if not inst:IsA("LuaSourceContainer") then
-				return "Error: not a script — " .. inst.ClassName
-			end
-			local src = ""
-			pcall(function() src = inst.Source end)
-			if src == "" then return "Source not accessible." end
-			return #src > 4000
-				and (src:sub(1, 4000) .. "\n...[truncated, " .. #src .. " total chars]")
-				or  src
-		end
-	})
 
 	Tools.register({
 		group = "Script",
