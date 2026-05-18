@@ -1166,6 +1166,7 @@ local function loadTabsFromFile()
 			)
 		end
 	end
+	updateTabVisuals()
 end
 
 loadTabsFromFile()
@@ -2487,7 +2488,10 @@ local function summarizeResult(toolName, result)
 	if toolName == "write_code"    then return fmt(result) end
 	if toolName == "edit_code"     then return fmt(result) end
 	if toolName == "replace_lines" then return fmt(result) end
-	if toolName == "read_code"     then return fmt(result) end
+	if toolName == "read_code" then
+		local lines = select(2, result:gsub("\n", "\n")) + 1
+		return fmt(plural(lines, "line") .. " read")
+	end
 	if toolName == "get_lines" then
 		return fmt(plural(select(2, result:gsub("\n", "\n")) + 1, "line") .. " fetched")
 	end
