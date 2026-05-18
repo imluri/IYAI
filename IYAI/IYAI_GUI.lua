@@ -1451,19 +1451,40 @@ Tools.register({
 	definition = {
 		type = "function",
 		["function"] = {
-			name        = "find_in_code",
-			description = "Search for a string in the code editor. Returns matching line numbers and their content so you can target get_lines or replace_lines precisely.",
-			parameters  = { type = "object", properties = { query = { type = "string", description = "Plain text to search for." } }, required = { "query" } }
+			name        = "grep",
+			description = "Search all code tabs (or a specific tab) using a Lua pattern. Returns tab name, line number, and matching line. Use for cross-tab searches or pattern-based searches (e.g. function definitions, variable names).",
+			parameters  = { type = "object", properties = {
+				pattern = { type = "string", description = "Lua pattern to search for (plain strings work too)." },
+				tab     = { type = "string", description = "Tab index or name to search (optional). Omit to search all tabs." },
+			}, required = { "pattern" } }
 		}
 	},
 	handler = function(args)
-		local lines = UI.CodeBox.Text:split("\n")
-		local matches = {}
-		for i, line in ipairs(lines) do
-			if line:find(args.query, 1, true) then matches[#matches+1] = i .. ": " .. line end
+		local pat = args.pattern or ""
+		if pat == "" then return "No pattern provided." end
+		local targets
+		if args.tab and args.tab ~= "" then
+			local t = resolveTab(args.tab)
+			if not t then return "Tab not found: '" .. tostring(args.tab) .. "'. Available: " .. tabListStr() end
+			targets = { t }
+		else
+			if Tabs.active then Tabs.active.code = UI.CodeBox.Text end
+			targets = Tabs.list
 		end
-		if #matches == 0 then return "No matches found." end
-		return #matches .. " match(es):\n" .. table.concat(matches, "\n")
+		local matches, total = {}, 0
+		for _, tab in ipairs(targets) do
+			local src = (tab == Tabs.active) and UI.CodeBox.Text or tab.code
+			local lines = src:split("\n")
+			for i, line in ipairs(lines) do
+				local ok, found = pcall(string.find, line, pat)
+				if ok and found then
+					matches[#matches+1] = tab.name .. ":" .. i .. ": " .. line
+					total = total + 1
+				end
+			end
+		end
+		if total == 0 then return "No matches." end
+		return total .. " match(es):\n" .. table.concat(matches, "\n")
 	end
 })
 
@@ -2470,7 +2491,7 @@ local function summarizeResult(toolName, result)
 	if toolName == "get_lines" then
 		return fmt(plural(select(2, result:gsub("\n", "\n")) + 1, "line") .. " fetched")
 	end
-	if toolName == "find_in_code" then
+	if toolName == "grep" then
 		local m = tonumber(result:match("^(%d+) match"))
 		return fmt(m and (plural(m, "match", "es") .. " found") or result)
 	end
@@ -2815,7 +2836,7 @@ local CODE_SYSTEM = table.concat({
 	"Never stop after just writing code if the user wants it executed and verified.",
 	"",
 	"Workflow for edits on existing code:",
-	"1. Call read_code() to read the full code, or find_in_code(query) to locate specific lines.",
+	"1. Call read_code() to read the full code, or grep(pattern) to locate specific lines.",
 	"2. Call replace_lines(start, end, replacement) or edit_code(search, replace) to make the change.",
 	"Never rewrite the entire file if you only need to change a small section.",
 	"",

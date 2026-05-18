@@ -54,7 +54,7 @@ return function(Http)
 			"  switch_tab(tab)                     — switch active tab by index or name; all code tools then operate on that tab",
 			"  write_code(code, tab?)              — write or fully replace code in a tab (defaults to active; pass index or name to write another)",
 			"  read_code(tab?)                     — read the full contents of a tab (defaults to active; pass index or name to read another)",
-			"  find_in_code(query)                 — find lines containing a string, returns line numbers",
+			"  grep(pattern, tab?)                 — search all tabs (or a specific tab) with a Lua pattern; returns tab:line: content",
 			"  get_lines(start_line, end_line)     — fetch a specific line range without reading the whole file",
 			"  replace_lines(start, end, content)  — replace a line range with new content",
 			"  edit_code(search, replace)          — find-and-replace when you don't know the line numbers",
