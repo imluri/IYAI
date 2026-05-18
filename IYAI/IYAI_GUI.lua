@@ -1061,12 +1061,14 @@ end)
 -- ── Code tabs ─────────────────────────────────────────────────────────────────
 
 local Tabs = { max = 10, list = {}, active = nil, saveTask = nil }
+local saveTabsToFile  -- forward declaration
 
 local function scheduleTabSave()
 	if Tabs.saveTask then task.cancel(Tabs.saveTask) end
 	Tabs.saveTask = task.delay(1.2, function()
 		if Tabs.active then Tabs.active.code = UI.CodeBox.Text end
 		Tabs.saveTask = nil
+		saveTabsToFile()
 	end)
 end
 
@@ -1099,6 +1101,7 @@ local function removeCodeTab(tab)
 	else
 		updateTabVisuals()
 	end
+	saveTabsToFile()
 end
 
 local function addCodeTab(name, code, switchTo)
@@ -1113,6 +1116,7 @@ local function addCodeTab(name, code, switchTo)
 	btn.MouseButton1Click:Connect(function()  switchCodeTab(tab)  end)
 	btn.MouseButton2Click:Connect(function()  removeCodeTab(tab)  end)
 	if switchTo ~= false then switchCodeTab(tab) end
+	saveTabsToFile()
 	return tab
 end
 
@@ -1125,6 +1129,46 @@ do
 	UI.TabButtonTemplate.MouseButton1Click:Connect(function() switchCodeTab(firstTab) end)
 	updateTabVisuals()
 end
+
+local TABS_FILE = "IYAI_tabs.json"
+
+saveTabsToFile = function()
+	if not writefile then return end
+	if Tabs.active then Tabs.active.code = UI.CodeBox.Text end
+	local data = {}
+	for _, t in ipairs(Tabs.list) do
+		data[#data+1] = { name = t.name, code = t.code }
+	end
+	local ok, json = pcall(HS.JSONEncode, HS, data)
+	if ok then pcall(writefile, TABS_FILE, json) end
+end
+
+local function loadTabsFromFile()
+	if not readfile then return end
+	local ok, content = pcall(readfile, TABS_FILE)
+	if not ok or not content or content == "" then return end
+	local ok2, data = pcall(HS.JSONDecode, HS, content)
+	if not ok2 or type(data) ~= "table" or #data == 0 then return end
+	local first = data[1]
+	if type(first) == "table" then
+		Tabs.list[1].name = type(first.name) == "string" and first.name or "Tab 1"
+		Tabs.list[1].code = type(first.code) == "string" and first.code or ""
+		Tabs.list[1].button.Text = Tabs.list[1].name
+		UI.CodeBox.Text = Tabs.list[1].code
+	end
+	for i = 2, #data do
+		local t = data[i]
+		if type(t) == "table" then
+			addCodeTab(
+				type(t.name) == "string" and t.name or ("Tab " .. i),
+				type(t.code) == "string" and t.code or "",
+				false
+			)
+		end
+	end
+end
+
+loadTabsFromFile()
 
 UI.NewTabButton.MouseButton1Click:Connect(function()
 	addCodeTab(nil, "", true)
@@ -1158,6 +1202,80 @@ end)
 
 -- Code tools registered here so they share UI.CodeBox closure
 local CODE_TOOL_GROUP = "Code"
+
+local function resolveTab(tabArg)
+	if tabArg == nil or tabArg == "" then return Tabs.active end
+	local idx = tonumber(tabArg)
+	if idx then return Tabs.list[math.floor(idx)] end
+	local q = tostring(tabArg):lower()
+	for _, t in ipairs(Tabs.list) do
+		if t.name:lower() == q then return t end
+	end
+	return nil  -- not found
+end
+
+local function tabListStr()
+	local names = {}
+	for i, t in ipairs(Tabs.list) do names[i] = i .. ": " .. t.name end
+	return table.concat(names, ", ")
+end
+
+Tools.register({
+	group = CODE_TOOL_GROUP,
+	definition = {
+		type = "function",
+		["function"] = {
+			name        = "list_tabs",
+			description = "List all open code tabs with their index and name. Returns which tab is currently active.",
+			parameters  = { type = "object", properties = {}, required = {} }
+		}
+	},
+	handler = function()
+		if #Tabs.list == 0 then return "No tabs open." end
+		local lines = {}
+		for i, tab in ipairs(Tabs.list) do
+			local marker = (tab == Tabs.active) and " (active)" or ""
+			lines[#lines+1] = i .. ": " .. tab.name .. marker
+		end
+		return table.concat(lines, "\n")
+	end
+})
+
+Tools.register({
+	group = CODE_TOOL_GROUP,
+	definition = {
+		type = "function",
+		["function"] = {
+			name        = "switch_tab",
+			description = "Switch the active code tab by index (1-based) or by name. All subsequent read_code/write_code/run calls will operate on that tab.",
+			parameters  = {
+				type = "object",
+				properties = {
+					tab = { type = "string", description = "Tab index (e.g. '2') or tab name (e.g. 'Tab 2')." }
+				},
+				required = { "tab" }
+			}
+		}
+	},
+	handler = function(args)
+		local query = tostring(args.tab or ""):match("^%s*(.-)%s*$")
+		local target
+		local idx = tonumber(query)
+		if idx then
+			target = Tabs.list[math.floor(idx)]
+		else
+			local q = query:lower()
+			for _, tab in ipairs(Tabs.list) do
+				if tab.name:lower() == q then target = tab; break end
+			end
+		end
+		if not target then
+			return "Tab not found: '" .. query .. "'. Available: " .. tabListStr()
+		end
+		switchCodeTab(target)
+		return "Switched to tab: " .. target.name
+	end
+})
 local function unescapeCode(s)
 	-- Models sometimes emit literal \n \t \r instead of real control chars
 	return (s:gsub("\\n", "\n"):gsub("\\t", "\t"):gsub("\\r", ""))
@@ -1174,13 +1292,22 @@ Tools.register({
 		}
 	},
 	handler = function(_args)
-		local code = UI.CodeBox.Text
+		local code = Tabs.active and Tabs.active.code or UI.CodeBox.Text
 		if code == "" then return "Code editor is empty. Use write_code() first." end
 		local fn, compErr = loadstring(code)
 		if not fn then return "Compile error: " .. tostring(compErr) end
+		local captured = {}
+		local origPrint = print
+		print = function(...)
+			local parts = {}
+			for i = 1, select("#", ...) do parts[i] = tostring(select(i, ...)) end
+			captured[#captured + 1] = table.concat(parts, "\t")
+			origPrint(...)
+		end
 		local ok, runErr = pcall(fn)
+		print = origPrint
 		if not ok then return "Runtime error: " .. tostring(runErr) end
-		return "Done."
+		return #captured > 0 and table.concat(captured, "\n") or "Done. (no output)"
 	end
 })
 
@@ -1191,19 +1318,32 @@ Tools.register({
 		type = "function",
 		["function"] = {
 			name        = "write_code",
-			description = "Write or fully replace the code in the code editor. Use for initial generation or complete rewrites.",
-			parameters  = { type = "object", properties = { code = { type = "string", description = "The full Lua code to write." } }, required = { "code" } }
+			description = "Write or fully replace the code in a tab. Defaults to the active tab; pass tab index or name to write to another tab without switching.",
+			parameters  = { type = "object", properties = {
+				code = { type = "string", description = "The full Lua code to write." },
+				tab  = { type = "string", description = "Tab index or name (optional). Omit for active tab." },
+			}, required = { "code" } }
 		}
 	},
 	handler = function(args)
 		local code = unescapeCode(args.code or "")
-		UI.CodeBox.Text = code
+		local tab = resolveTab(args.tab)
+		if not tab then
+			-- create a new tab with that name
+			local name = tostring(args.tab)
+			tab = addCodeTab(name, "", false)
+			if not tab then return "Cannot create tab '" .. name .. "' — tab limit reached." end
+		end
+		if tab == Tabs.active then
+			UI.CodeBox.Text = code
+		else
+			tab.code = code
+		end
 		local lines = select(2, code:gsub("\n", "\n")) + 1
 		local _, syntaxErr = loadstring(code)
-		if syntaxErr then
-			return "Code written (" .. lines .. " lines) — Syntax error: " .. tostring(syntaxErr)
-		end
-		return "Code written (" .. lines .. " lines)"
+		local suffix = syntaxErr and (" — Syntax error: " .. tostring(syntaxErr)) or ""
+		local tabNote = (tab ~= Tabs.active) and (" (tab: " .. tab.name .. ")") or ""
+		return "Code written (" .. lines .. " lines)" .. tabNote .. suffix
 	end
 })
 
@@ -1240,14 +1380,18 @@ Tools.register({
 		type = "function",
 		["function"] = {
 			name        = "read_code",
-			description = "Read the current code editor. Returns total line count so you know what range to fetch with get_lines.",
-			parameters  = { type = "object", properties = {} }
+			description = "Read and return the full contents of a code tab. Defaults to the active tab; pass tab index or name to read another tab without switching.",
+			parameters  = { type = "object", properties = { tab = { type = "string", description = "Tab index or name (optional). Omit for active tab." } } }
 		}
 	},
-	handler = function()
-		local code = UI.CodeBox.Text
-		if code == "" then return "(editor is empty)" end
-		return tostring(select(2, code:gsub("\n", "\n")) + 1) .. " lines total"
+	handler = function(args)
+		local tab = resolveTab(args.tab)
+		if not tab then
+			return "Tab not found: '" .. tostring(args.tab) .. "'. Available: " .. tabListStr()
+		end
+		local code = (tab == Tabs.active) and UI.CodeBox.Text or tab.code
+		if code == "" then return "(tab is empty)" end
+		return code
 	end
 })
 
@@ -2331,8 +2475,9 @@ local function summarizeResult(toolName, result)
 		return fmt(m and (plural(m, "match", "es") .. " found") or result)
 	end
 	if toolName == "iy_status" or toolName == "iy_cmd" then return fmt(result) end
-	if toolName == "run" then
-		return fmt(plural(select(2, result:gsub("\n", "\n")) + 1, "line") .. " of output")
+	if toolName == "run" or toolName == "run_once" then
+		local lines = select(2, result:gsub("\n", "\n")) + 1
+		return fmt(plural(lines, "line") .. " of output")
 	end
 	return fmt(plural(select(2, result:gsub("\n", "\n")) + 1, "line") .. " of output")
 end
@@ -2669,12 +2814,10 @@ local CODE_SYSTEM = table.concat({
 	"4. Keep iterating until the output is correct or the task is fully done.",
 	"Never stop after just writing code if the user wants it executed and verified.",
 	"",
-	"Workflow for edits on large existing code:",
-	"1. Call read_code() to get the total line count.",
-	"2. Call find_in_code(query) to locate the relevant lines by keyword.",
-	"3. Call get_lines(start, end) to read that section in context.",
-	"4. Call replace_lines(start, end, replacement) to make the change.",
-	"Never read or rewrite the entire file if you only need to change a small section.",
+	"Workflow for edits on existing code:",
+	"1. Call read_code() to read the full code, or find_in_code(query) to locate specific lines.",
+	"2. Call replace_lines(start, end, replacement) or edit_code(search, replace) to make the change.",
+	"Never rewrite the entire file if you only need to change a small section.",
 	"",
 	"Use write_code only for new scripts or complete rewrites (editor is empty or user asks for a full rewrite).",
 	"Use any game inspection tools (tree, props, source, etc.) to gather context before coding.",
@@ -2786,15 +2929,17 @@ end
 local Br = { url = "http://127.0.0.1:7402", active = false, polling = false, webOk = false, logs = {} }
 
 local function bridgePost(path, data)
-	if not http_request then return end
+	if not http_request or not Br.active then return end
 	local ok, json = pcall(HS.JSONEncode, HS, data)
 	if not ok then return end
-	pcall(http_request, {
-		Url     = Br.url .. path,
-		Method  = "POST",
-		Headers = { ["Content-Type"] = "application/json" },
-		Body    = json,
-	})
+	task.spawn(function()
+		pcall(http_request, {
+			Url     = Br.url .. path,
+			Method  = "POST",
+			Headers = { ["Content-Type"] = "application/json" },
+			Body    = json,
+		})
+	end)
 end
 
 -- ── Agent loop ────────────────────────────────────────────────────────────────
