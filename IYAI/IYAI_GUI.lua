@@ -49,12 +49,12 @@ local function markdownToRichText(text, baseSize)
 	text = text:gsub("</?[A-Za-z][^>]*>", "")
 	text = text:gsub("&", "&amp;"):gsub("<", "&lt;"):gsub(">", "&gt;")
 
+	local MONO = 'family="rbxasset://fonts/families/RobotoMono.json"'
 	local function inline(s)
 		if not s or s == "" then return "" end
-		s = s:gsub("`([^`]+)`",       '<font color="rgb(255,100,100)" face="GothamMono">%1</font>')
-		s = s:gsub("%*%*%*(.-)%*%*%*", '<font face="GothamBold"><i>%1</i></font>')
-		s = s:gsub("%*%*(.-)%*%*",     '<font face="GothamBold">%1</font>')
-		s = s:gsub("%*(.-)%*",         "<i>%1</i>")
+		s = s:gsub("`([^`]+)`",    '<font '..MONO..' color="rgb(255,100,100)">%1</font>')
+		s = s:gsub("%*%*(.-)%*%*", "<b>%1</b>")
+		s = s:gsub("%*(.-)%*",     "<i>%1</i>")
 		s = s:gsub("~~(.-)~~",         "<s>%1</s>")
 		s = s:gsub("__(.-)__",         "<u>%1</u>")
 		s = s:gsub("!%[.-%]%(.-%)",    "")
@@ -75,7 +75,7 @@ local function markdownToRichText(text, baseSize)
 			if not inCode then
 				inCode, codeBuf = true, {}
 			else
-				out[#out+1] = '<font color="rgb(180,180,180)" face="GothamMono">' .. table.concat(codeBuf, "\n") .. '</font>'
+				out[#out+1] = '<font family="rbxasset://fonts/families/RobotoMono.json" color="rgb(180,180,180)">' .. table.concat(codeBuf, "\n") .. '</font>'
 				inCode = false
 			end
 		elseif inCode then
@@ -86,19 +86,19 @@ local function markdownToRichText(text, baseSize)
 			out[#out+1] = "────────────────────"
 		elseif line:match("^###") then
 			local content = line:gsub("^###%s*", "")
-			out[#out+1] = '<font size="'..hs[3]..'" face="GothamBold">'..inline(content)..'</font>'
+			out[#out+1] = '<font size="'..hs[3]..'">'.. '<b>'..inline(content)..'</b>' ..'</font>'
 		elseif line:match("^##") then
 			local content = line:gsub("^##%s*", "")
-			out[#out+1] = '<font size="'..hs[2]..'" face="GothamBold">'..inline(content)..'</font>'
+			out[#out+1] = '<font size="'..hs[2]..'">'.. '<b>'..inline(content)..'</b>' ..'</font>'
 		elseif line:match("^#") then
 			local content = line:gsub("^#%s*", "")
-			out[#out+1] = '<font size="'..hs[1]..'" face="GothamBold">'..inline(content)..'</font>'
+			out[#out+1] = '<font size="'..hs[1]..'">'.. '<b>'..inline(content)..'</b>' ..'</font>'
 		elseif line:match("^>") then
 			local content = line:gsub("^>%s*", "")
 			out[#out+1] = '<font color="rgb(150,200,150)">▍ '..inline(content)..'</font>'
 		elseif line:match("^%s*[-*+]") then
 			local content = line:gsub("^%s*[-*+]%s*", "")
-			out[#out+1] = '<font face="GothamBold">  •</font>  '..inline(content)
+			out[#out+1] = '<b>  •</b>  '..inline(content)
 		elseif line:match("^%s*%d+%.") then
 			local n = line:match("^%s*(%d+)%.") or "1"
 			local content = line:gsub("^%s*%d+%.%s*", "")
@@ -157,133 +157,169 @@ local UI = {
 	SendButton             = G2L["57"],
 	StopButton             = G2L["59"],
 	ActionsFrame           = G2L["5b"],
-	ClearButton            = G2L["5d"],
-	SettingsPage           = G2L["5e"],
-	Settings_SF            = G2L["5f"],
-	APIKeyFrame            = G2L["60"],
-	APIKeyLabel            = G2L["62"],
-	APIKeyBox              = G2L["63"],
-	HostSelectFrame        = G2L["67"],
-	HostTitle              = G2L["68"],
-	HostFrame              = G2L["69"],
-	HostButtons            = G2L["69"]:GetChildren(),
-	ModelSelectFrame       = G2L["88"],
-	ModelFrame             = G2L["8a"],
-	ModelBox               = G2L["8b"],
-	DropdownButton         = G2L["8e"],
+	NewChatButton          = G2L["5e"],
+	-- Settings page
+	SettingsPage           = G2L["62"],
+	Settings_SF            = G2L["63"],
+	APIKeyFrame            = G2L["64"],
+	APIKeyLabel            = G2L["66"],
+	APIKeyBox              = G2L["67"],
+	HostSelectFrame        = G2L["6b"],
+	HostTitle              = G2L["6c"],
+	HostFrame              = G2L["6d"],
+	HostButtons            = G2L["6d"]:GetChildren(),
+	ModelSelectFrame       = G2L["8c"],
+	ModelFrame             = G2L["8e"],
+	ModelBox               = G2L["8f"],
+	DropdownButton         = G2L["92"],
 	DropdownList           = Instance.new("Frame"),
-	TestFrame              = G2L["91"],
-	ConnectionButton       = G2L["94"],
-	CredentialButton       = G2L["9b"],
-	ConnectionIconColor    = G2L["97"],
-	CredentialIconColor    = G2L["9e"],
-	UnsavedChanges         = G2L["b7"],
-	TextLabel              = G2L["b9"],
-	SaveButton             = G2L["bb"],
-	RevertButton           = G2L["bd"],
-	CodePage               = G2L["c0"],
-	CodeSF                 = G2L["c7"],
-	LineLabel              = G2L["cc"],
-	CodeBox                = G2L["c9"],
-	IntelLabel             = G2L["cb"],
-	CodeActionsFrame       = G2L["c1"],
-	CodeClearButton        = G2L["c3"],
-	CodeCopyButton         = G2L["c4"],
-	RunButton              = G2L["c5"],
-	LeftSidebar            = G2L["154"],
-	TopBar                 = G2L["178"],
-	CloseButton            = G2L["17a"],
-	MinimizeButton         = G2L["17d"],
-	Highlight              = G2L["17e"],
-	IntroFrame             = G2L["1a3"],
-	IYAIToastContainer     = G2L["1a6"],
-	ToastTemplate          = G2L["1a7"],
-	CurrentPage            = G2L["1b3"],
-	ModalFrame             = G2L["17f"],
-	ModalInner             = G2L["181"],
-	ModalCloseButton       = G2L["183"],
-	SearchModelModal       = G2L["184"],
-	ModalSearchBox         = G2L["186"],
-	ModalSF                = G2L["18a"],
-	ExampleModelBtn        = G2L["18b"],
-	ModalSearchButton      = G2L["189"],
-	ModalOpenButton        = G2L["8e"],
-	MaxStepFrame           = G2L["a2"],
-	MaxStepBox             = G2L["a5"],
-	ToolsPage              = G2L["ce"],
-	ToolsSF                = G2L["cf"],
-	ToolsElementTemplate   = G2L["c3"],
-	ToolsGroupFrame        = G2L["d3"],
-	ToolsGroupInner        = G2L["d5"],
-	ToolsGroupTitle        = G2L["c7"],
-	ToolsToolFrame         = G2L["da"],
-	ToolsToolNameDesc      = G2L["ce"],
-	ToolsTotalElements     = G2L["d0"],
-	ToolResultViewModal    = G2L["18e"],
-	ToolResultSF           = G2L["190"],
-	ToolResultTextBox      = G2L["191"],
-	ModalTitleLabel        = G2L["193"],
-	StartupPageSF          = G2L["e4"],
-	StartupPageLayout      = G2L["e5"],
-	StartupElemTemplate    = G2L["e7"],
-	StartupGroupFrame      = G2L["e8"],
-	StartupGroupInner      = G2L["ea"],
-	StartupGroupTitle      = G2L["eb"],
-	StartupToolFrame       = G2L["ef"],
-	StartupToolNameDesc    = G2L["f2"],
-	StartupTotalElems      = G2L["f4"],
+	TestFrame              = G2L["95"],
+	ConnectionButton       = G2L["98"],
+	CredentialButton       = G2L["9f"],
+	ConnectionIconColor    = G2L["9b"],
+	CredentialIconColor    = G2L["a2"],
+	MaxStepFrame           = G2L["a6"],
+	MaxStepBox             = G2L["a9"],
+	MaxStepResetButton     = G2L["ac"],
+	TemperatureBox         = G2L["b2"],
+	TemperatureResetButton = G2L["b5"],
+	SystemPromptFrame      = G2L["b7"],
+	SystemPromptButton     = G2L["b9"],
+	UnsavedChanges         = G2L["bb"],
+	TextLabel              = G2L["bd"],
+	SaveButton             = G2L["bf"],
+	RevertButton           = G2L["c1"],
+	-- Code page
+	CodePage               = G2L["c4"],
+	CodeTopFrame           = G2L["c5"],
+	CodeActionsFrame       = G2L["c6"],
+	CodeClearButton        = G2L["c9"],
+	CodeCopyButton         = G2L["cd"],
+	RunButton              = G2L["d1"],
+	TabsFrame              = G2L["d4"],
+	TabsScrollingFrame     = G2L["d5"],
+	TabButtonTemplate      = G2L["d6"],
+	NewTabButton           = G2L["d9"],
+	CodeSF                 = G2L["dc"],
+	CodeBox                = G2L["de"],
+	IntelLabel             = G2L["e0"],
+	LineLabel              = G2L["e1"],
+	-- Tools page
+	ToolsPage              = G2L["e3"],
+	ToolsSF                = G2L["e4"],
+	ToolsElementTemplate   = G2L["e7"],
+	ToolsGroupFrame        = G2L["e8"],
+	ToolsGroupInner        = G2L["ea"],
+	ToolsGroupTitle        = G2L["eb"],
+	ToolsToolFrame         = G2L["ef"],
+	ToolsToolNameDesc      = G2L["f2"],
+	ToolsTotalElements     = G2L["f4"],
+	-- Startup page
+	StartupPageSF          = G2L["f9"],
+	StartupPageLayout      = G2L["fa"],
+	StartupElemTemplate    = G2L["fc"],
+	StartupGroupFrame      = G2L["fd"],
+	StartupGroupInner      = G2L["ff"],
+	StartupGroupTitle      = G2L["100"],
+	StartupToolFrame       = G2L["104"],
+	StartupToolNameDesc    = G2L["107"],
+	StartupTotalElems      = G2L["109"],
 	-- History page
-	HistoryPage            = G2L["f7"],
-	HistorySF              = G2L["f8"],
-	HistoryTemplate        = G2L["fc"],
-	HistoryToolFrame       = G2L["105"],
-	HistoryTotalElements   = G2L["11f"],
-	HistoryPageTip         = G2L["120"],
-	HistoryButtonFrame     = G2L["16b"],
-	-- New elements
-	OpenConversationHistoryButton = G2L["50"],
-	MaxStepResetButton     = G2L["a8"],
-	TemperatureBox         = G2L["ae"],
-	TemperatureResetButton = G2L["b1"],
-	SystemPromptFrame      = G2L["b3"],
-	SystemPromptButton     = G2L["b5"],
-	SystemPromptModal      = G2L["195"],
-	SystemPromptSF         = G2L["197"],
-	SystemPromptTextBox    = G2L["198"],
-	SystemPromptResetButton = G2L["19c"],
-	SystemPromptSaveButton  = G2L["19d"],
+	HistoryPage            = G2L["10c"],
+	HistorySF              = G2L["10d"],
+	HistoryTemplate        = G2L["111"],
+	HistoryToolFrame       = G2L["11a"],
+	HistoryTotalElements   = G2L["134"],
+	HistoryPageTip         = G2L["135"],
+	HistoryButtonFrame     = G2L["19e"],
 	-- Browser page
-	BrowserPage            = G2L["122"],
-	BrowserDotYou          = G2L["128"],
-	BrowserDotBridge       = G2L["12f"],
-	BrowserDotWeb          = G2L["135"],
-	BrowserIconBridge      = G2L["12d"],
-	BrowserLabelBridge     = G2L["12e"],
-	BrowserIconWeb         = G2L["133"],
-	BrowserLabelWeb        = G2L["134"],
-	BrowserGrad1           = G2L["13d"],
-	BrowserGrad2           = G2L["141"],
-	BrowserInstructions    = G2L["142"],
-	BrowserLogsModal       = G2L["19e"],
-	BrowserLogsTextBox     = G2L["1a1"],
+	BrowserPage            = G2L["137"],
+	BrowserDotYou          = G2L["13d"],
+	BrowserDotBridge       = G2L["144"],
+	BrowserDotWeb          = G2L["14a"],
+	BrowserIconBridge      = G2L["142"],
+	BrowserLabelBridge     = G2L["143"],
+	BrowserIconWeb         = G2L["148"],
+	BrowserLabelWeb        = G2L["149"],
+	BrowserGrad1           = G2L["152"],
+	BrowserGrad2           = G2L["156"],
+	BrowserInstructions    = G2L["157"],
+	BrowserLogsModal       = G2L["1d4"],
+	BrowserLogsTextBox     = G2L["1d7"],
 	ConnectToBrowserButton = G2L["51"],
-	ForceRefreshButton     = G2L["152"],
-	OpenBrowserLogsButton  = G2L["150"],
-	BrowserButtonHitbox    = G2L["172"],
+	ForceRefreshButton     = G2L["167"],
+	OpenBrowserLogsButton  = G2L["165"],
+	BrowserButtonHitbox    = G2L["1a5"],
+	-- Skills page
+	SkillsPage             = G2L["169"],
+	SkillsSF               = G2L["16a"],
+	SkillsTemplate         = G2L["16d"],
+	SkillsGroupFrame       = G2L["16e"],
+	SkillsPageTip          = G2L["181"],
+	SkillsTotalElements    = G2L["180"],
+	SkillsRefreshButton    = G2L["184"],
+	SkillsRefreshText      = G2L["186"],
+	SkillsButtonHitbox     = G2L["1a7"],
+	-- Sidebar & topbar
+	LeftSidebar            = G2L["187"],
+	TopBar                 = G2L["1ae"],
+	CloseButton            = G2L["1b0"],
+	MinimizeButton         = G2L["1b3"],
+	Highlight              = G2L["1b4"],
+	-- Modal
+	ModalFrame             = G2L["1b5"],
+	ModalInner             = G2L["1b7"],
+	ModalCloseButton       = G2L["1b9"],
+	SearchModelModal       = G2L["1ba"],
+	ModalSearchBox         = G2L["1bc"],
+	ModalSF                = G2L["1c0"],
+	ExampleModelBtn        = G2L["1c1"],
+	ModalSearchButton      = G2L["1bf"],
+	ModalOpenButton        = G2L["92"],
+	ToolResultViewModal    = G2L["1c4"],
+	ToolResultSF           = G2L["1c6"],
+	ToolResultTextBox      = G2L["1c7"],
+	ModalTitleLabel        = G2L["1c9"],
+	SystemPromptModal      = G2L["1cb"],
+	SystemPromptSF         = G2L["1cd"],
+	SystemPromptTextBox    = G2L["1ce"],
+	SystemPromptResetButton = G2L["1d2"],
+	SystemPromptSaveButton  = G2L["1d3"],
+	-- Confirmation modal
+	ConfirmationFrame      = G2L["1d9"],
+	ConfirmYesButton       = G2L["1dd"],
+	ConfirmNoButton        = G2L["1de"],
+	ConfirmTextLabel       = G2L["1df"],
+	-- Misc
+	IntroFrame             = G2L["1e1"],
+	IYAIToastContainer     = G2L["1e4"],
+	ToastTemplate          = G2L["1e5"],
+	CurrentPage            = G2L["1f1"],
+	OpenConversationHistoryButton = G2L["50"],
 }
 -- ── Main logic ────────────────────────────────────────────────────────────────
 
-local VERSION           = G2L["1b4"] and G2L["1b4"].Value or ""
+local Clr = {
+    ok    = Color3.fromRGB(109, 217, 161),
+    err   = Color3.fromRGB(171, 108, 108),
+    idle  = Color3.fromRGB(41,  41,  41),
+    tools = {
+        Script   = Color3.fromRGB(109, 217, 161),
+        Web      = Color3.fromRGB(86,  156, 214),
+        Explorer = Color3.fromRGB(255, 198, 102),
+        IY       = Color3.fromRGB(171, 108, 108),
+    },
+    sdim  = NumberSequence.new{ NumberSequenceKeypoint.new(0, 1), NumberSequenceKeypoint.new(0.5, 0.9), NumberSequenceKeypoint.new(1, 1) },
+    sfull = NumberSequence.new{ NumberSequenceKeypoint.new(0, 1), NumberSequenceKeypoint.new(0.5, 0),   NumberSequenceKeypoint.new(1, 1) },
+}
+
+local VERSION           = G2L["1f2"] and G2L["1f2"].Value or ""
 local Tween             = TweenInfo.new(0.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut)
-local COLOR_OK          = Color3.fromRGB(109, 217, 161)
-local COLOR_ERR         = Color3.fromRGB(171, 108, 108)
-local COLOR_IDLE        = Color3.fromRGB(41,  41,  41)
 local DefaultIYAISize   = UDim2.new(0, 600, 0, 400)
 local MinimizedIYAISize = UDim2.new(0, 160, 0, 25)
 local Minimized         = false
 local modelList         = {}
 local _loading          = false
-local ModelBox_ref      = UI.ModelBox  -- forward ref used in fetchOpenRouterModels
 
 UI.ToastTemplate.Visible = false
 Toast.init(UI.ToastTemplate, UI.IYAIToastContainer)
@@ -294,7 +330,7 @@ local _startupGroup = nil
 local _startupInner = nil
 
 local function addStartupEvent(status, title, desc)
-	local colors = { ok = COLOR_OK, warn = Color3.fromRGB(171, 171, 0), err = COLOR_ERR }
+	local colors = { ok = Clr.ok, warn = Color3.fromRGB(171, 171, 0), err = Clr.err }
 	if not _startupGroup then
 		_startupGroup = UI.StartupGroupFrame:Clone()
 		_startupInner = _startupGroup:FindFirstChild("Frame")
@@ -580,13 +616,11 @@ local function scrollBottom()
 	end)
 end
 
-local currentSessionId = nil
-local currentRenders   = nil
-local isReplaying      = false
+local Agt = { history = {}, sessionId = nil, renders = nil, replaying = false, step = 0, aborted = false, codeHistory = {} }
 
 local function recordRender(entry)
-	if currentRenders and not isReplaying then
-		table.insert(currentRenders, entry)
+	if Agt.renders and not Agt.replaying then
+		table.insert(Agt.renders, entry)
 	end
 end
 
@@ -622,10 +656,9 @@ local function addTaskFrame(kind)
 	return addElement(name, nil, false)
 end
 
-local StepCount = 0
 local function addStep()
-	StepCount += 1
-	addElement("StepN", "Step " .. StepCount, true)
+	Agt.step += 1
+	addElement("StepN", "Step " .. Agt.step, true)
 end
 
 local function addThinking(text)
@@ -634,24 +667,25 @@ local function addThinking(text)
 end
 
 local TYPEWRITER_SPEED = 3
-local RICH_TAGS = {"font", "i", "s", "u", "b", "stroke"}
+local RICH_TAGS = {"b", "i", "s", "u", "font", "stroke"}
 
 local function balanceRichTags(s)
-	s = s:gsub("<[^>]*$", "")  -- strip trailing incomplete tag syntax (e.g. "<fon")
-	-- strip any opening tag whose closing tag hasn't arrived yet
+	s = s:gsub("<[^>]*$", "")  -- strip trailing incomplete tag (e.g. "<fon")
+	local suffix = {}
 	for _, tag in ipairs(RICH_TAGS) do
-		local openPat  = "<" .. tag
-		local closePat = "</" .. tag
-		while select(2, s:gsub(openPat, "")) > select(2, s:gsub(closePat, "")) do
-			s = s:match("^(.*)<" .. tag) or ""
+		local openPat = (tag == "font" or tag == "stroke") and ("<" .. tag .. "[%s>]") or ("<" .. tag .. ">")
+		local opens  = select(2, s:gsub(openPat, ""))
+		local closes = select(2, s:gsub("</" .. tag .. ">", ""))
+		for _ = 1, math.max(0, opens - closes) do
+			table.insert(suffix, "</" .. tag .. ">")
 		end
 	end
-	return s
+	return s .. table.concat(suffix)
 end
 
 local function typewriteInto(element, text)
 	if element then element.RichText = true end
-	if isReplaying then
+	if Agt.replaying then
 		if element and element.Parent then element.Text = text end
 		return
 	end
@@ -772,41 +806,44 @@ end
 
 -- ── Syntax highlighter ────────────────────────────────────────────────────────
 
-local _KW = {
-	["and"]=1,["or"]=1,["not"]=1,["if"]=1,["then"]=1,["else"]=1,["elseif"]=1,
-	["end"]=1,["do"]=1,["while"]=1,["for"]=1,["in"]=1,["repeat"]=1,["until"]=1,
-	["break"]=1,["continue"]=1,["return"]=1,["function"]=1,["local"]=1,
-	["self"]=1,["export"]=1,["type"]=1,["typeof"]=1,
-}
-local _BOOL = {["true"]=1,["false"]=1,["nil"]=1}
-local _GL = {
-	["game"]=1,["workspace"]=1,["script"]=1,["shared"]=1,["_G"]=1,["_VERSION"]=1,
-	["print"]=1,["warn"]=1,["error"]=1,["assert"]=1,["require"]=1,["tick"]=1,
-	["wait"]=1,["delay"]=1,["spawn"]=1,["pcall"]=1,["xpcall"]=1,["tonumber"]=1,
-	["tostring"]=1,["unpack"]=1,["next"]=1,["pairs"]=1,["ipairs"]=1,["select"]=1,
-	["getmetatable"]=1,["setmetatable"]=1,["rawget"]=1,["rawset"]=1,["rawlen"]=1,
-	["rawequal"]=1,["load"]=1,["loadstring"]=1,["collectgarbage"]=1,
-}
-local _LIB = {
-	["math"]=1,["string"]=1,["table"]=1,["task"]=1,["os"]=1,["debug"]=1,
-	["coroutine"]=1,["utf8"]=1,["bit32"]=1,["buffer"]=1,
-}
-local _CT = {
-	["Vector3"]=1,["Vector2"]=1,["CFrame"]=1,["Color3"]=1,["UDim"]=1,["UDim2"]=1,
-	["Instance"]=1,["Ray"]=1,["Rect"]=1,["Region3"]=1,["Enum"]=1,["Random"]=1,
-	["BrickColor"]=1,["TweenInfo"]=1,["NumberRange"]=1,["NumberSequence"]=1,
-	["ColorSequence"]=1,["PhysicalProperties"]=1,
-}
-local _CKW="#ab6c6c" local _CGL="#8FB4FF" local _CLIB="#8FB4FF"
-local _CCT="#8FB4FF" local _CSTR="#8EE9B6" local _CCOM="#6a9955"
-local _CNUM="#F2BA2A"
+local syntaxHighlight  -- forward-declare; assigned inside do-block to keep constants off outer scope
 
-local function _esc(s)
-	return (s:gsub("&","&amp;"):gsub("<","&lt;"):gsub(">","&gt;"))
-end
-local function _col(c,s) return '<font color="'..c..'">'..s..'</font>' end
+do
+	local _KW = {
+		["and"]=1,["or"]=1,["not"]=1,["if"]=1,["then"]=1,["else"]=1,["elseif"]=1,
+		["end"]=1,["do"]=1,["while"]=1,["for"]=1,["in"]=1,["repeat"]=1,["until"]=1,
+		["break"]=1,["continue"]=1,["return"]=1,["function"]=1,["local"]=1,
+		["self"]=1,["export"]=1,["type"]=1,["typeof"]=1,
+	}
+	local _BOOL = {["true"]=1,["false"]=1,["nil"]=1}
+	local _GL = {
+		["game"]=1,["workspace"]=1,["script"]=1,["shared"]=1,["_G"]=1,["_VERSION"]=1,
+		["print"]=1,["warn"]=1,["error"]=1,["assert"]=1,["require"]=1,["tick"]=1,
+		["wait"]=1,["delay"]=1,["spawn"]=1,["pcall"]=1,["xpcall"]=1,["tonumber"]=1,
+		["tostring"]=1,["unpack"]=1,["next"]=1,["pairs"]=1,["ipairs"]=1,["select"]=1,
+		["getmetatable"]=1,["setmetatable"]=1,["rawget"]=1,["rawset"]=1,["rawlen"]=1,
+		["rawequal"]=1,["load"]=1,["loadstring"]=1,["collectgarbage"]=1,
+	}
+	local _LIB = {
+		["math"]=1,["string"]=1,["table"]=1,["task"]=1,["os"]=1,["debug"]=1,
+		["coroutine"]=1,["utf8"]=1,["bit32"]=1,["buffer"]=1,
+	}
+	local _CT = {
+		["Vector3"]=1,["Vector2"]=1,["CFrame"]=1,["Color3"]=1,["UDim"]=1,["UDim2"]=1,
+		["Instance"]=1,["Ray"]=1,["Rect"]=1,["Region3"]=1,["Enum"]=1,["Random"]=1,
+		["BrickColor"]=1,["TweenInfo"]=1,["NumberRange"]=1,["NumberSequence"]=1,
+		["ColorSequence"]=1,["PhysicalProperties"]=1,
+	}
+	local _CKW="#ab6c6c" local _CGL="#8FB4FF" local _CLIB="#8FB4FF"
+	local _CCT="#8FB4FF" local _CSTR="#8EE9B6" local _CCOM="#6a9955"
+	local _CNUM="#F2BA2A"
 
-local function syntaxHighlight(code)
+	local function _esc(s)
+		return (s:gsub("&","&amp;"):gsub("<","&lt;"):gsub(">","&gt;"))
+	end
+	local function _col(c,s) return '<font color="'..c..'">'..s..'</font>' end
+
+	function syntaxHighlight(code)
 	local out, i, n = {}, 1, #code
 	while i <= n do
 		local ch = code:sub(i,i)
@@ -860,7 +897,8 @@ local function syntaxHighlight(code)
 		else table.insert(out, _esc(ch)); i = i+1 end
 	end
 	return table.concat(out)
-end
+	end  -- function syntaxHighlight
+end  -- do block
 
 local function updateHighlight()
 	local code = UI.CodeBox.Text
@@ -1019,6 +1057,80 @@ end)
 UI.CodeClearButton.MouseButton1Click:Connect(function()
 	UI.CodeBox.Text = ""
 end)
+
+-- ── Code tabs ─────────────────────────────────────────────────────────────────
+
+local Tabs = { max = 10, list = {}, active = nil, saveTask = nil }
+
+local function scheduleTabSave()
+	if Tabs.saveTask then task.cancel(Tabs.saveTask) end
+	Tabs.saveTask = task.delay(1.2, function()
+		if Tabs.active then Tabs.active.code = UI.CodeBox.Text end
+		Tabs.saveTask = nil
+	end)
+end
+
+local function updateTabVisuals()
+	for _, tab in ipairs(Tabs.list) do
+		if tab.button then
+			tab.button.BackgroundTransparency = (tab == Tabs.active) and 0.75 or 0.95
+		end
+	end
+	UI.NewTabButton.Visible = #Tabs.list < Tabs.max
+end
+
+local function switchCodeTab(tab)
+	if Tabs.active then Tabs.active.code = UI.CodeBox.Text end
+	Tabs.active = tab
+	UI.CodeBox.Text = tab.code
+	updateTabVisuals()
+end
+
+local function removeCodeTab(tab)
+	if #Tabs.list <= 1 then return end  -- keep at least one tab
+	local idx = table.find(Tabs.list, tab)
+	if not idx then return end
+	tab.button:Destroy()
+	table.remove(Tabs.list, idx)
+	-- fix LayoutOrders
+	for i, t in ipairs(Tabs.list) do t.button.LayoutOrder = i end
+	if Tabs.active == tab then
+		switchCodeTab(Tabs.list[math.min(idx, #Tabs.list)])
+	else
+		updateTabVisuals()
+	end
+end
+
+local function addCodeTab(name, code, switchTo)
+	if #Tabs.list >= Tabs.max then return end
+	local btn = UI.TabButtonTemplate:Clone()
+	local tab = { name = name or ("Tab " .. (#Tabs.list + 1)), code = code or "", button = btn }
+	table.insert(Tabs.list, tab)
+	btn.Text         = tab.name
+	btn.LayoutOrder  = #Tabs.list
+	btn.Visible      = true
+	btn.Parent       = UI.TabsScrollingFrame
+	btn.MouseButton1Click:Connect(function()  switchCodeTab(tab)  end)
+	btn.MouseButton2Click:Connect(function()  removeCodeTab(tab)  end)
+	if switchTo ~= false then switchCodeTab(tab) end
+	return tab
+end
+
+-- Wire the first tab to the existing TabButtonTemplate
+do
+	local firstTab = { name = "Tab 1", code = UI.CodeBox.Text, button = UI.TabButtonTemplate }
+	table.insert(Tabs.list, firstTab)
+	Tabs.active = firstTab
+	UI.TabButtonTemplate.LayoutOrder = 1
+	UI.TabButtonTemplate.MouseButton1Click:Connect(function() switchCodeTab(firstTab) end)
+	updateTabVisuals()
+end
+
+UI.NewTabButton.MouseButton1Click:Connect(function()
+	addCodeTab(nil, "", true)
+end)
+
+UI.CodeBox:GetPropertyChangedSignal("Text"):Connect(scheduleTabSave)
 
 UI.CodeCopyButton.MouseButton1Click:Connect(function()
 	if UI.CodeBox.Text == "" then return end
@@ -1279,8 +1391,15 @@ end)
 
 local _onSettingsSaved  -- forward-declared; wired to sendSyncState after bridge section loads
 
-local selectedHost = Config.host
-local dropdownOpen = false
+local Set = {
+	host      = Config.host,
+	ddOpen    = false,
+	loadKey   = true,
+	keyFocus  = false,
+	filtList  = {},
+	allHosts  = {"OpenRouter", "Ollama", "Mistral", "Groq", "Pollinations", "HuggingFace", "Google AI Studio"},
+	cache     = {},
+}
 
 UI.UnsavedChanges.Visible = false
 UI.DropdownList.Visible   = false
@@ -1297,19 +1416,15 @@ local function updateHostLabel(host)
 	UI.HostTitle.Text = 'Host Provider  <font size="11" color="#A1A5A2">(' .. host .. ')</font>'
 end
 
-local ALL_HOSTS = {"OpenRouter", "Ollama", "Mistral", "Groq", "Pollinations", "HuggingFace", "Google AI Studio"}
-local providerCache = {}
-for _, h in ipairs(ALL_HOSTS) do
+for _, h in ipairs(Set.allHosts) do
 	local pd = Config.providerData and Config.providerData[h] or {}
-	providerCache[h] = { key = pd.apiKey or "", model = pd.model or "" }
+	Set.cache[h] = { key = pd.apiKey or "", model = pd.model or "" }
 end
 -- Authoritative current values from Config
-providerCache[Config.host] = { key = Config.apiKey, model = Config.model }
-
-local _loadingKey = true
+Set.cache[Config.host] = { key = Config.apiKey, model = Config.model }
 
 local function applyProviderToUI(host)
-	local cached = providerCache[host] or {}
+	local cached = Set.cache[host] or {}
 	UI.APIKeyBox.Text             = cached.key or ""
 	UI.APIKeyBox.TextTransparency = 1
 	UI.APIKeyLabel.Text           = maskKey(cached.key or "")
@@ -1319,41 +1434,37 @@ end
 applyProviderToUI(Config.host)
 UI.MaxStepBox.Text     = tostring(Config.maxSteps)
 UI.TemperatureBox.Text = tostring(Config.temperature)
-selectedHost    = Config.host
+Set.host    = Config.host
 
 for _, b in pairs(UI.HostButtons) do
 	if b:IsA("TextButton") then
-		b.BackgroundTransparency = b.Text == selectedHost and 0.9 or 1
+		b.BackgroundTransparency = b.Text == Set.host and 0.9 or 1
 	end
 end
 
-updateHostLabel(selectedHost)
+updateHostLabel(Set.host)
 _loading    = false
-_loadingKey = false
-
-local _apiKeyFocused = false
+Set.loadKey = false
 
 UI.APIKeyBox.Focused:Connect(function()
-	_apiKeyFocused   = true
+	Set.keyFocus   = true
 	UI.APIKeyLabel.Text = string.rep("•", #UI.APIKeyBox.Text)
 end)
 
 UI.APIKeyBox.FocusLost:Connect(function()
-	_apiKeyFocused   = false
+	Set.keyFocus   = false
 	UI.APIKeyLabel.Text = maskKey(UI.APIKeyBox.Text)
-	if not _loadingKey then UI.UnsavedChanges.Visible = true end
+	if not Set.loadKey then UI.UnsavedChanges.Visible = true end
 end)
 
 UI.APIKeyBox:GetPropertyChangedSignal("Text"):Connect(function()
-	if _loadingKey then return end
+	if Set.loadKey then return end
 	UI.UnsavedChanges.Visible = true
-	if _apiKeyFocused then UI.APIKeyLabel.Text = string.rep("•", #UI.APIKeyBox.Text) end
+	if Set.keyFocus then UI.APIKeyLabel.Text = string.rep("•", #UI.APIKeyBox.Text) end
 end)
 
-local filteredList = {}
-
 local function closeDropdown()
-	dropdownOpen         = false
+	Set.ddOpen         = false
 	UI.DropdownList.Visible = false
 end
 
@@ -1384,17 +1495,17 @@ local function populateDropdown(models)
 		btn.MouseEnter:Connect(function() btn.TextColor3 = Color3.fromRGB(250, 250, 250) end)
 		btn.MouseLeave:Connect(function() btn.TextColor3 = Color3.fromRGB(161, 161, 170) end)
 	end
-	dropdownOpen         = true
+	Set.ddOpen         = true
 	UI.DropdownList.Visible = true
 end
 
 local function filterDropdown(query)
 	local q = query:lower()
-	filteredList = {}
+	Set.filtList = {}
 	for _, m in ipairs(modelList) do
-		if m.name:lower():find(q, 1, true) then table.insert(filteredList, m) end
+		if m.name:lower():find(q, 1, true) then table.insert(Set.filtList, m) end
 	end
-	populateDropdown(filteredList)
+	populateDropdown(Set.filtList)
 end
 
 UI.ModelBox:GetPropertyChangedSignal("Text"):Connect(function()
@@ -1424,7 +1535,7 @@ UI.TemperatureResetButton.MouseButton1Click:Connect(function()
 end)
 
 UI.DropdownButton.MouseButton1Click:Connect(function()
-	if dropdownOpen then closeDropdown() else filterDropdown(UI.ModelBox.Text) end
+	if Set.ddOpen then closeDropdown() else filterDropdown(UI.ModelBox.Text) end
 end)
 
 UI.ModelBox.Focused:Connect(function()
@@ -1438,7 +1549,7 @@ end)
 
 local _uisBegan = UIS.InputBegan:Connect(function(input)
 	if input.UserInputType ~= Enum.UserInputType.MouseButton1 then return end
-	if not dropdownOpen then return end
+	if not Set.ddOpen then return end
 	local mousePos = UIS:GetMouseLocation()
 	local function inside(gui)
 		local pos = gui.AbsolutePosition; local size = gui.AbsoluteSize
@@ -1454,55 +1565,55 @@ local function updateApiKeyVisibility(host)
 	end
 end
 
-updateApiKeyVisibility(selectedHost)
+updateApiKeyVisibility(Set.host)
 
 for _, btn in pairs(UI.HostButtons) do
 	if not btn:IsA("TextButton") then continue end
 	btn.MouseButton1Click:Connect(function()
 		-- Save current provider's unsaved key+model to cache
-		providerCache[selectedHost] = { key = UI.APIKeyBox.Text, model = UI.ModelBox.Text }
-		selectedHost = btn.Text
+		Set.cache[Set.host] = { key = UI.APIKeyBox.Text, model = UI.ModelBox.Text }
+		Set.host = btn.Text
 		for _, b in pairs(UI.HostButtons) do
 			if b:IsA("TextButton") then
-				b.BackgroundTransparency = b.Text == selectedHost and 0.9 or 1
+				b.BackgroundTransparency = b.Text == Set.host and 0.9 or 1
 			end
 		end
-		UI.ConnectionIconColor.BackgroundColor3 = COLOR_IDLE
-		UI.CredentialIconColor.BackgroundColor3 = COLOR_IDLE
+		UI.ConnectionIconColor.BackgroundColor3 = Clr.idle
+		UI.CredentialIconColor.BackgroundColor3 = Clr.idle
 		-- Restore new provider's key+model
-		_loading = true; _loadingKey = true
-		applyProviderToUI(selectedHost)
-		_loading = false; _loadingKey = false
-		updateApiKeyVisibility(selectedHost)
-		updateHostLabel(selectedHost)
+		_loading = true; Set.loadKey = true
+		applyProviderToUI(Set.host)
+		_loading = false; Set.loadKey = false
+		updateApiKeyVisibility(Set.host)
+		updateHostLabel(Set.host)
 		UI.UnsavedChanges.Visible = true
 	end)
 end
 
-local function setConnStatus(ok)   UI.ConnectionIconColor.BackgroundColor3 = ok and COLOR_OK or COLOR_ERR end
-local function setCredStatus(ok)   UI.CredentialIconColor.BackgroundColor3 = ok and COLOR_OK or COLOR_ERR end
+local function setConnStatus(ok)   UI.ConnectionIconColor.BackgroundColor3 = ok and Clr.ok or Clr.err end
+local function setCredStatus(ok)   UI.CredentialIconColor.BackgroundColor3 = ok and Clr.ok or Clr.err end
 
 UI.ConnectionButton.MouseButton1Click:Connect(function()
 	local res
-	if selectedHost == "Ollama" then
+	if Set.host == "Ollama" then
 		res = Http.request(Config.ollamaUrl .. "/api/tags", "GET", {})
-	elseif selectedHost == "Pollinations" then
+	elseif Set.host == "Pollinations" then
 		res = Http.request("https://gen.pollinations.ai/v1/models", "GET", {
 			["Authorization"] = "Bearer " .. UI.APIKeyBox.Text,
 		})
-	elseif selectedHost == "Groq" then
+	elseif Set.host == "Groq" then
 		res = Http.request("https://api.groq.com/openai/v1/models", "GET", {
 			["Authorization"] = "Bearer " .. UI.APIKeyBox.Text,
 		})
-	elseif selectedHost == "Mistral" then
+	elseif Set.host == "Mistral" then
 		res = Http.request("https://api.mistral.ai/v1/models", "GET", {
 			["Authorization"] = "Bearer " .. UI.APIKeyBox.Text,
 		})
-	elseif selectedHost == "HuggingFace" then
+	elseif Set.host == "HuggingFace" then
 		res = Http.request("https://router.huggingface.co/v1/models", "GET", {
 			["Authorization"] = "Bearer " .. UI.APIKeyBox.Text,
 		})
-	elseif selectedHost == "Google AI Studio" then
+	elseif Set.host == "Google AI Studio" then
 		res = Http.request("https://generativelanguage.googleapis.com/v1beta/openai/models", "GET", {
 			["Authorization"] = "Bearer " .. UI.APIKeyBox.Text,
 		})
@@ -1513,20 +1624,20 @@ UI.ConnectionButton.MouseButton1Click:Connect(function()
 	end
 	if not res or res.StatusCode ~= 200 then
 		setConnStatus(false)
-		Toast.show("Failed", "Could not reach " .. selectedHost, "err", 4)
+		Toast.show("Failed", "Could not reach " .. Set.host, "err", 4)
 		return
 	end
 	setConnStatus(true)
-	Toast.show("Connected", selectedHost .. " is reachable", "ok", 3)
+	Toast.show("Connected", Set.host .. " is reachable", "ok", 3)
 	local ok, data = pcall(HS.JSONDecode, HS, res.Body)
 	if not ok then return end
-	if selectedHost == "Ollama" and data.models then
+	if Set.host == "Ollama" and data.models then
 		modelList = data.models
 		populateDropdown(data.models)
 		if UI.ModelBox.Text == "" and #data.models > 0 then
 			_loading = true; UI.ModelBox.Text = data.models[1].name; _loading = false
 		end
-	elseif selectedHost ~= "Ollama" and data.data then
+	elseif Set.host ~= "Ollama" and data.data then
 		modelList = {}
 		for _, m in ipairs(data.data) do table.insert(modelList, { name = m.id }) end
 		table.sort(modelList, function(a, b) return a.name < b.name end)
@@ -1539,10 +1650,10 @@ end)
 
 UI.CredentialButton.MouseButton1Click:Connect(function()
 	local key = UI.APIKeyBox.Text
-	if selectedHost ~= "Ollama" and key == "" then
+	if Set.host ~= "Ollama" and key == "" then
 		Toast.show("No API Key", "Enter an API key first", "err", 3) return
 	end
-	if selectedHost == "Ollama" then
+	if Set.host == "Ollama" then
 		local res = Http.request(Config.ollamaUrl .. "/api/tags", "GET", {})
 			if res and res.StatusCode == 200 then
 			setCredStatus(true)
@@ -1551,7 +1662,7 @@ UI.CredentialButton.MouseButton1Click:Connect(function()
 			setCredStatus(false)
 			Toast.show("Failed", "Could not reach Ollama", "err", 4)
 		end
-	elseif selectedHost == "Pollinations" then
+	elseif Set.host == "Pollinations" then
 		-- Send a minimal chat request; public endpoint returns 200 regardless of auth on /models
 		local body = HS:JSONEncode({ model = "openai", messages = {{ role = "user", content = "hi" }}, max_tokens = 1 })
 		local res = Http.request("https://gen.pollinations.ai/v1/chat/completions", "POST", {
@@ -1567,7 +1678,7 @@ UI.CredentialButton.MouseButton1Click:Connect(function()
 		else
 			setCredStatus(false); Toast.show("Failed", "Status " .. res.StatusCode, "err", 4)
 		end
-	elseif selectedHost == "Groq" then
+	elseif Set.host == "Groq" then
 		local res = Http.request("https://api.groq.com/openai/v1/models", "GET", {
 			["Authorization"] = "Bearer " .. key,
 		})
@@ -1580,7 +1691,7 @@ UI.CredentialButton.MouseButton1Click:Connect(function()
 		else
 			setCredStatus(false); Toast.show("Failed", "Status " .. res.StatusCode, "err", 4)
 		end
-	elseif selectedHost == "Mistral" then
+	elseif Set.host == "Mistral" then
 		local res = Http.request("https://api.mistral.ai/v1/models", "GET", {
 			["Authorization"] = "Bearer " .. key,
 		})
@@ -1593,7 +1704,7 @@ UI.CredentialButton.MouseButton1Click:Connect(function()
 		else
 			setCredStatus(false); Toast.show("Failed", "Status " .. res.StatusCode, "err", 4)
 		end
-	elseif selectedHost == "HuggingFace" then
+	elseif Set.host == "HuggingFace" then
 		-- /api/whoami requires auth; /v1/models is public and always returns 200
 		local res = Http.request("https://huggingface.co/api/whoami", "GET", {
 			["Authorization"] = "Bearer " .. key,
@@ -1609,7 +1720,7 @@ UI.CredentialButton.MouseButton1Click:Connect(function()
 		else
 			setCredStatus(false); Toast.show("Failed", "Status " .. res.StatusCode, "err", 4)
 		end
-	elseif selectedHost == "Google AI Studio" then
+	elseif Set.host == "Google AI Studio" then
 		local res = Http.request("https://generativelanguage.googleapis.com/v1beta/openai/models", "GET", {
 			["Authorization"] = "Bearer " .. key,
 		})
@@ -1650,14 +1761,14 @@ UI.CredentialButton.MouseButton1Click:Connect(function()
 end)
 
 local function saveSettings()
-	providerCache[selectedHost] = { key = UI.APIKeyBox.Text, model = UI.ModelBox.Text }
+	Set.cache[Set.host] = { key = UI.APIKeyBox.Text, model = UI.ModelBox.Text }
 	Config.apiKey       = UI.APIKeyBox.Text
 	Config.model        = UI.ModelBox.Text
-	Config.host         = selectedHost
+	Config.host         = Set.host
 	Config.maxSteps     = math.max(1, tonumber(UI.MaxStepBox.Text) or 100)
 	Config.temperature  = math.clamp(tonumber(UI.TemperatureBox.Text) or 1.0, 0, 2)
 	Config.providerData = {}
-	for h, data in pairs(providerCache) do
+	for h, data in pairs(Set.cache) do
 		Config.providerData[h] = { apiKey = data.key, model = data.model }
 	end
 	UI.MaxStepBox.Text      = tostring(Config.maxSteps)
@@ -1669,27 +1780,27 @@ local function saveSettings()
 end
 
 local function revertSettings()
-	_loading = true; _loadingKey = true
+	_loading = true; Set.loadKey = true
 	-- Rebuild cache from saved Config
-	for _, h in ipairs(ALL_HOSTS) do
+	for _, h in ipairs(Set.allHosts) do
 		local pd = Config.providerData and Config.providerData[h] or {}
-		providerCache[h] = { key = pd.apiKey or "", model = pd.model or "" }
+		Set.cache[h] = { key = pd.apiKey or "", model = pd.model or "" }
 	end
-	providerCache[Config.host] = { key = Config.apiKey, model = Config.model }
-	selectedHost = Config.host
-	applyProviderToUI(selectedHost)
+	Set.cache[Config.host] = { key = Config.apiKey, model = Config.model }
+	Set.host = Config.host
+	applyProviderToUI(Set.host)
 	UI.MaxStepBox.Text     = tostring(Config.maxSteps)
 	UI.TemperatureBox.Text = tostring(Config.temperature)
 	for _, b in pairs(UI.HostButtons) do
 		if b:IsA("TextButton") then
-			b.BackgroundTransparency = b.Text == selectedHost and 0.9 or 1
+			b.BackgroundTransparency = b.Text == Set.host and 0.9 or 1
 		end
 	end
-	updateApiKeyVisibility(selectedHost)
-	updateHostLabel(selectedHost)
-	UI.ConnectionIconColor.BackgroundColor3 = COLOR_IDLE
-	UI.CredentialIconColor.BackgroundColor3 = COLOR_IDLE
-	_loading = false; _loadingKey = false
+	updateApiKeyVisibility(Set.host)
+	updateHostLabel(Set.host)
+	UI.ConnectionIconColor.BackgroundColor3 = Clr.idle
+	UI.CredentialIconColor.BackgroundColor3 = Clr.idle
+	_loading = false; Set.loadKey = false
 	UI.UnsavedChanges.Visible = false
 end
 
@@ -1698,13 +1809,13 @@ UI.RevertButton.MouseButton1Click:Connect(revertSettings)
 
 -- ── Model Select Modal ────────────────────────────────────────────────────────
 
-local MODAL_CHUNK    = 40
-local modalAllModels = {}
-local modalFiltered  = {}
-local modalRendered  = 0
+local Modal = { chunk = 40, all = {}, filtered = {}, rendered = 0 }
 
-UI.ModalFrame.Visible      = false
-UI.ExampleModelBtn.Visible = false
+UI.ModalFrame.Visible         = false
+UI.ModalInner.Visible         = false
+UI.ConfirmationFrame.Visible  = false
+UI.ExampleModelBtn.Visible    = false
+UI.ConfirmTextLabel.Text      = "Are you sure you want to start a new chat? Your chat is saved automatically."
 
 local function modalClearButtons()
 	for _, c in ipairs(UI.ModalSF:GetChildren()) do
@@ -1715,10 +1826,10 @@ local function modalClearButtons()
 end
 
 local function modalRenderChunk()
-	local startIdx = modalRendered + 1
-	local endIdx   = math.min(modalRendered + MODAL_CHUNK, #modalFiltered)
+	local startIdx = Modal.rendered + 1
+	local endIdx   = math.min(Modal.rendered + Modal.chunk, #Modal.filtered)
 	for i = startIdx, endIdx do
-		local m   = modalFiltered[i]
+		local m   = Modal.filtered[i]
 		local btn = UI.ExampleModelBtn:Clone()
 		btn.Text    = m.name
 		btn.Visible = true
@@ -1730,25 +1841,25 @@ local function modalRenderChunk()
 		end)
 		if i % 20 == 0 then task.wait() end
 	end
-	modalRendered = endIdx
+	Modal.rendered = endIdx
 end
 
 local function modalApplyFilter(query)
 	query = (query or ""):lower()
-	modalFiltered = {}
-	for _, m in ipairs(modalAllModels) do
+	Modal.filtered = {}
+	for _, m in ipairs(Modal.all) do
 		if query == "" or m.name:lower():find(query, 1, true) then
-			table.insert(modalFiltered, m)
+			table.insert(Modal.filtered, m)
 		end
 	end
-	modalRendered = 0
+	Modal.rendered = 0
 	modalClearButtons()
 	modalRenderChunk()
 	UI.ModalSF.CanvasPosition = Vector2.zero
 end
 
 UI.ModalSF:GetPropertyChangedSignal("CanvasPosition"):Connect(function()
-	if modalRendered >= #modalFiltered then return end
+	if Modal.rendered >= #Modal.filtered then return end
 	local pos      = UI.ModalSF.CanvasPosition.Y
 	local viewH    = UI.ModalSF.AbsoluteSize.Y
 	local contentH = UI.ModalSF.AbsoluteCanvasSize.Y
@@ -1764,28 +1875,28 @@ local function fetchHuggingFaceModalSearch(query)
 	end
 	local res = Http.request(url, "GET", { ["Authorization"] = "Bearer " .. UI.APIKeyBox.Text })
 	local ok, data = pcall(HS.JSONDecode, HS, res and res.Body or "")
-	modalAllModels = {}
+	Modal.all = {}
 	if ok and type(data) == "table" then
 		for _, m in ipairs(data) do
 			local id = type(m) == "table" and (m.modelId or m.id) or tostring(m)
-			if id then table.insert(modalAllModels, { name = id }) end
+			if id then table.insert(Modal.all, { name = id }) end
 		end
 	end
-	modalFiltered = { table.unpack(modalAllModels) }
-	modalRendered = 0
+	Modal.filtered = { table.unpack(Modal.all) }
+	Modal.rendered = 0
 	modalClearButtons()
 	modalRenderChunk()
 end
 
 local function modalFetch()
-	modalAllModels = {}
-	local host = selectedHost
+	Modal.all = {}
+	local host = Set.host
 	if host == "Ollama" then
 		local res = Http.request(Config.ollamaUrl .. "/api/tags", "GET", {})
 		local ok, data = pcall(HS.JSONDecode, HS, res and res.Body or "")
 		if ok and data and data.models then
 			for _, m in ipairs(data.models) do
-				table.insert(modalAllModels, { name = m.name })
+				table.insert(Modal.all, { name = m.name })
 			end
 		end
 	elseif host == "HuggingFace" then
@@ -1802,19 +1913,21 @@ local function modalFetch()
 		local ok, data = pcall(HS.JSONDecode, HS, res and res.Body or "")
 		if ok and data and data.data then
 			for _, m in ipairs(data.data) do
-				table.insert(modalAllModels, { name = m.id })
+				table.insert(Modal.all, { name = m.id })
 			end
-			table.sort(modalAllModels, function(a, b) return a.name < b.name end)
+			table.sort(Modal.all, function(a, b) return a.name < b.name end)
 		end
 	end
-	modalFiltered = { table.unpack(modalAllModels) }
-	modalRendered = 0
+	Modal.filtered = { table.unpack(Modal.all) }
+	Modal.rendered = 0
 	modalClearButtons()
 	modalRenderChunk()
 end
 
 local function openModal()
 	if UI.ModalTitleLabel then UI.ModalTitleLabel.Text = "Select Model" end
+	UI.ModalInner.Visible          = true
+	UI.ConfirmationFrame.Visible   = false
 	UI.SearchModelModal.Visible    = true
 	UI.ToolResultViewModal.Visible = false
 	UI.SystemPromptModal.Visible   = false
@@ -1827,6 +1940,8 @@ end
 
 local function openToolResultModal(fullText)
 	if UI.ModalTitleLabel then UI.ModalTitleLabel.Text = "Tool Output" end
+	UI.ModalInner.Visible          = true
+	UI.ConfirmationFrame.Visible   = false
 	UI.SearchModelModal.Visible    = false
 	UI.ToolResultViewModal.Visible = true
 	UI.SystemPromptModal.Visible   = false
@@ -1841,6 +1956,8 @@ end
 
 local function openSystemPromptModal()
 	if UI.ModalTitleLabel then UI.ModalTitleLabel.Text = "System Prompt" end
+	UI.ModalInner.Visible          = true
+	UI.ConfirmationFrame.Visible   = false
 	UI.SearchModelModal.Visible    = false
 	UI.ToolResultViewModal.Visible = false
 	UI.SystemPromptModal.Visible   = true
@@ -1854,10 +1971,23 @@ end
 UI.ModalOpenButton.MouseButton1Click:Connect(openModal)
 UI.ModalCloseButton.MouseButton1Click:Connect(function()
 	UI.ModalFrame.Visible          = false
+	UI.ModalInner.Visible          = false
+	UI.ConfirmationFrame.Visible   = false
 	UI.SearchModelModal.Visible    = true
 	UI.ToolResultViewModal.Visible = false
 	UI.SystemPromptModal.Visible   = false
 end)
+
+local function openConfirmationModal()
+	UI.ModalInner.Visible          = false
+	UI.ConfirmationFrame.Visible   = true
+	UI.ModalFrame.Visible          = true
+end
+
+local function closeConfirmationModal()
+	UI.ModalFrame.Visible          = false
+	UI.ConfirmationFrame.Visible   = false
+end
 
 UI.SystemPromptButton.MouseButton1Click:Connect(openSystemPromptModal)
 
@@ -1876,7 +2006,7 @@ local _hfSearchTask = nil
 if UI.ModalSearchBox then
 	UI.ModalSearchBox:GetPropertyChangedSignal("Text"):Connect(function()
 		local query = UI.ModalSearchBox.Text
-		if selectedHost == "HuggingFace" then
+		if Set.host == "HuggingFace" then
 			if _hfSearchTask then task.cancel(_hfSearchTask); _hfSearchTask = nil end
 			_hfSearchTask = task.delay(0.4, function()
 				_hfSearchTask = nil
@@ -1890,7 +2020,7 @@ end
 if UI.ModalSearchButton then
 	UI.ModalSearchButton.MouseButton1Click:Connect(function()
 		local query = UI.ModalSearchBox and UI.ModalSearchBox.Text or ""
-		if selectedHost == "HuggingFace" then
+		if Set.host == "HuggingFace" then
 			if _hfSearchTask then task.cancel(_hfSearchTask); _hfSearchTask = nil end
 			fetchHuggingFaceModalSearch(query)
 		else
@@ -1934,8 +2064,6 @@ UI.CloseButton.MouseButton1Click:Connect(function()
 end)
 
 -- ── AI core ───────────────────────────────────────────────────────────────────
-
-local conversationHistory = {}
 
 local function buildUrl()
 	if Config.host == "Ollama"          then return Config.ollamaUrl .. "/api/chat" end
@@ -1995,9 +2123,83 @@ local function isContextError(res)
 	return false
 end
 
+-- ── Skills system ─────────────────────────────────────────────────────────────
+
+local Sk = { file = "iyai_skills.json", enabled = {}, loaded = {}, populated = false }
+
+local function parseSkillMd(text)
+	local name    = text:match("^%-%-%-[^\n]*\n.-\nname:%s*(.-)%s*\n") or ""
+	local desc    = text:match("^%-%-%-[^\n]*\n.-\ndescription:%s*(.-)%s*\n") or ""
+	local content = text:match("^%-%-%-[^\n]*\n.-\n%-%-%-\n(.+)$") or text
+	return name:match("^%s*(.-)%s*$"), desc:match("^%s*(.-)%s*$"), content
+end
+
+local function loadSkillsEnabled()
+	Sk.enabled = {}
+	pcall(function()
+		if not readfile then return end
+		local ok, raw = pcall(readfile, Sk.file)
+		if not ok or not raw or raw == "" then return end
+		local ok2, data = pcall(HS.JSONDecode, HS, raw)
+		if ok2 and type(data) == "table" then
+			for k, v in pairs(data) do Sk.enabled[k] = v == true end
+		end
+	end)
+end
+
+local function saveSkillsEnabled()
+	pcall(function()
+		if not writefile then return end
+		local ok, json = pcall(HS.JSONEncode, HS, Sk.enabled)
+		if ok then pcall(writefile, Sk.file, json) end
+	end)
+end
+
+local function loadSkillFiles()
+	Sk.loaded = {}
+	pcall(function()
+		if not listfiles then return end
+		local files = listfiles("IYAI/skills")
+		if not files then return end
+		for _, path in ipairs(files) do
+			if path:match("%.md$") then
+				local ok, text = pcall(readfile, path)
+				if ok and text and text ~= "" then
+					local name, desc, content = parseSkillMd(text)
+					local fname = path:match("[^/\\]+$") or path
+					if name == "" then name = fname:gsub("%.md$", "") end
+					table.insert(Sk.loaded, { name = name, desc = desc, content = content, file = fname })
+				end
+			end
+		end
+	end)
+end
+
+local function getEnabledSkillsContext()
+	if #Sk.loaded == 0 then return nil end
+	local parts = {}
+	for _, skill in ipairs(Sk.loaded) do
+		if Sk.enabled[skill.file] ~= false then
+			table.insert(parts, "## " .. skill.name .. "\n" .. skill.content)
+		end
+	end
+	if #parts == 0 then return nil end
+	return "## Skill Guides\nThe following cheat sheets provide ready-made patterns for specific tasks:\n\n"
+		.. table.concat(parts, "\n\n---\n\n")
+end
+
+-- Load skills on startup (no UI rendering yet)
+task.spawn(function()
+	loadSkillsEnabled()
+	loadSkillFiles()
+end)
+
 local function buildMessages(history)
-	local msgs = {{ role = "system", content = Prompt.build(true, Config.userSystemPrompt) }}
-	for _, m in ipairs(history or conversationHistory) do table.insert(msgs, m) end
+	local sysContent = Prompt.build(true, Config.userSystemPrompt)
+	local skillsCtx  = getEnabledSkillsContext()
+	if skillsCtx then sysContent = sysContent .. "\n\n" .. skillsCtx end
+	local msgs = {{ role = "system", content = sysContent }}
+	for _, m in ipairs(history or Agt.history) do table.insert(msgs, m) end
 	return msgs
 end
 
@@ -2065,26 +2267,24 @@ loadSessionsFromFile()
 
 -- ── UI helpers ────────────────────────────────────────────────────────────────
 
-local agentAborted = false
-
 local function setBusy(state)
 	UI.isAssistantBusy.Value        = state
 	UI.SendButton.Visible           = not state
 	UI.SendButton.ImageTransparency = UI.TextBoxInput.Text == "" and 0.7 or 0
 	UI.StopButton.Visible           = state == true
 
-	if not state and currentSessionId then
+	if not state and Agt.sessionId then
 		for _, s in ipairs(sessions) do
-			if s.id == currentSessionId then
-				s.messages       = { table.unpack(conversationHistory) }
+			if s.id == Agt.sessionId then
+				s.messages       = { table.unpack(Agt.history) }
 				s.lastMessageAt  = os.time()
 				local count = 0
-				for _, m in ipairs(conversationHistory) do
+				for _, m in ipairs(Agt.history) do
 					if m.role == "user" or m.role == "assistant" then count += 1 end
 				end
 				s.msgCount = count
 				local groupSet, groups = {}, {}
-				for _, m in ipairs(conversationHistory) do
+				for _, m in ipairs(Agt.history) do
 					if m.role == "tool" and m.name then
 						local g = toolNameToGroup[m.name]
 						if g and not groupSet[g] then
@@ -2102,7 +2302,7 @@ local function setBusy(state)
 end
 
 UI.StopButton.Visible = false
-UI.StopButton.MouseButton1Click:Connect(function() agentAborted = true end)
+UI.StopButton.MouseButton1Click:Connect(function() Agt.aborted = true end)
 
 local function plural(n, word, suffix)
 	return n .. " " .. word .. (n == 1 and "" or (suffix or "s"))
@@ -2192,22 +2392,15 @@ end
 
 -- ── History page ──────────────────────────────────────────────────────────────
 
-local TOOL_COLORS = {
-	Script   = Color3.fromRGB(109, 217, 161),
-	Web      = Color3.fromRGB(86,  156, 214),
-	Explorer = Color3.fromRGB(255, 198, 102),
-	IY       = Color3.fromRGB(171, 108, 108),
-}
-
 local function saveCurrentSession()
-	if #conversationHistory == 0 then return end
+	if #Agt.history == 0 then return end
 	local firstUser = ""
-	for _, m in ipairs(conversationHistory) do
+	for _, m in ipairs(Agt.history) do
 		if m.role == "user" then firstUser = m.content; break end
 	end
 	local title = firstUser ~= "" and (firstUser:sub(1, 45) .. (#firstUser > 45 and "..." or "")) or "Conversation"
 	local msgCount = 0
-	for _, m in ipairs(conversationHistory) do
+	for _, m in ipairs(Agt.history) do
 		if m.role ~= "system" then msgCount += 1 end
 	end
 	table.insert(sessions, 1, {
@@ -2216,14 +2409,14 @@ local function saveCurrentSession()
 		timestamp = os.time(),
 		msgCount  = msgCount,
 		tools     = {},
-		messages  = { table.unpack(conversationHistory) },
+		messages  = { table.unpack(Agt.history) },
 	})
 	nextSessionId += 1
 end
 
 local function replayRenders(renderList)
-	isReplaying = true
-	StepCount = 0
+	Agt.replaying = true
+	Agt.step = 0
 	UI.TotalElements.Value = 0
 	for _, child in ipairs(UI.ScrollingFrameMainChat:GetChildren()) do
 		if child:IsA("GuiObject") and child ~= UI.ElementTemplate and child ~= GreetFrame then
@@ -2254,15 +2447,15 @@ local function replayRenders(renderList)
 		end
 	end
 
-	isReplaying = false
+	Agt.replaying = false
 	scrollBottom()
 end
 
 local function clearChat()
-	currentSessionId = nil
-	currentRenders   = nil
-	conversationHistory = {}
-	StepCount           = 0
+	Agt.sessionId = nil
+	Agt.renders   = nil
+	Agt.history = {}
+	Agt.step           = 0
 	UI.TotalElements.Value = 0
 	for _, child in ipairs(UI.ScrollingFrameMainChat:GetChildren()) do
 		if child:IsA("GuiObject") and child ~= UI.ElementTemplate and child ~= GreetFrame then child:Destroy() end
@@ -2307,7 +2500,7 @@ local function renderHistoryPage()
 				end
 				timeLbl.Text = "Created at " .. created .. lastLine
 			end
-			if activeTag then activeTag.Visible = (session.id == currentSessionId) end
+			if activeTag then activeTag.Visible = (session.id == Agt.sessionId) end
 
 			if toolsRow then
 				for _, ch in ipairs(toolsRow:GetChildren()) do
@@ -2317,7 +2510,7 @@ local function renderHistoryPage()
 					local badge    = UI.HistoryToolFrame:Clone()
 					local iconDot  = badge:FindFirstChild("IconColor")
 					local nameLbl  = badge:FindFirstChild("ToolName")
-					if iconDot then iconDot.BackgroundColor3 = TOOL_COLORS[group] or COLOR_OK end
+					if iconDot then iconDot.BackgroundColor3 = Clr.tools[group] or Clr.ok end
 					if nameLbl then nameLbl.Text = group end
 					badge.Visible = true
 					badge.Parent  = toolsRow
@@ -2332,16 +2525,16 @@ local function renderHistoryPage()
 
 			if loadBtn then
 				loadBtn.MouseButton1Click:Connect(function()
-					conversationHistory = { table.unpack(session.messages) }
-					currentSessionId    = session.id
-					currentRenders      = session.renders
+					Agt.history = { table.unpack(session.messages) }
+					Agt.sessionId    = session.id
+					Agt.renders      = session.renders
 					UI.CurrentPage.Value = "Agent"
 					task.defer(function() replayRenders(session.renders) end)
 				end)
 			end
 			if deleteBtn then
 				deleteBtn.MouseButton1Click:Connect(function()
-					local wasActive = (sid == currentSessionId)
+					local wasActive = (sid == Agt.sessionId)
 					for i, s in ipairs(sessions) do
 						if s.id == sid then table.remove(sessions, i); break end
 					end
@@ -2367,9 +2560,101 @@ UI.CurrentPage.Changed:Connect(function(page)
 	if page == "History" then renderHistoryPage() end
 end)
 
--- ── Clear button ──────────────────────────────────────────────────────────────
+-- ── New Chat button (with confirmation) ──────────────────────────────────────
 
-UI.ClearButton.MouseButton1Click:Connect(clearChat)
+UI.NewChatButton.MouseButton1Click:Connect(function()
+	if #Agt.history == 0 then clearChat(); return end
+	openConfirmationModal()
+end)
+
+UI.ConfirmYesButton.MouseButton1Click:Connect(function()
+	closeConfirmationModal()
+	clearChat()
+end)
+
+UI.ConfirmNoButton.MouseButton1Click:Connect(function()
+	closeConfirmationModal()
+end)
+
+-- ── Skills page ───────────────────────────────────────────────────────────────
+
+
+local function setToggleVisual(bg, button, enabled)
+	local ti = TweenInfo.new(0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+	TS:Create(button, ti, { Position = enabled and UDim2.new(1, -20, 0, 0) or UDim2.new(0, 0, 0, 0) }):Play()
+	TS:Create(bg,     ti, { BackgroundColor3 = enabled and Color3.fromRGB(120, 230, 80) or Color3.fromRGB(50, 50, 50) }):Play()
+end
+
+local function populateSkillsPage()
+	for _, child in ipairs(UI.SkillsSF:GetChildren()) do
+		if child.Name == "GroupFrame" then child:Destroy() end
+	end
+	UI.SkillsTotalElements.Value = 0
+
+	for _, skill in ipairs(Sk.loaded) do
+		local enabled = Sk.enabled[skill.file] ~= false  -- default on
+
+		local card  = UI.SkillsGroupFrame:Clone()
+		local inner = card:FindFirstChildWhichIsA("Frame")
+		if not inner then card:Destroy(); continue end
+		local left   = inner:FindFirstChild("Left")
+		local right  = inner:FindFirstChild("Right")
+		if not (left and right) then card:Destroy(); continue end
+
+		local topRow     = left:FindFirstChild("TopRowFrame")
+		local skillLabel = topRow  and topRow:FindFirstChild("SkillLabel")
+		local descLabel  = left:FindFirstChild("DescriptionLabel")
+		local toggleCont = right:FindFirstChild("ToggleContainer")
+		local bg         = toggleCont and toggleCont:FindFirstChild("BG")
+		local button     = bg and bg:FindFirstChild("Button")
+
+		if skillLabel then skillLabel.Text = skill.name end
+		if descLabel  then descLabel.Text  = skill.desc end
+
+		if bg and button then
+			button.Position         = enabled and UDim2.new(1, -20, 0, 0) or UDim2.new(0, 0, 0, 0)
+			bg.BackgroundColor3     = enabled and Color3.fromRGB(120, 230, 80) or Color3.fromRGB(50, 50, 50)
+			local capturedSkill  = skill
+			local capturedBg     = bg
+			local capturedButton = button
+			button.MouseButton1Click:Connect(function()
+				local isOn = Sk.enabled[capturedSkill.file] ~= false
+				Sk.enabled[capturedSkill.file] = not isOn
+				setToggleVisual(capturedBg, capturedButton, not isOn)
+				saveSkillsEnabled()
+			end)
+		end
+
+		UI.SkillsTotalElements.Value += 1
+		card.LayoutOrder = UI.SkillsTotalElements.Value
+		card.Visible     = true
+		card.Parent      = UI.SkillsSF
+	end
+
+	task.defer(function()
+		local lay = UI.SkillsSF:FindFirstChildWhichIsA("UIListLayout")
+		if lay then UI.SkillsSF.CanvasSize = UDim2.new(0, 0, 0, lay.AbsoluteContentSize.Y + 10) end
+	end)
+end
+
+UI.CurrentPage.Changed:Connect(function(page)
+	if page == "Skills" and not Sk.populated then
+		Sk.populated = true
+		populateSkillsPage()
+	end
+end)
+
+UI.SkillsRefreshButton.MouseButton1Click:Connect(function()
+	Sk.populated = false
+	loadSkillsEnabled()
+	loadSkillFiles()
+	populateSkillsPage()
+	Sk.populated = true
+	UI.SkillsRefreshText.TextTransparency = 0
+	TS:Create(UI.SkillsRefreshText, TweenInfo.new(1.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+		TextTransparency = 1,
+	}):Play()
+end)
 
 -- ── Code agent ────────────────────────────────────────────────────────────────
 
@@ -2397,22 +2682,20 @@ local CODE_SYSTEM = table.concat({
 	"Do not ask clarifying questions — make a reasonable attempt and explain your assumptions.",
 }, "\n")
 
-local codeHistory = {}
-
 local function runCodeAgent(userText)
-	StepCount    = 0
-	agentAborted = false
+	Agt.step    = 0
+	Agt.aborted = false
 	setBusy(true)
 	UI.CurrentPage.Value = "Agent"
 
 	local maxSteps = Config.maxSteps
-	table.insert(codeHistory, { role = "user", content = userText })
+	table.insert(Agt.codeHistory, { role = "user", content = userText })
 	local statusFrame = addCodeStatus("Agent is writing code...")
 	local stepsDone   = 0
 	local diffSummary = ""
 
 	while stepsDone < maxSteps do
-		if agentAborted then
+		if Agt.aborted then
 			updateCodeStatus(statusFrame, "Stopped.", false)
 			addElement("AbortText", "Stopped by user.", true)
 			break
@@ -2439,10 +2722,10 @@ local function runCodeAgent(userText)
 			return j:gsub('"properties":%[%]', '"properties":{}')
 		end
 
-		local res = requestWithRetry(buildUrl(), "POST", buildHeaders(), buildCodeBody(codeHistory))
+		local res = requestWithRetry(buildUrl(), "POST", buildHeaders(), buildCodeBody(Agt.codeHistory))
 		if isContextError(res) then
 			Toast.show("History trimmed", "Context too long — retrying with less history", "warn", 3)
-			res = requestWithRetry(buildUrl(), "POST", buildHeaders(), buildCodeBody(trimHistory(codeHistory)))
+			res = requestWithRetry(buildUrl(), "POST", buildHeaders(), buildCodeBody(trimHistory(Agt.codeHistory)))
 		end
 		if not res or res.StatusCode ~= 200 then
 			updateCodeStatus(statusFrame, "Request failed (" .. (res and tostring(res.StatusCode) or "no response") .. ")", false)
@@ -2458,11 +2741,11 @@ local function runCodeAgent(userText)
 			updateCodeStatus(statusFrame,
 				(diffSummary ~= "" and diffSummary .. "  " or "") .. text,
 				true)
-			table.insert(codeHistory, { role = "assistant", content = text })
+			table.insert(Agt.codeHistory, { role = "assistant", content = text })
 			break
 		end
 
-		table.insert(codeHistory, msg)
+		table.insert(Agt.codeHistory, msg)
 
 		local seenCodeCalls = {}
 		for _, call in ipairs(toolCalls) do
@@ -2481,7 +2764,7 @@ local function runCodeAgent(userText)
 				if added   > 0 then diffSummary = diffSummary .. string.format('<font color="#4ec94e">+%d</font> ', added) end
 				if removed > 0 then diffSummary = diffSummary .. string.format('<font color="#e05252">-%d</font> ', removed) end
 			end
-			table.insert(codeHistory, {
+			table.insert(Agt.codeHistory, {
 				role         = "tool",
 				tool_call_id = call.id or fnName,
 				name         = fnName,
@@ -2500,14 +2783,14 @@ end
 
 -- ── Web Bridge (defined here so runAgentLoop can call bridgePost) ─────────────
 
-local BRIDGE_URL = "http://127.0.0.1:7402"
+local Br = { url = "http://127.0.0.1:7402", active = false, polling = false, webOk = false, logs = {} }
 
 local function bridgePost(path, data)
 	if not http_request then return end
 	local ok, json = pcall(HS.JSONEncode, HS, data)
 	if not ok then return end
 	pcall(http_request, {
-		Url     = BRIDGE_URL .. path,
+		Url     = Br.url .. path,
 		Method  = "POST",
 		Headers = { ["Content-Type"] = "application/json" },
 		Body    = json,
@@ -2517,12 +2800,12 @@ end
 -- ── Agent loop ────────────────────────────────────────────────────────────────
 
 local function runAgentLoop(userText)
-	StepCount    = 0
-	agentAborted = false
+	Agt.step    = 0
+	Agt.aborted = false
 	setBusy(true)
 
 	local MAX_STEPS = Config.maxSteps
-	table.insert(conversationHistory, { role = "user", content = userText })
+	table.insert(Agt.history, { role = "user", content = userText })
 	local stepsDone  = 0
 	local agentDone  = false
 	local seenGlobal = {}  -- cross-step duplicate detection
@@ -2551,7 +2834,7 @@ local function runAgentLoop(userText)
 	end
 
 	while stepsDone < MAX_STEPS do
-		if agentAborted then
+		if Agt.aborted then
 			if generatingFrame then generatingFrame:Destroy(); generatingFrame = nil end
 			addElement("AbortText", "Stopped by user.", true)
 			recordRender({t = "stop"})
@@ -2572,7 +2855,7 @@ local function runAgentLoop(userText)
 		if _retryFrame then _retryFrame:Destroy(); _retryFrame = nil end
 		if isContextError(res) then
 			Toast.show("History trimmed", "Context too long — retrying with less history", "warn", 3)
-			res = requestWithRetry(buildUrl(), "POST", buildHeaders(), buildBody(trimHistory(conversationHistory)))
+			res = requestWithRetry(buildUrl(), "POST", buildHeaders(), buildBody(trimHistory(Agt.history)))
 		end
 		if not res or res.StatusCode ~= 200 then
 			if generatingFrame then generatingFrame:Destroy(); generatingFrame = nil end
@@ -2625,7 +2908,7 @@ local function runAgentLoop(userText)
 				addResponse(rawContent, usage)
 			end
 			generatingFrame = nil
-			table.insert(conversationHistory, { role = "assistant", content = Prompt.stripMarkdown(rawContent) })
+			table.insert(Agt.history, { role = "assistant", content = Prompt.stripMarkdown(rawContent) })
 			if rawContent ~= "" then bridgePost("/roblox/result", { type = "chat", text = rawContent }) end
 			break
 		end
@@ -2644,7 +2927,7 @@ local function runAgentLoop(userText)
 		end
 
 		-- addStep()
-		table.insert(conversationHistory, msg)
+		table.insert(Agt.history, msg)
 
 		agentDone = false
 		local seenCalls = {}
@@ -2655,7 +2938,7 @@ local function runAgentLoop(userText)
 			if seenCalls[callKey] then continue end
 			seenCalls[callKey] = true
 			if seenGlobal[callKey] then
-				table.insert(conversationHistory, {
+				table.insert(Agt.history, {
 					role         = "tool",
 					tool_call_id = call.id or fnName,
 					name         = fnName,
@@ -2687,7 +2970,7 @@ local function runAgentLoop(userText)
 						else
 						addResponse(message, usage)
 						end
-						table.insert(conversationHistory, { role = "assistant", content = message })
+						table.insert(Agt.history, { role = "assistant", content = message })
 						bridgePost("/roblox/result", { type = "chat", text = message })
 				end
 				if generatingFrame then generatingFrame:Destroy(); generatingFrame = nil end
@@ -2709,7 +2992,7 @@ local function runAgentLoop(userText)
 			if not failed and CODE_WRITE_TOOLS[fnName] then
 				addPostAction("View Code →", function() UI.CurrentPage.Value = "Code" end)
 			end
-			table.insert(conversationHistory, {
+			table.insert(Agt.history, {
 				role         = "tool",
 				tool_call_id = call.id or fnName,
 				name         = fnName,
@@ -2850,8 +3133,8 @@ local function sendSyncState()
 		config   = { host = Config.host, model = Config.model, apiKey = Config.apiKey },
 		tools    = toolList,
 		sessions = sessionList,
-		activeId = currentSessionId,
-		history  = conversationHistory,
+		activeId = Agt.sessionId,
+		history  = Agt.history,
 	})
 end
 
@@ -2868,9 +3151,9 @@ end
 local function handleLoadSession(id)
 	for _, s in ipairs(sessions) do
 		if s.id == id then
-			currentSessionId   = s.id
-			currentRenders     = s.renders
-			conversationHistory = { table.unpack(s.messages) }
+			Agt.sessionId   = s.id
+			Agt.renders     = s.renders
+			Agt.history = { table.unpack(s.messages) }
 			bridgePost("/roblox/result", { type = "session_loaded", id = id, history = s.messages })
 			return
 		end
@@ -2880,21 +3163,18 @@ end
 
 -- ── Bridge poll ───────────────────────────────────────────────────────────────
 
-local bridgeActive  = false   -- true only while bridge is reachable
-local pollLoopAlive = false   -- prevents duplicate loops
-
 local function startBridgePoll()
 	if not http_request then return end
-	if pollLoopAlive then return end
-	pollLoopAlive = true
+	if Br.polling then return end
+	Br.polling = true
 	task.spawn(function()
-		while bridgeActive do
+		while Br.active do
 			-- long-poll: bridge holds this request until a message arrives (up to 15s)
 			local ok, res = pcall(http_request, {
-				Url    = BRIDGE_URL .. "/roblox/poll",
+				Url    = Br.url .. "/roblox/poll",
 				Method = "GET",
 			})
-			if not bridgeActive then break end
+			if not Br.active then break end
 			if not ok then
 				task.wait(1)  -- back off on network error
 			elseif res and res.StatusCode == 200 and res.Body and res.Body ~= "null" then
@@ -2922,7 +3202,7 @@ local function startBridgePoll()
 			end
 			-- null response = timeout, loop immediately for next long-poll
 		end
-		pollLoopAlive = false
+		Br.polling = false
 	end)
 end
 
@@ -2933,7 +3213,7 @@ onSend = function(webText)
 	if text == "" or UI.isAssistantBusy.Value then return end
 	if not webText then UI.TextBoxInput.Text = "" end
 
-	if #conversationHistory == 0 and currentSessionId == nil then
+	if #Agt.history == 0 and Agt.sessionId == nil then
 		local title = text:sub(1, 45) .. (#text > 45 and "..." or "")
 		local sid = nextSessionId
 		nextSessionId += 1
@@ -2948,8 +3228,8 @@ onSend = function(webText)
 			renders   = renders,
 		}
 		table.insert(sessions, 1, newSession)
-		currentSessionId = sid
-		currentRenders   = renders
+		Agt.sessionId = sid
+		Agt.renders   = renders
 	end
 
 	addChat(text)
@@ -2975,14 +3255,13 @@ end)
 
 -- ── Browser page ──────────────────────────────────────────────────────────────
 
-local browserLogs = {}
 local function bridgeLog(msg)
-	table.insert(browserLogs, os.date("[%H:%M:%S] ") .. msg)
-	if #browserLogs > 200 then table.remove(browserLogs, 1) end
+	table.insert(Br.logs, os.date("[%H:%M:%S] ") .. msg)
+	if #Br.logs > 200 then table.remove(Br.logs, 1) end
 end
 
 -- You dot is always green — the plugin is the local end
-UI.BrowserDotYou.BackgroundColor3 = COLOR_OK
+UI.BrowserDotYou.BackgroundColor3 = Clr.ok
 
 -- Shimmer: sweep UIGradient offset from -1 to +1, loop forever
 local shimmerTI = TweenInfo.new(1.5, Enum.EasingStyle.Linear, Enum.EasingDirection.Out, -1, false, 0.4)
@@ -3003,32 +3282,26 @@ for _, btn in ipairs(UI.BrowserInstructions:GetDescendants()) do
 end
 
 local function setDotState(dot, icon, label, connected)
-	dot.BackgroundColor3         = connected and COLOR_OK or COLOR_ERR
+	dot.BackgroundColor3         = connected and Clr.ok or Clr.err
 	icon.ImageTransparency       = connected and 0 or 0.6
 	label.TextTransparency       = connected and 0 or 0.6
 end
 
-local SHIMMER_DIM   = NumberSequence.new{ NumberSequenceKeypoint.new(0, 1), NumberSequenceKeypoint.new(0.5, 0.9), NumberSequenceKeypoint.new(1, 1) }
-local SHIMMER_FULL  = NumberSequence.new{ NumberSequenceKeypoint.new(0, 1), NumberSequenceKeypoint.new(0.5, 0),   NumberSequenceKeypoint.new(1, 1) }
-local shimmerTweenI = TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
-
 local function setShimmer(full)
 	-- UIGradient Transparency can't be tweened directly; swap instantly
-	UI.BrowserGrad1.Transparency = full and SHIMMER_FULL or SHIMMER_DIM
-	UI.BrowserGrad2.Transparency = full and SHIMMER_FULL or SHIMMER_DIM
+	UI.BrowserGrad1.Transparency = full and Clr.sfull or Clr.sdim
+	UI.BrowserGrad2.Transparency = full and Clr.sfull or Clr.sdim
 end
-
-local prevWebOk = false
 
 local function checkBridgeStatus()
 	if not http_request then return end
-	local ok, res = pcall(http_request, { Url = BRIDGE_URL .. "/ping", Method = "GET" })
+	local ok, res = pcall(http_request, { Url = Br.url .. "/ping", Method = "GET" })
 	local bridgeOk = ok and res and res.StatusCode == 200
 	setDotState(UI.BrowserDotBridge, UI.BrowserIconBridge, UI.BrowserLabelBridge, bridgeOk)
 	if bridgeOk then
 		bridgeLog("Bridge OK")
 		local webOk = false
-		local ok2, res2 = pcall(http_request, { Url = BRIDGE_URL .. "/status", Method = "GET" })
+		local ok2, res2 = pcall(http_request, { Url = Br.url .. "/status", Method = "GET" })
 		if ok2 and res2 and res2.StatusCode == 200 then
 			local ok3, data = pcall(HS.JSONDecode, HS, res2.Body)
 			webOk = ok3 and data and data.browser == true
@@ -3037,19 +3310,19 @@ local function checkBridgeStatus()
 		setDotState(UI.BrowserDotWeb, UI.BrowserIconWeb, UI.BrowserLabelWeb, webOk)
 		setShimmer(webOk)
 		-- Push tree + state the moment a browser client appears
-		if webOk and not prevWebOk then
+		if webOk and not Br.webOk then
 			task.spawn(sendGameTree)
 			task.spawn(sendSyncState)
 		end
-		prevWebOk = webOk
-		if not bridgeActive then
-			bridgeActive = true
+		Br.webOk = webOk
+		if not Br.active then
+			Br.active = true
 			startBridgePoll()
 		end
 	else
 		bridgeLog("Bridge unreachable")
-		bridgeActive = false
-		prevWebOk = false
+		Br.active = false
+		Br.webOk = false
 		setDotState(UI.BrowserDotWeb, UI.BrowserIconWeb, UI.BrowserLabelWeb, false)
 		setShimmer(false)
 	end
@@ -3080,11 +3353,13 @@ end)
 
 UI.OpenBrowserLogsButton.MouseButton1Click:Connect(function()
 	if UI.ModalTitleLabel then UI.ModalTitleLabel.Text = "Bridge Logs" end
+	UI.ModalInner.Visible          = true
+	UI.ConfirmationFrame.Visible   = false
 	UI.SearchModelModal.Visible    = false
 	UI.ToolResultViewModal.Visible = false
 	UI.SystemPromptModal.Visible   = false
 	UI.BrowserLogsModal.Visible    = true
-	UI.BrowserLogsTextBox.Text     = #browserLogs > 0 and table.concat(browserLogs, "\n") or "(no logs yet)"
+	UI.BrowserLogsTextBox.Text     = #Br.logs > 0 and table.concat(Br.logs, "\n") or "(no logs yet)"
 	UI.ModalFrame.Visible          = true
 end)
 
@@ -3106,7 +3381,7 @@ UI.TopBar.InputBegan:Connect(function(input)
 	end
 end)
 
-local _uisChanged = UIS.InputChanged:Connect(function(input)
+_uisChanged = UIS.InputChanged:Connect(function(input)
 	if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
 		local delta   = input.Position - dragStart
 		UI.IYAI.Position = UDim2.new(
@@ -3116,6 +3391,6 @@ local _uisChanged = UIS.InputChanged:Connect(function(input)
 	end
 end)
 
-local _uisEnded = UIS.InputEnded:Connect(function(input)
+_uisEnded = UIS.InputEnded:Connect(function(input)
 	if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = false end
 end)
