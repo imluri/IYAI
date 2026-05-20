@@ -2369,10 +2369,22 @@ local function buildMessages(history)
 	return msgs
 end
 
+local function safeJsonEntry(entry)
+	local ok, _ = pcall(HS.JSONEncode, HS, entry)
+	if ok then return entry end
+	-- strip tool_calls and fall back to plain text
+	local safe = { role = entry.role or "assistant", content = type(entry.content) == "string" and entry.content or "" }
+	local ok2, _ = pcall(HS.JSONEncode, HS, safe)
+	return ok2 and safe or { role = "assistant", content = "" }
+end
+
 local function buildBody(history)
+	local msgs = buildMessages(history)
+	-- ensure every message is JSON-safe
+	for i, m in ipairs(msgs) do msgs[i] = safeJsonEntry(m) end
 	local body = {
 		model       = Config.model,
-		messages    = buildMessages(history),
+		messages    = msgs,
 		stream      = false,
 		temperature = Config.temperature,
 	}
@@ -2384,7 +2396,7 @@ local function buildBody(history)
 		body.tool_choice = "auto"
 	end
 	local ok, json = pcall(HS.JSONEncode, HS, body)
-	if not ok then error("Can't build request — history contains non-serializable data: " .. tostring(json), 2) end
+	if not ok then error("buildBody failed: " .. tostring(json), 2) end
 	json = json:gsub('"properties":%[%]', '"properties":{}')
 	return json
 end
