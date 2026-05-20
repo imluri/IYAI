@@ -3315,6 +3315,18 @@ local function sendSyncState()
 		})
 	end
 
+	-- tabs
+	local tabsList = {}
+	for i, t in ipairs(Tabs.list) do
+		tabsList[i] = { name = t.name, code = (t == Tabs.active) and UI.CodeBox.Text or t.code, active = t == Tabs.active }
+	end
+
+	-- skills
+	local skillsList = {}
+	for _, sk in ipairs(Sk.loaded) do
+		skillsList[#skillsList+1] = { name = sk.name, desc = sk.desc or "", enabled = Sk.enabled[sk.file] ~= false }
+	end
+
 	bridgePost("/roblox/result", {
 		type     = "sync_state",
 		config   = { host = Config.host, model = Config.model, apiKey = Config.apiKey },
@@ -3322,6 +3334,8 @@ local function sendSyncState()
 		sessions = sessionList,
 		activeId = Agt.sessionId,
 		history  = Agt.history,
+		tabs     = tabsList,
+		skills   = skillsList,
 	})
 end
 
@@ -3384,6 +3398,80 @@ local function startBridgePoll()
 					elseif msg.type == "load_session" and msg.id then
 						local captured = msg.id
 						task.spawn(function() handleLoadSession(captured) end)
+					elseif msg.type == "get_tabs" then
+						task.spawn(function()
+							if Tabs.active then Tabs.active.code = UI.CodeBox.Text end
+							local tabsList = {}
+							for i, t in ipairs(Tabs.list) do
+								tabsList[i] = { name = t.name, code = t.code, active = t == Tabs.active }
+							end
+							bridgePost("/roblox/result", { type = "tabs_state", tabs = tabsList })
+						end)
+					elseif msg.type == "set_code" and msg.tabIndex then
+						task.spawn(function()
+							local tab = Tabs.list[math.floor(msg.tabIndex)]
+							if tab then
+								if tab == Tabs.active then
+									UI.CodeBox.Text = msg.code or ""
+								else
+									tab.code = msg.code or ""
+								end
+								saveTabsToFile()
+							end
+						end)
+					elseif msg.type == "run_code" then
+						task.spawn(function()
+							local code = UI.CodeBox.Text
+							if code == "" then
+								bridgePost("/roblox/result", { type = "run_result", output = "Code editor is empty." })
+								return
+							end
+							local fn, compErr = loadstring(code)
+							if not fn then
+								bridgePost("/roblox/result", { type = "run_result", output = "Compile error: " .. tostring(compErr) })
+								return
+							end
+							local captured = {}
+							local origPrint = print
+							print = function(...)
+								local parts = {}
+								for i = 1, select("#", ...) do parts[i] = tostring(select(i, ...)) end
+								captured[#captured+1] = table.concat(parts, "\t")
+								origPrint(...)
+							end
+							local ok, runErr = pcall(fn)
+							print = origPrint
+							if not ok then
+								bridgePost("/roblox/result", { type = "run_result", output = "Runtime error: " .. tostring(runErr) })
+							else
+								bridgePost("/roblox/result", { type = "run_result", output = #captured > 0 and table.concat(captured, "\n") or "(no output)" })
+							end
+						end)
+					elseif msg.type == "switch_tab" and msg.tabIndex then
+						task.spawn(function()
+							local tab = Tabs.list[math.floor(msg.tabIndex)]
+							if tab then switchCodeTab(tab) end
+						end)
+					elseif msg.type == "get_skills" then
+						task.spawn(function()
+							local skillsList = {}
+							for _, sk in ipairs(Sk.loaded) do
+								skillsList[#skillsList+1] = { name = sk.name, desc = sk.desc or "", enabled = Sk.enabled[sk.file] ~= false }
+							end
+							bridgePost("/roblox/result", { type = "skills_state", skills = skillsList })
+						end)
+					elseif msg.type == "toggle_skill" and msg.name then
+						task.spawn(function()
+							for _, sk in ipairs(Sk.loaded) do
+								if sk.name == msg.name then
+									local isOn = Sk.enabled[sk.file] ~= false
+									Sk.enabled[sk.file] = not isOn
+									saveSkillsEnabled()
+									sendSyncState()
+									break
+								end
+							end
+						end)
 					end
 				end
 			end
