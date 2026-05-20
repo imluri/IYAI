@@ -2383,7 +2383,8 @@ local function buildBody(history)
 		body.tools       = toolDefs
 		body.tool_choice = "auto"
 	end
-	local json = HS:JSONEncode(body)
+	local ok, json = pcall(HS.JSONEncode, HS, body)
+	if not ok then error("Can't build request — history contains non-serializable data: " .. tostring(json), 2) end
 	json = json:gsub('"properties":%[%]', '"properties":{}')
 	return json
 end
@@ -3096,8 +3097,12 @@ local function runAgentLoop(userText)
 			generatingFrame.LayoutOrder = UI.TotalElements.Value + 100
 		end
 
-		-- addStep()
-		table.insert(Agt.history, msg)
+		-- addStep() — only keep JSON-safe fields; raw msg may have provider-specific extras
+		local histEntry = { role = msg.role or "assistant" }
+		if msg.content      then histEntry.content     = msg.content      end
+		if msg.tool_calls   then histEntry.tool_calls  = msg.tool_calls   end
+		if msg.thinking     then histEntry.thinking    = msg.thinking     end
+		table.insert(Agt.history, histEntry)
 
 		agentDone = false
 		local seenCalls = {}
