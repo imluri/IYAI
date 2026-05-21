@@ -2967,7 +2967,9 @@ local function runCodeAgent(userText)
 			updateCodeStatus(statusFrame,
 				(diffSummary ~= "" and diffSummary .. "  " or "") .. text,
 				true)
-			table.insert(Agt.codeHistory, { role = "assistant", content = text })
+			local codeEntry = { role = "assistant", content = text }
+			if msg.reasoning_content then codeEntry.reasoning_content = msg.reasoning_content end
+			table.insert(Agt.codeHistory, codeEntry)
 			break
 		end
 
@@ -3136,7 +3138,9 @@ local function runAgentLoop(userText)
 				addResponse(rawContent, usage)
 			end
 			generatingFrame = nil
-			table.insert(Agt.history, { role = "assistant", content = Prompt.stripMarkdown(rawContent) })
+			local finalEntry = { role = "assistant", content = Prompt.stripMarkdown(rawContent) }
+			if msg.reasoning_content then finalEntry.reasoning_content = msg.reasoning_content end
+			table.insert(Agt.history, finalEntry)
 			if rawContent ~= "" then bridgePost("/roblox/result", { type = "chat", text = rawContent }) end
 			break
 		end
@@ -3156,9 +3160,10 @@ local function runAgentLoop(userText)
 
 		-- addStep() — only keep JSON-safe fields; raw msg may have provider-specific extras
 		local histEntry = { role = msg.role or "assistant" }
-		if msg.content      then histEntry.content     = msg.content      end
-		if msg.tool_calls   then histEntry.tool_calls  = msg.tool_calls   end
-		if msg.thinking     then histEntry.thinking    = msg.thinking     end
+		if msg.content           then histEntry.content           = msg.content           end
+		if msg.tool_calls        then histEntry.tool_calls        = msg.tool_calls        end
+		if msg.thinking          then histEntry.thinking          = msg.thinking          end
+		if msg.reasoning_content then histEntry.reasoning_content = msg.reasoning_content end
 		table.insert(Agt.history, histEntry)
 
 		agentDone = false
