@@ -168,133 +168,134 @@ local UI = {
 	HostTitle              = G2L["6c"],
 	HostFrame              = G2L["6d"],
 	HostButtons            = G2L["6d"]:GetChildren(),
-	ModelSelectFrame       = G2L["8c"],
-	ModelFrame             = G2L["8e"],
-	ModelBox               = G2L["8f"],
-	DropdownButton         = G2L["92"],
+	ModelSelectFrame       = G2L["94"],
+	ModelFrame             = G2L["96"],
+	ModelBox               = G2L["97"],
+	DropdownButton         = G2L["9a"],
 	DropdownList           = Instance.new("Frame"),
-	TestFrame              = G2L["95"],
-	ConnectionButton       = G2L["98"],
-	CredentialButton       = G2L["9f"],
-	ConnectionIconColor    = G2L["9b"],
-	CredentialIconColor    = G2L["a2"],
-	MaxStepFrame           = G2L["a6"],
-	MaxStepBox             = G2L["a9"],
-	MaxStepResetButton     = G2L["ac"],
-	TemperatureBox         = G2L["b2"],
-	TemperatureResetButton = G2L["b5"],
-	SystemPromptFrame      = G2L["b7"],
-	SystemPromptButton     = G2L["b9"],
-	UnsavedChanges         = G2L["bb"],
-	TextLabel              = G2L["bd"],
-	SaveButton             = G2L["bf"],
-	RevertButton           = G2L["c1"],
+	TestFrame              = G2L["9d"],
+	ConnectionButton       = G2L["a0"],
+	CredentialButton       = G2L["a7"],
+	ConnectionIconColor    = G2L["a3"],
+	CredentialIconColor    = G2L["aa"],
+	MaxStepFrame           = G2L["ae"],
+	MaxStepBox             = G2L["b1"],
+	MaxStepResetButton     = G2L["b4"],
+	TemperatureBox         = G2L["ba"],
+	TemperatureResetButton = G2L["bd"],
+	SystemPromptFrame      = G2L["bf"],
+	SystemPromptButton     = G2L["c1"],
+	UnsavedChanges         = G2L["c3"],
+	TextLabel              = G2L["c5"],
+	SaveButton             = G2L["c7"],
+	RevertButton           = G2L["c9"],
 	-- Code page
-	CodePage               = G2L["c4"],
-	CodeTopFrame           = G2L["c5"],
-	CodeActionsFrame       = G2L["c6"],
-	CodeClearButton        = G2L["c9"],
-	CodeCopyButton         = G2L["cd"],
-	RunButton              = G2L["d1"],
-	TabsFrame              = G2L["d4"],
-	TabsScrollingFrame     = G2L["d5"],
-	TabButtonTemplate      = G2L["d6"],
-	NewTabButton           = G2L["d9"],
-	CodeSF                 = G2L["dc"],
-	CodeBox                = G2L["de"],
-	IntelLabel             = G2L["e0"],
-	LineLabel              = G2L["e1"],
+	CodePage               = G2L["cc"],
+	CodeTopFrame           = G2L["cd"],
+	CodeActionsFrame       = G2L["ce"],
+	CodeClearButton        = G2L["d1"],
+	CodeCopyButton         = G2L["d5"],
+	RunButton              = G2L["d9"],
+	TabsFrame              = G2L["dc"],
+	TabsScrollingFrame     = G2L["dd"],
+	TabButtonTemplate      = G2L["de"],
+	NewTabButton           = G2L["e1"],
+	CodeSF                 = G2L["e4"],
+	CodeBox                = G2L["e6"],
+	IntelLabel             = G2L["e8"],
+	LineLabel              = G2L["e9"],
 	-- Tools page
-	ToolsPage              = G2L["e3"],
-	ToolsSF                = G2L["e4"],
-	ToolsElementTemplate   = G2L["e7"],
-	ToolsGroupFrame        = G2L["e8"],
-	ToolsGroupInner        = G2L["ea"],
-	ToolsGroupTitle        = G2L["eb"],
-	ToolsToolFrame         = G2L["ef"],
-	ToolsToolNameDesc      = G2L["f2"],
-	ToolsTotalElements     = G2L["f4"],
+	ToolsPage              = G2L["eb"],
+	ToolsSF                = G2L["ec"],
+	ToolsElementTemplate   = G2L["ef"],
+	ToolsGroupFrame        = G2L["f0"],
+	ToolsGroupInner        = G2L["f2"],
+	ToolsGroupTitle        = G2L["f3"],
+	ToolsToolFrame         = G2L["f7"],
+	ToolsToolNameDesc      = G2L["fa"],
+	ToolsTotalElements     = G2L["fc"],
 	-- Startup page
-	StartupPageSF          = G2L["f9"],
-	StartupPageLayout      = G2L["fa"],
-	StartupElemTemplate    = G2L["fc"],
-	StartupGroupFrame      = G2L["fd"],
-	StartupGroupInner      = G2L["ff"],
-	StartupGroupTitle      = G2L["100"],
-	StartupToolFrame       = G2L["104"],
-	StartupToolNameDesc    = G2L["107"],
-	StartupTotalElems      = G2L["109"],
+	StartupPageSF          = G2L["101"],
+	StartupPageLayout      = G2L["102"],
+	StartupElemTemplate    = G2L["104"],
+	StartupGroupFrame      = G2L["105"],
+	StartupGroupInner      = G2L["107"],
+	StartupGroupTitle      = G2L["108"],
+	StartupToolFrame       = G2L["10c"],
+	StartupToolNameDesc    = G2L["10f"],
+	StartupTotalElems      = G2L["111"],
 	-- History page
-	HistoryPage            = G2L["10c"],
-	HistorySF              = G2L["10d"],
-	HistoryTemplate        = G2L["111"],
-	HistoryToolFrame       = G2L["11a"],
-	HistoryTotalElements   = G2L["134"],
-	HistoryPageTip         = G2L["135"],
-	HistoryButtonFrame     = G2L["19e"],
+	HistoryPage            = G2L["114"],
+	HistorySF              = G2L["115"],
+	HistoryTemplate        = G2L["119"],
+	HistoryToolFrame       = G2L["122"],
+	HistoryTotalElements   = G2L["13c"],
+	HistoryPageTip         = G2L["13d"],
+	HistoryButtonFrame     = G2L["1a6"],
 	-- Browser page
-	BrowserPage            = G2L["137"],
-	BrowserDotYou          = G2L["13d"],
-	BrowserDotBridge       = G2L["144"],
-	BrowserDotWeb          = G2L["14a"],
-	BrowserIconBridge      = G2L["142"],
-	BrowserLabelBridge     = G2L["143"],
-	BrowserIconWeb         = G2L["148"],
-	BrowserLabelWeb        = G2L["149"],
-	BrowserGrad1           = G2L["152"],
-	BrowserGrad2           = G2L["156"],
+	BrowserPage            = G2L["13f"],
+	BrowserDotYou          = G2L["145"],
+	BrowserDotBridge       = G2L["14c"],
+	BrowserDotWeb          = G2L["152"],
+	BrowserIconBridge      = G2L["14a"],
+	BrowserLabelBridge     = G2L["14b"],
+	BrowserIconWeb         = G2L["150"],
+	BrowserLabelWeb        = G2L["151"],
+	BrowserGrad1           = G2L["15a"],
+	BrowserGrad2           = G2L["15e"],
 	BrowserInstructions    = G2L["157"],
 	BrowserLogsModal       = G2L["1d4"],
 	BrowserLogsTextBox     = G2L["1d7"],
 	ConnectToBrowserButton = G2L["51"],
-	ForceRefreshButton     = G2L["167"],
-	OpenBrowserLogsButton  = G2L["165"],
+	ForceRefreshButton     = G2L["16f"],
+	OpenBrowserLogsButton  = G2L["16d"],
 	BrowserButtonHitbox    = G2L["1a5"],
 	-- Skills page
-	SkillsPage             = G2L["169"],
+	SkillsPage             = G2L["171"],
 	SkillsSF               = G2L["16a"],
 	SkillsTemplate         = G2L["16d"],
 	SkillsGroupFrame       = G2L["16e"],
-	SkillsPageTip          = G2L["181"],
-	SkillsTotalElements    = G2L["180"],
-	SkillsRefreshButton    = G2L["184"],
-	SkillsRefreshText      = G2L["186"],
+	SkillsPageTip          = G2L["189"],
+	SkillsTotalElements    = G2L["188"],
+	SkillsRefreshButton    = G2L["18c"],
+	SkillsRefreshText      = G2L["18e"],
 	SkillsButtonHitbox     = G2L["1a7"],
 	-- Sidebar & topbar
-	LeftSidebar            = G2L["187"],
-	TopBar                 = G2L["1ae"],
-	CloseButton            = G2L["1b0"],
-	MinimizeButton         = G2L["1b3"],
-	Highlight              = G2L["1b4"],
+	LeftSidebar            = G2L["18f"],
+	TopBar                 = G2L["1b6"],
+	CloseButton            = G2L["1b8"],
+	MinimizeButton         = G2L["1bb"],
+	Highlight              = G2L["1bc"],
 	-- Modal
-	ModalFrame             = G2L["1b5"],
-	ModalInner             = G2L["1b7"],
-	ModalCloseButton       = G2L["1b9"],
-	SearchModelModal       = G2L["1ba"],
-	ModalSearchBox         = G2L["1bc"],
-	ModalSF                = G2L["1c0"],
-	ExampleModelBtn        = G2L["1c1"],
-	ModalSearchButton      = G2L["1bf"],
-	ModalOpenButton        = G2L["92"],
-	ToolResultViewModal    = G2L["1c4"],
-	ToolResultSF           = G2L["1c6"],
-	ToolResultTextBox      = G2L["1c7"],
-	ModalTitleLabel        = G2L["1c9"],
-	SystemPromptModal      = G2L["1cb"],
-	SystemPromptSF         = G2L["1cd"],
-	SystemPromptTextBox    = G2L["1ce"],
-	SystemPromptResetButton = G2L["1d2"],
-	SystemPromptSaveButton  = G2L["1d3"],
+	ModalFrame             = G2L["1bd"],
+	ModalInner             = G2L["1bf"],
+	ModalCloseButton       = G2L["1c1"],
+	SearchModelModal       = G2L["1c2"],
+	ModalSearchBox         = G2L["1c4"],
+	ModalSF                = G2L["1c8"],
+	ExampleModelBtn        = G2L["1c9"],
+	ModalSearchButton      = G2L["1c7"],
+	ModalOpenButton        = G2L["9a"],
+	ToolResultViewModal    = G2L["1cc"],
+	ToolResultSF           = G2L["1ce"],
+	ToolResultTextBox      = G2L["1cf"],
+	ModalTitleLabel        = G2L["1d1"],
+	SystemPromptModal      = G2L["1d3"],
+	SystemPromptSF         = G2L["1d5"],
+	SystemPromptTextBox    = G2L["1d6"],
+	SystemPromptResetButton = G2L["1da"],
+	SystemPromptSaveButton  = G2L["1db"],
+	BrowserLogsModal       = G2L["1dc"],
 	-- Confirmation modal
-	ConfirmationFrame      = G2L["1d9"],
-	ConfirmYesButton       = G2L["1dd"],
-	ConfirmNoButton        = G2L["1de"],
-	ConfirmTextLabel       = G2L["1df"],
+	ConfirmationFrame      = G2L["1e1"],
+	ConfirmYesButton       = G2L["1e5"],
+	ConfirmNoButton        = G2L["1e6"],
+	ConfirmTextLabel       = G2L["1e7"],
 	-- Misc
-	IntroFrame             = G2L["1e1"],
-	IYAIToastContainer     = G2L["1e4"],
-	ToastTemplate          = G2L["1e5"],
-	CurrentPage            = G2L["1f1"],
+	IntroFrame             = G2L["1e9"],
+	IYAIToastContainer     = G2L["1ec"],
+	ToastTemplate          = G2L["1ed"],
+	CurrentPage            = G2L["1f9"],
 	OpenConversationHistoryButton = G2L["50"],
 }
 -- ── Main logic ────────────────────────────────────────────────────────────────
@@ -313,7 +314,7 @@ local Clr = {
     sfull = NumberSequence.new{ NumberSequenceKeypoint.new(0, 1), NumberSequenceKeypoint.new(0.5, 0),   NumberSequenceKeypoint.new(1, 1) },
 }
 
-local VERSION           = G2L["1f2"] and G2L["1f2"].Value or ""
+local VERSION           = G2L["1fa"] and G2L["1fa"].Value or ""
 local Tween             = TweenInfo.new(0.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut)
 local DefaultIYAISize   = UDim2.new(0, 600, 0, 400)
 local MinimizedIYAISize = UDim2.new(0, 160, 0, 25)
@@ -413,6 +414,8 @@ local function fetchMistralModels()     fetchModelsFromOpenAIEndpoint("https://a
 local function fetchGroqModels()        fetchModelsFromOpenAIEndpoint("https://api.groq.com/openai/v1/models",                               Config.apiKey)  end
 local function fetchHuggingFaceModels() fetchModelsFromOpenAIEndpoint("https://router.huggingface.co/v1/models",                             Config.apiKey)  end
 local function fetchGoogleModels()      fetchModelsFromOpenAIEndpoint("https://generativelanguage.googleapis.com/v1beta/openai/models",       Config.apiKey)  end
+local function fetch9routerModels()     fetchModelsFromOpenAIEndpoint("http://localhost:20128/v1/models",                                    Config.apiKey)  end
+local function fetchOpenCodeModels()    fetchModelsFromOpenAIEndpoint("https://opencode.ai/zen/v1/models",                                   Config.apiKey)  end
 
 local function autoTestOnStart()
 	task.spawn(function()
@@ -430,6 +433,10 @@ local function autoTestOnStart()
 			fetchHuggingFaceModels()
 		elseif Config.host == "Google AI Studio" then
 			fetchGoogleModels()
+		elseif Config.host == "9router" then
+			fetch9routerModels()
+		elseif Config.host == "OpenCode" then
+			fetchOpenCodeModels()
 		else
 			fetchOpenRouterModels()
 		end
@@ -1563,7 +1570,7 @@ local Set = {
 	loadKey   = true,
 	keyFocus  = false,
 	filtList  = {},
-	allHosts  = {"OpenRouter", "Ollama", "Mistral", "Groq", "Pollinations", "HuggingFace", "Google AI Studio"},
+	allHosts  = {"OpenRouter", "Ollama", "Mistral", "Groq", "Pollinations", "HuggingFace", "Google AI Studio", "9router", "OpenCode"},
 	cache     = {},
 }
 
@@ -1783,6 +1790,14 @@ UI.ConnectionButton.MouseButton1Click:Connect(function()
 		res = Http.request("https://generativelanguage.googleapis.com/v1beta/openai/models", "GET", {
 			["Authorization"] = "Bearer " .. UI.APIKeyBox.Text,
 		})
+	elseif Set.host == "9router" then
+		res = Http.request("http://localhost:20128/v1/models", "GET", {
+			["Authorization"] = "Bearer " .. UI.APIKeyBox.Text,
+		})
+	elseif Set.host == "OpenCode" then
+		res = Http.request("https://opencode.ai/zen/v1/models", "GET", {
+			["Authorization"] = "Bearer " .. UI.APIKeyBox.Text,
+		})
 	else
 		res = Http.request("https://openrouter.ai/api/v1/models", "GET", {
 			["Authorization"] = "Bearer " .. UI.APIKeyBox.Text,
@@ -1896,6 +1911,32 @@ UI.CredentialButton.MouseButton1Click:Connect(function()
 			setCredStatus(true);  Toast.show("Valid Key", "Google AI Studio key accepted", "ok", 3)
 		elseif res.StatusCode == 401 then
 			setCredStatus(false); Toast.show("Invalid Key", "Google key rejected (401)", "err", 4)
+		else
+			setCredStatus(false); Toast.show("Failed", "Status " .. res.StatusCode, "err", 4)
+		end
+	elseif Set.host == "9router" then
+		local res = Http.request("http://localhost:20128/v1/models", "GET", {
+			["Authorization"] = "Bearer " .. key,
+		})
+		if not res then
+			setCredStatus(false); Toast.show("Failed", "Cannot reach 9router — is it running?", "err", 4)
+		elseif res.StatusCode == 200 then
+			setCredStatus(true);  Toast.show("Connected", "9router is reachable", "ok", 3)
+		elseif res.StatusCode == 401 then
+			setCredStatus(false); Toast.show("Invalid Key", "9router key rejected (401)", "err", 4)
+		else
+			setCredStatus(false); Toast.show("Failed", "Status " .. res.StatusCode, "err", 4)
+		end
+	elseif Set.host == "OpenCode" then
+		local res = Http.request("https://opencode.ai/zen/v1/models", "GET", {
+			["Authorization"] = "Bearer " .. key,
+		})
+		if not res then
+			setCredStatus(false); Toast.show("Failed", "No response from OpenCode", "err", 4)
+		elseif res.StatusCode == 200 then
+			setCredStatus(true);  Toast.show("Valid Key", "OpenCode key accepted", "ok", 3)
+		elseif res.StatusCode == 401 then
+			setCredStatus(false); Toast.show("Invalid Key", "OpenCode key rejected (401)", "err", 4)
 		else
 			setCredStatus(false); Toast.show("Failed", "Status " .. res.StatusCode, "err", 4)
 		end
@@ -2069,10 +2110,12 @@ local function modalFetch()
 		fetchHuggingFaceModalSearch("")
 		return
 	else
-		local url = host == "Mistral"         and "https://api.mistral.ai/v1/models"
-			or    host == "Groq"              and "https://api.groq.com/openai/v1/models"
-			or    host == "Pollinations"      and "https://gen.pollinations.ai/v1/models"
-			or    host == "Google AI Studio"  and "https://generativelanguage.googleapis.com/v1beta/openai/models"
+		local url = host == "Mistral"          and "https://api.mistral.ai/v1/models"
+			or    host == "Groq"               and "https://api.groq.com/openai/v1/models"
+			or    host == "Pollinations"       and "https://gen.pollinations.ai/v1/models"
+			or    host == "Google AI Studio"   and "https://generativelanguage.googleapis.com/v1beta/openai/models"
+			or    host == "9router"            and "http://localhost:20128/v1/models"
+			or    host == "OpenCode"           and "https://opencode.ai/zen/v1/models"
 			or    "https://openrouter.ai/api/v1/models"
 		local auth = host ~= "OpenRouter" and UI.APIKeyBox.Text or ""
 		local res = Http.request(url, "GET", auth ~= "" and { ["Authorization"] = "Bearer " .. auth } or {})
@@ -2232,12 +2275,14 @@ end)
 -- ── AI core ───────────────────────────────────────────────────────────────────
 
 local function buildUrl()
-	if Config.host == "Ollama"          then return Config.ollamaUrl .. "/api/chat" end
-	if Config.host == "Mistral"         then return "https://api.mistral.ai/v1/chat/completions" end
-	if Config.host == "Groq"            then return "https://api.groq.com/openai/v1/chat/completions" end
-	if Config.host == "Pollinations"    then return "https://gen.pollinations.ai/v1/chat/completions" end
-	if Config.host == "HuggingFace"     then return "https://router.huggingface.co/v1/chat/completions" end
+	if Config.host == "Ollama"           then return Config.ollamaUrl .. "/api/chat" end
+	if Config.host == "Mistral"          then return "https://api.mistral.ai/v1/chat/completions" end
+	if Config.host == "Groq"             then return "https://api.groq.com/openai/v1/chat/completions" end
+	if Config.host == "Pollinations"     then return "https://gen.pollinations.ai/v1/chat/completions" end
+	if Config.host == "HuggingFace"      then return "https://router.huggingface.co/v1/chat/completions" end
 	if Config.host == "Google AI Studio" then return "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions" end
+	if Config.host == "9router"          then return "http://localhost:20128/v1/chat/completions" end
+	if Config.host == "OpenCode"         then return "https://opencode.ai/zen/v1/chat/completions" end
 	return "https://openrouter.ai/api/v1/chat/completions"
 end
 

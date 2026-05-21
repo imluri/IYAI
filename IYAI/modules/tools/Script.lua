@@ -16,7 +16,6 @@ return function(Tools)
 		return inst
 	end
 
-
 	Tools.register({
 		group = "Script",
 		definition = {
