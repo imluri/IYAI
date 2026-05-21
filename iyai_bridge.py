@@ -82,13 +82,11 @@ def browser_events():
         },
     )
 
-_BROWSER_CMD_TYPES = {'chat', 'get_tree', 'get_children', 'get_props', 'get_state', 'settings_update', 'load_session'}
-
 @app.route('/browser/send', methods=['POST'])
 def browser_send():
     """Web page sends a command or chat message to Roblox."""
     data = request.get_json(silent=True) or {}
-    if data.get('type') in _BROWSER_CMD_TYPES:
+    if data:
         to_roblox.put(data)
     return 'ok', 200
 

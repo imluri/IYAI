@@ -5158,6 +5158,6 @@ G2L["1f9"]["Name"] = [[CurrentPage]];
 -- StarterGui.IYAI.Version
 G2L["1fa"] = Instance.new("StringValue", G2L["1"]);
 G2L["1fa"]["Name"] = [[Version]];
-G2L["1fa"]["Value"] = [[1.0.6]];
+G2L["1fa"]["Value"] = [[1.0.7]];
 
 return G2L

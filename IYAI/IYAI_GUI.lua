@@ -244,17 +244,16 @@ local UI = {
 	BrowserGrad1           = G2L["15a"],
 	BrowserGrad2           = G2L["15e"],
 	BrowserInstructions    = G2L["157"],
-	BrowserLogsModal       = G2L["1d4"],
-	BrowserLogsTextBox     = G2L["1d7"],
+	BrowserLogsTextBox     = G2L["1df"],
 	ConnectToBrowserButton = G2L["51"],
 	ForceRefreshButton     = G2L["16f"],
 	OpenBrowserLogsButton  = G2L["16d"],
 	BrowserButtonHitbox    = G2L["1a5"],
 	-- Skills page
 	SkillsPage             = G2L["171"],
-	SkillsSF               = G2L["16a"],
-	SkillsTemplate         = G2L["16d"],
-	SkillsGroupFrame       = G2L["16e"],
+	SkillsSF               = G2L["172"],
+	SkillsTemplate         = G2L["175"],
+	SkillsGroupFrame       = G2L["176"],
 	SkillsPageTip          = G2L["189"],
 	SkillsTotalElements    = G2L["188"],
 	SkillsRefreshButton    = G2L["18c"],
@@ -916,6 +915,8 @@ local function updateHighlight()
 	end
 end
 
+local scheduleTabSave, scheduleBridgeCodeSync, bridgeSyncTabs, bridgePost, Br  -- forward declarations; defined below
+
 updateLineNumbers()
 updateHighlight()
 UI.CodeBox:GetPropertyChangedSignal("Text"):Connect(function()
@@ -923,6 +924,10 @@ UI.CodeBox:GetPropertyChangedSignal("Text"):Connect(function()
 	updateHighlight()
 	if not UI.CodeBox:IsFocused() then
 		UI.CodeSF.CanvasPosition = Vector2.new(0, UI.CodeSF.AbsoluteCanvasSize.Y)
+	end
+	if UI.CodeBox:IsFocused() then
+		scheduleTabSave()
+		scheduleBridgeCodeSync()
 	end
 end)
 
@@ -1067,16 +1072,40 @@ end)
 
 -- ── Code tabs ─────────────────────────────────────────────────────────────────
 
-local Tabs = { max = 10, list = {}, active = nil, saveTask = nil }
+local Tabs = { max = 10, list = {}, active = nil, saveTask = nil, syncTask = nil }
 local saveTabsToFile  -- forward declaration
 
-local function scheduleTabSave()
+scheduleTabSave = function()
 	if Tabs.saveTask then task.cancel(Tabs.saveTask) end
 	Tabs.saveTask = task.delay(1.2, function()
 		if Tabs.active then Tabs.active.code = UI.CodeBox.Text end
 		Tabs.saveTask = nil
 		saveTabsToFile()
 	end)
+end
+
+scheduleBridgeCodeSync = function()
+	if not Br or not Br.active then return end
+	if Tabs.syncTask then task.cancel(Tabs.syncTask) end
+	Tabs.syncTask = task.delay(0.4, function()
+		Tabs.syncTask = nil
+		if not Br.active or not Tabs.active then return end
+		local idx = table.find(Tabs.list, Tabs.active) or 1
+		bridgePost("/roblox/result", {
+			type     = "code_update",
+			tabIndex = idx,
+			code     = UI.CodeBox.Text,
+		})
+	end)
+end
+
+bridgeSyncTabs = function()
+	if not Br or not Br.active then return end
+	local list = {}
+	for i, t in ipairs(Tabs.list) do
+		list[i] = { name = t.name, active = t == Tabs.active }
+	end
+	bridgePost("/roblox/result", { type = "tabs_meta", tabs = list })
 end
 
 local function updateTabVisuals()
@@ -1093,6 +1122,8 @@ local function switchCodeTab(tab)
 	Tabs.active = tab
 	UI.CodeBox.Text = tab.code
 	updateTabVisuals()
+	bridgeSyncTabs()
+	scheduleBridgeCodeSync()
 end
 
 local function removeCodeTab(tab)
@@ -1107,6 +1138,7 @@ local function removeCodeTab(tab)
 		switchCodeTab(Tabs.list[math.min(idx, #Tabs.list)])
 	else
 		updateTabVisuals()
+		bridgeSyncTabs()
 	end
 	saveTabsToFile()
 end
@@ -1122,7 +1154,7 @@ local function addCodeTab(name, code, switchTo)
 	btn.Parent       = UI.TabsScrollingFrame
 	btn.MouseButton1Click:Connect(function()  switchCodeTab(tab)  end)
 	btn.MouseButton2Click:Connect(function()  removeCodeTab(tab)  end)
-	if switchTo ~= false then switchCodeTab(tab) end
+	if switchTo ~= false then switchCodeTab(tab) else bridgeSyncTabs() end
 	saveTabsToFile()
 	return tab
 end
@@ -2339,9 +2371,10 @@ end
 local Sk = { file = "iyai_skills.json", enabled = {}, loaded = {}, populated = false }
 
 local function parseSkillMd(text)
-	local name    = text:match("^%-%-%-[^\n]*\n.-\nname:%s*(.-)%s*\n") or ""
-	local desc    = text:match("^%-%-%-[^\n]*\n.-\ndescription:%s*(.-)%s*\n") or ""
-	local content = text:match("^%-%-%-[^\n]*\n.-\n%-%-%-\n(.+)$") or text
+	local name    = text:match("^%-%-%-[^\n]*\nname:%s*(.-)%s*\n") or ""
+	local desc    = text:match("^%-%-%-[^\n]*\n[^\n]*\ndescription:%s*(.-)%s*\n") or ""
+	local fm_end  = text:find("\n%-%-%-\n", 2)
+	local content = fm_end and text:sub(fm_end + 5) or text
 	return name:match("^%s*(.-)%s*$"), desc:match("^%s*(.-)%s*$"), content
 end
 
@@ -2399,10 +2432,26 @@ local function getEnabledSkillsContext()
 		.. table.concat(parts, "\n\n---\n\n")
 end
 
--- Load skills on startup (no UI rendering yet)
+-- Load skills on startup; re-render if the page or bridge already asked before files were ready
 task.spawn(function()
 	loadSkillsEnabled()
 	loadSkillFiles()
+	-- If Skills page was opened before files finished loading, repopulate it now
+	if Sk.populated then
+		Sk.populated = false
+		task.defer(function()
+			populateSkillsPage()
+			Sk.populated = true
+		end)
+	end
+	-- Push updated list to any connected browser
+	if Br and Br.active and #Sk.loaded > 0 then
+		local skillsList = {}
+		for _, sk in ipairs(Sk.loaded) do
+			skillsList[#skillsList+1] = { name = sk.name, desc = sk.desc or "", enabled = Sk.enabled[sk.file] ~= false }
+		end
+		bridgePost("/roblox/result", { type = "skills_state", skills = skillsList })
+	end
 end)
 
 local function buildMessages(history)
@@ -3011,9 +3060,9 @@ end
 
 -- ── Web Bridge (defined here so runAgentLoop can call bridgePost) ─────────────
 
-local Br = { url = "http://127.0.0.1:7402", active = false, polling = false, webOk = false, logs = {} }
+Br = { url = "http://127.0.0.1:7402", active = false, polling = false, webOk = false, logs = {} }
 
-local function bridgePost(path, data)
+bridgePost = function(path, data)
 	if not http_request or not Br.active then return end
 	local ok, json = pcall(HS.JSONEncode, HS, data)
 	if not ok then return end
@@ -3502,6 +3551,24 @@ local function startBridgePoll()
 							local tab = Tabs.list[math.floor(msg.tabIndex)]
 							if tab then switchCodeTab(tab) end
 						end)
+					elseif msg.type == "new_tab" then
+						task.spawn(function()
+							addCodeTab(nil, "", true)
+						end)
+					elseif msg.type == "remove_tab" and msg.tabIndex then
+						task.spawn(function()
+							local tab = Tabs.list[math.floor(msg.tabIndex)]
+							if tab then removeCodeTab(tab) end
+						end)
+					elseif msg.type == "close_other_tabs" and msg.tabIndex then
+						task.spawn(function()
+							local keepIdx = math.floor(msg.tabIndex)
+							local keep = Tabs.list[keepIdx]
+							if not keep then return end
+							for i = #Tabs.list, 1, -1 do
+								if i ~= keepIdx then removeCodeTab(Tabs.list[i]) end
+							end
+						end)
 					elseif msg.type == "get_skills" then
 						task.spawn(function()
 							local skillsList = {}
@@ -3521,6 +3588,18 @@ local function startBridgePoll()
 									break
 								end
 							end
+						end)
+					elseif msg.type == "call_tool" and msg.name then
+						local captured = msg
+						task.spawn(function()
+							local ok, result = pcall(Tools.run, captured.name, captured.args or "{}")
+							bridgePost("/roblox/result", {
+								type    = "tool_result",
+								reqId   = captured.reqId,
+								name    = captured.name,
+								ok      = ok,
+								result  = ok and result or tostring(result),
+							})
 						end)
 					end
 				end

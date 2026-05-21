@@ -129,14 +129,10 @@ function Handle-Context($ctx) {
 
         "POST /browser/send" {
             $json = Read-Body $ctx
-            try {
-                $data    = $json | ConvertFrom-Json
-                $allowed = @("chat","get_tree","get_children","get_props","get_state","settings_update","load_session")
-                if ($data.type -and $allowed -contains $data.type) {
-                    $script:toRoblox.Enqueue($json)
-                    Flush-PendingPoll
-                }
-            } catch {}
+            if ($json -and $json.Trim() -ne "" -and $json.Trim() -ne "{}") {
+                $script:toRoblox.Enqueue($json)
+                Flush-PendingPoll
+            }
             Send-Response $ctx 200 "text/plain" "ok"
         }
 
