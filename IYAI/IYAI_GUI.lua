@@ -3209,7 +3209,8 @@ local function runAgentLoop(userText)
 
 		-- addStep() — only keep JSON-safe fields; raw msg may have provider-specific extras
 		local histEntry = { role = msg.role or "assistant" }
-		if msg.content           then histEntry.content           = msg.content           end
+		-- always include content (some providers reject messages where content is absent)
+		histEntry.content = (msg.content and msg.content ~= "") and msg.content or ""
 		if msg.tool_calls        then histEntry.tool_calls        = msg.tool_calls        end
 		if msg.thinking          then histEntry.thinking          = msg.thinking          end
 		if msg.reasoning_content then histEntry.reasoning_content = msg.reasoning_content end
