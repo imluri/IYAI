@@ -453,7 +453,7 @@ return function(Tools, getProperties, getMethods)
 					properties = {
 						class      = { type = "string", description = "ClassName e.g. 'Part', 'RemoteEvent', 'StringValue'" },
 						parent     = { type = "string", description = "Path to parent instance (default: game.Workspace)" },
-						properties = { type = "object", description = "Key/value pairs of properties to set, same string format as set_property." },
+						properties = { type = "string", description = "JSON object of property key/value pairs e.g. '{\"Anchored\":\"true\",\"BrickColor\":\"Bright red\"}'. Values use the same string format as set_property." },
 					},
 					required = { "class" }
 				}
@@ -463,7 +463,14 @@ return function(Tools, getProperties, getMethods)
 			local ok, inst = pcall(Instance.new, args.class)
 			if not ok then return "Error: invalid class '" .. tostring(args.class) .. "': " .. tostring(inst) end
 
-			for prop, valStr in pairs(args.properties or {}) do
+			local propsTable = args.properties
+			if type(propsTable) == "string" and propsTable ~= "" then
+				local HS2 = game:GetService("HttpService")
+				local pok, decoded = pcall(HS2.JSONDecode, HS2, propsTable)
+				propsTable = pok and decoded or {}
+			end
+
+			for prop, valStr in pairs(type(propsTable) == "table" and propsTable or {}) do
 				local readOk, cur = pcall(function() return inst[prop] end)
 				if readOk then
 					local coerced, coerceErr = coerceValue(cur, tostring(valStr))

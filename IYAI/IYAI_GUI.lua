@@ -161,140 +161,148 @@ local UI = {
 	-- Settings page
 	SettingsPage           = G2L["62"],
 	Settings_SF            = G2L["63"],
-	APIKeyFrame            = G2L["64"],
-	APIKeyLabel            = G2L["66"],
-	APIKeyBox              = G2L["67"],
-	HostSelectFrame        = G2L["6b"],
-	HostTitle              = G2L["6c"],
-	HostFrame              = G2L["6d"],
-	HostButtons            = G2L["6d"]:GetChildren(),
-	ModelSelectFrame       = G2L["94"],
-	ModelFrame             = G2L["96"],
-	ModelBox               = G2L["97"],
-	DropdownButton         = G2L["9a"],
+	APIKeyFrame                = G2L["64"],
+	APIKeyLabel                = G2L["66"],
+	APIKeyBox                  = G2L["67"],
+	APIKeySingleButton         = G2L["6c"],
+	APIKeyMultiButton          = G2L["70"],
+	SetMultipleAPIKeysButton   = G2L["72"],
+	HostSelectFrame            = G2L["74"],
+	HostTitle              = G2L["75"],
+	HostFrame              = G2L["76"],
+	HostButtons            = G2L["76"]:GetChildren(),
+	ModelSelectFrame       = G2L["9d"],
+	ModelFrame             = G2L["9f"],
+	ModelBox               = G2L["a0"],
+	DropdownButton         = G2L["a3"],
 	DropdownList           = Instance.new("Frame"),
-	TestFrame              = G2L["9d"],
-	ConnectionButton       = G2L["a0"],
-	CredentialButton       = G2L["a7"],
-	ConnectionIconColor    = G2L["a3"],
-	CredentialIconColor    = G2L["aa"],
-	MaxStepFrame           = G2L["ae"],
-	MaxStepBox             = G2L["b1"],
-	MaxStepResetButton     = G2L["b4"],
-	TemperatureBox         = G2L["ba"],
-	TemperatureResetButton = G2L["bd"],
-	SystemPromptFrame      = G2L["bf"],
-	SystemPromptButton     = G2L["c1"],
-	UnsavedChanges         = G2L["c3"],
-	TextLabel              = G2L["c5"],
-	SaveButton             = G2L["c7"],
-	RevertButton           = G2L["c9"],
+	TestFrame              = G2L["a6"],
+	ConnectionButton       = G2L["a9"],
+	CredentialButton       = G2L["b0"],
+	ConnectionIconColor    = G2L["ac"],
+	CredentialIconColor    = G2L["b3"],
+	MaxStepFrame           = G2L["b7"],
+	MaxStepBox             = G2L["ba"],
+	MaxStepResetButton     = G2L["bd"],
+	TemperatureBox         = G2L["c3"],
+	TemperatureResetButton = G2L["c6"],
+	SystemPromptFrame      = G2L["c8"],
+	SystemPromptButton     = G2L["ca"],
+	UnsavedChanges         = G2L["cc"],
+	TextLabel              = G2L["ce"],
+	SaveButton             = G2L["d0"],
+	RevertButton           = G2L["d2"],
 	-- Code page
-	CodePage               = G2L["cc"],
-	CodeTopFrame           = G2L["cd"],
-	CodeActionsFrame       = G2L["ce"],
-	CodeClearButton        = G2L["d1"],
-	CodeCopyButton         = G2L["d5"],
-	RunButton              = G2L["d9"],
-	TabsFrame              = G2L["dc"],
-	TabsScrollingFrame     = G2L["dd"],
-	TabButtonTemplate      = G2L["de"],
-	NewTabButton           = G2L["e1"],
-	CodeSF                 = G2L["e4"],
-	CodeBox                = G2L["e6"],
-	IntelLabel             = G2L["e8"],
-	LineLabel              = G2L["e9"],
+	CodePage               = G2L["d5"],
+	CodeTopFrame           = G2L["d6"],
+	CodeActionsFrame       = G2L["d7"],
+	CodeClearButton        = G2L["da"],
+	CodeCopyButton         = G2L["de"],
+	RunButton              = G2L["e2"],
+	TabsFrame              = G2L["e5"],
+	TabsScrollingFrame     = G2L["e6"],
+	TabButtonTemplate      = G2L["e7"],
+	NewTabButton           = G2L["ea"],
+	CodeSF                 = G2L["ed"],
+	CodeBox                = G2L["ef"],
+	IntelLabel             = G2L["f1"],
+	LineLabel              = G2L["f2"],
 	-- Tools page
-	ToolsPage              = G2L["eb"],
-	ToolsSF                = G2L["ec"],
-	ToolsElementTemplate   = G2L["ef"],
-	ToolsGroupFrame        = G2L["f0"],
-	ToolsGroupInner        = G2L["f2"],
-	ToolsGroupTitle        = G2L["f3"],
-	ToolsToolFrame         = G2L["f7"],
-	ToolsToolNameDesc      = G2L["fa"],
-	ToolsTotalElements     = G2L["fc"],
+	ToolsPage              = G2L["f4"],
+	ToolsSF                = G2L["f5"],
+	ToolsElementTemplate   = G2L["f8"],
+	ToolsGroupFrame        = G2L["f9"],
+	ToolsGroupInner        = G2L["fb"],
+	ToolsGroupTitle        = G2L["fc"],
+	ToolsToolFrame         = G2L["100"],
+	ToolsToolNameDesc      = G2L["103"],
+	ToolsTotalElements     = G2L["105"],
 	-- Startup page
-	StartupPageSF          = G2L["101"],
-	StartupPageLayout      = G2L["102"],
-	StartupElemTemplate    = G2L["104"],
-	StartupGroupFrame      = G2L["105"],
-	StartupGroupInner      = G2L["107"],
-	StartupGroupTitle      = G2L["108"],
-	StartupToolFrame       = G2L["10c"],
-	StartupToolNameDesc    = G2L["10f"],
-	StartupTotalElems      = G2L["111"],
+	StartupPageSF          = G2L["10a"],
+	StartupPageLayout      = G2L["10b"],
+	StartupElemTemplate    = G2L["10d"],
+	StartupGroupFrame      = G2L["10e"],
+	StartupGroupInner      = G2L["110"],
+	StartupGroupTitle      = G2L["111"],
+	StartupToolFrame       = G2L["115"],
+	StartupToolNameDesc    = G2L["118"],
+	StartupTotalElems      = G2L["11a"],
 	-- History page
-	HistoryPage            = G2L["114"],
-	HistorySF              = G2L["115"],
-	HistoryTemplate        = G2L["119"],
-	HistoryToolFrame       = G2L["122"],
-	HistoryTotalElements   = G2L["13c"],
-	HistoryPageTip         = G2L["13d"],
-	HistoryButtonFrame     = G2L["1a6"],
+	HistoryPage            = G2L["11d"],
+	HistorySF              = G2L["11e"],
+	HistoryTemplate        = G2L["122"],
+	HistoryToolFrame       = G2L["12b"],
+	HistoryTotalElements   = G2L["145"],
+	HistoryPageTip         = G2L["146"],
+	HistoryButtonFrame     = G2L["1af"],
 	-- Browser page
-	BrowserPage            = G2L["13f"],
-	BrowserDotYou          = G2L["145"],
-	BrowserDotBridge       = G2L["14c"],
-	BrowserDotWeb          = G2L["152"],
-	BrowserIconBridge      = G2L["14a"],
-	BrowserLabelBridge     = G2L["14b"],
-	BrowserIconWeb         = G2L["150"],
-	BrowserLabelWeb        = G2L["151"],
-	BrowserGrad1           = G2L["15a"],
-	BrowserGrad2           = G2L["15e"],
-	BrowserInstructions    = G2L["157"],
-	BrowserLogsTextBox     = G2L["1df"],
+	BrowserPage            = G2L["148"],
+	BrowserDotYou          = G2L["14e"],
+	BrowserDotBridge       = G2L["155"],
+	BrowserDotWeb          = G2L["15b"],
+	BrowserIconBridge      = G2L["153"],
+	BrowserLabelBridge     = G2L["154"],
+	BrowserIconWeb         = G2L["159"],
+	BrowserLabelWeb        = G2L["15a"],
+	BrowserGrad1           = G2L["163"],
+	BrowserGrad2           = G2L["167"],
+	BrowserInstructions    = G2L["160"],
+	BrowserLogsTextBox     = G2L["1ec"],
 	ConnectToBrowserButton = G2L["51"],
-	ForceRefreshButton     = G2L["16f"],
-	OpenBrowserLogsButton  = G2L["16d"],
-	BrowserButtonHitbox    = G2L["1a5"],
+	ForceRefreshButton     = G2L["178"],
+	OpenBrowserLogsButton  = G2L["176"],
+	BrowserButtonHitbox    = G2L["1ae"],
 	-- Skills page
-	SkillsPage             = G2L["171"],
-	SkillsSF               = G2L["172"],
-	SkillsTemplate         = G2L["175"],
-	SkillsGroupFrame       = G2L["176"],
-	SkillsPageTip          = G2L["189"],
-	SkillsTotalElements    = G2L["188"],
-	SkillsRefreshButton    = G2L["18c"],
-	SkillsRefreshText      = G2L["18e"],
-	SkillsButtonHitbox     = G2L["1a7"],
+	SkillsPage             = G2L["17a"],
+	SkillsSF               = G2L["173"],
+	SkillsTemplate         = G2L["176"],
+	SkillsGroupFrame       = G2L["177"],
+	SkillsPageTip          = G2L["192"],
+	SkillsTotalElements    = G2L["191"],
+	SkillsRefreshButton    = G2L["195"],
+	SkillsRefreshText      = G2L["197"],
+	SkillsButtonHitbox     = G2L["1b0"],
 	-- Sidebar & topbar
-	LeftSidebar            = G2L["18f"],
-	TopBar                 = G2L["1b6"],
-	CloseButton            = G2L["1b8"],
-	MinimizeButton         = G2L["1bb"],
-	Highlight              = G2L["1bc"],
+	LeftSidebar            = G2L["198"],
+	TopBar                 = G2L["1bf"],
+	CloseButton            = G2L["1c1"],
+	MinimizeButton         = G2L["1c4"],
+	Highlight              = G2L["1c5"],
 	-- Modal
-	ModalFrame             = G2L["1bd"],
-	ModalInner             = G2L["1bf"],
-	ModalCloseButton       = G2L["1c1"],
-	SearchModelModal       = G2L["1c2"],
-	ModalSearchBox         = G2L["1c4"],
-	ModalSF                = G2L["1c8"],
-	ExampleModelBtn        = G2L["1c9"],
-	ModalSearchButton      = G2L["1c7"],
-	ModalOpenButton        = G2L["9a"],
-	ToolResultViewModal    = G2L["1cc"],
-	ToolResultSF           = G2L["1ce"],
-	ToolResultTextBox      = G2L["1cf"],
-	ModalTitleLabel        = G2L["1d1"],
-	SystemPromptModal      = G2L["1d3"],
-	SystemPromptSF         = G2L["1d5"],
-	SystemPromptTextBox    = G2L["1d6"],
-	SystemPromptResetButton = G2L["1da"],
-	SystemPromptSaveButton  = G2L["1db"],
-	BrowserLogsModal       = G2L["1dc"],
+	ModalFrame             = G2L["1c6"],
+	ModalInner             = G2L["1c8"],
+	ModalCloseButton       = G2L["1ca"],
+	SearchModelModal       = G2L["1cb"],
+	ModalSearchBox         = G2L["1cd"],
+	ModalSF                = G2L["1d1"],
+	ExampleModelBtn        = G2L["1d2"],
+	ModalSearchButton      = G2L["1d0"],
+	ModalOpenButton        = G2L["a3"],
+	ToolResultViewModal    = G2L["1d5"],
+	ToolResultSF           = G2L["1d7"],
+	ToolResultTextBox      = G2L["1da"],
+	ModalTitleLabel        = G2L["1db"],
+	SystemPromptModal      = G2L["1dd"],
+	SystemPromptSF         = G2L["1df"],
+	SystemPromptTextBox    = G2L["1e0"],
+	SystemPromptResetButton = G2L["1e5"],
+	SystemPromptSaveButton  = G2L["1e6"],
+	BrowserLogsModal       = G2L["1e7"],
+	-- Multi API key modal
+	SetMultiAPIKeyModal    = G2L["1ed"],
+	MultiAPIKeyTextBox     = G2L["1f0"],
+	MultiAPIKeyClearButton = G2L["1f6"],
+	MultiAPIKeySaveButton  = G2L["1f7"],
 	-- Confirmation modal
-	ConfirmationFrame      = G2L["1e1"],
-	ConfirmYesButton       = G2L["1e5"],
-	ConfirmNoButton        = G2L["1e6"],
-	ConfirmTextLabel       = G2L["1e7"],
+	ConfirmationFrame      = G2L["1f8"],
+	ConfirmYesButton       = G2L["1fc"],
+	ConfirmNoButton        = G2L["1fd"],
+	ConfirmTextLabel       = G2L["1fe"],
 	-- Misc
-	IntroFrame             = G2L["1e9"],
-	IYAIToastContainer     = G2L["1ec"],
-	ToastTemplate          = G2L["1ed"],
-	CurrentPage            = G2L["1f9"],
+	IntroFrame             = G2L["200"],
+	IYAIToastContainer     = G2L["203"],
+	ToastTemplate          = G2L["204"],
+	CurrentPage            = G2L["210"],
 	OpenConversationHistoryButton = G2L["50"],
 }
 -- ── Main logic ────────────────────────────────────────────────────────────────
@@ -313,7 +321,7 @@ local Clr = {
     sfull = NumberSequence.new{ NumberSequenceKeypoint.new(0, 1), NumberSequenceKeypoint.new(0.5, 0),   NumberSequenceKeypoint.new(1, 1) },
 }
 
-local VERSION           = G2L["1fa"] and G2L["1fa"].Value or ""
+local VERSION           = G2L["211"] and G2L["211"].Value or ""
 local Tween             = TweenInfo.new(0.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut)
 local DefaultIYAISize   = UDim2.new(0, 600, 0, 400)
 local MinimizedIYAISize = UDim2.new(0, 160, 0, 25)
@@ -1623,10 +1631,10 @@ end
 
 for _, h in ipairs(Set.allHosts) do
 	local pd = Config.providerData and Config.providerData[h] or {}
-	Set.cache[h] = { key = pd.apiKey or "", model = pd.model or "" }
+	Set.cache[h] = { key = pd.apiKey or "", model = pd.model or "", mode = pd.mode or "single" }
 end
 -- Authoritative current values from Config
-Set.cache[Config.host] = { key = Config.apiKey, model = Config.model }
+Set.cache[Config.host] = { key = Config.apiKey, model = Config.model, mode = Config.apiKeyMode or "single" }
 
 local function applyProviderToUI(host)
 	local cached = Set.cache[host] or {}
@@ -1634,6 +1642,7 @@ local function applyProviderToUI(host)
 	UI.APIKeyBox.TextTransparency = 1
 	UI.APIKeyLabel.Text           = maskKey(cached.key or "")
 	UI.ModelBox.Text              = cached.model or ""
+	Config.apiKeyMode             = cached.mode or "single"
 end
 
 applyProviderToUI(Config.host)
@@ -1650,6 +1659,45 @@ end
 updateHostLabel(Set.host)
 _loading    = false
 Set.loadKey = false
+
+-- ── API key mode toggle (Single / Multi) ─────────────────────────────────────
+
+local function applyAPIKeyMode(mode)
+	local isMulti = mode == "multi"
+	UI.APIKeyLabel.Visible              = not isMulti
+	UI.SetMultipleAPIKeysButton.Visible = isMulti
+	UI.APIKeySingleButton.BackgroundTransparency = isMulti and 1 or 0.85
+	UI.APIKeyMultiButton.BackgroundTransparency  = isMulti and 0.85 or 1
+end
+
+applyAPIKeyMode(Config.apiKeyMode)
+
+UI.APIKeySingleButton.MouseButton1Click:Connect(function()
+	Config.apiKeyMode = "single"
+	Set.cache[Set.host] = Set.cache[Set.host] or {}
+	Set.cache[Set.host].mode = "single"
+	applyAPIKeyMode("single")
+	UI.UnsavedChanges.Visible = true
+end)
+
+UI.APIKeyMultiButton.MouseButton1Click:Connect(function()
+	local singleKey = UI.APIKeyBox.Text
+	if singleKey ~= "" then
+		local already = false
+		for _, k in ipairs(Config.openrouterKeys or {}) do
+			if k == singleKey then already = true; break end
+		end
+		if not already then
+			Config.openrouterKeys = Config.openrouterKeys or {}
+			table.insert(Config.openrouterKeys, 1, singleKey)
+		end
+	end
+	Config.apiKeyMode = "multi"
+	Set.cache[Set.host] = Set.cache[Set.host] or {}
+	Set.cache[Set.host].mode = "multi"
+	applyAPIKeyMode("multi")
+	UI.UnsavedChanges.Visible = true
+end)
 
 UI.APIKeyBox.Focused:Connect(function()
 	Set.keyFocus   = true
@@ -1768,6 +1816,7 @@ local function updateApiKeyVisibility(host)
 	if UI.APIKeyFrame then
 		UI.APIKeyFrame.Visible = host ~= "Ollama"
 	end
+	applyAPIKeyMode(Config.apiKeyMode)
 end
 
 updateApiKeyVisibility(Set.host)
@@ -1776,7 +1825,7 @@ for _, btn in pairs(UI.HostButtons) do
 	if not btn:IsA("TextButton") then continue end
 	btn.MouseButton1Click:Connect(function()
 		-- Save current provider's unsaved key+model to cache
-		Set.cache[Set.host] = { key = UI.APIKeyBox.Text, model = UI.ModelBox.Text }
+		Set.cache[Set.host] = { key = UI.APIKeyBox.Text, model = UI.ModelBox.Text, mode = Config.apiKeyMode }
 		Set.host = btn.Text
 		for _, b in pairs(UI.HostButtons) do
 			if b:IsA("TextButton") then
@@ -2000,7 +2049,7 @@ UI.CredentialButton.MouseButton1Click:Connect(function()
 end)
 
 local function saveSettings()
-	Set.cache[Set.host] = { key = UI.APIKeyBox.Text, model = UI.ModelBox.Text }
+	Set.cache[Set.host] = { key = UI.APIKeyBox.Text, model = UI.ModelBox.Text, mode = Config.apiKeyMode }
 	Config.apiKey       = UI.APIKeyBox.Text
 	Config.model        = UI.ModelBox.Text
 	Config.host         = Set.host
@@ -2008,7 +2057,7 @@ local function saveSettings()
 	Config.temperature  = math.clamp(tonumber(UI.TemperatureBox.Text) or 1.0, 0, 2)
 	Config.providerData = {}
 	for h, data in pairs(Set.cache) do
-		Config.providerData[h] = { apiKey = data.key, model = data.model }
+		Config.providerData[h] = { apiKey = data.key, model = data.model, mode = data.mode }
 	end
 	UI.MaxStepBox.Text      = tostring(Config.maxSteps)
 	UI.TemperatureBox.Text  = tostring(Config.temperature)
@@ -2023,9 +2072,9 @@ local function revertSettings()
 	-- Rebuild cache from saved Config
 	for _, h in ipairs(Set.allHosts) do
 		local pd = Config.providerData and Config.providerData[h] or {}
-		Set.cache[h] = { key = pd.apiKey or "", model = pd.model or "" }
+		Set.cache[h] = { key = pd.apiKey or "", model = pd.model or "", mode = pd.mode or "single" }
 	end
-	Set.cache[Config.host] = { key = Config.apiKey, model = Config.model }
+	Set.cache[Config.host] = { key = Config.apiKey, model = Config.model, mode = Config.apiKeyMode or "single" }
 	Set.host = Config.host
 	applyProviderToUI(Set.host)
 	UI.MaxStepBox.Text     = tostring(Config.maxSteps)
@@ -2173,6 +2222,7 @@ local function openModal()
 	UI.ToolResultViewModal.Visible = false
 	UI.SystemPromptModal.Visible   = false
 	UI.BrowserLogsModal.Visible    = false
+	UI.SetMultiAPIKeyModal.Visible = false
 	UI.ModalFrame.Visible = true
 	if UI.ModalSearchBox then UI.ModalSearchBox.Text = "" end
 	modalClearButtons()
@@ -2187,6 +2237,7 @@ local function openToolResultModal(fullText)
 	UI.ToolResultViewModal.Visible = true
 	UI.SystemPromptModal.Visible   = false
 	UI.BrowserLogsModal.Visible    = false
+	UI.SetMultiAPIKeyModal.Visible = false
 	UI.ToolResultTextBox.Text      = fullText
 	UI.ToolResultSF.CanvasPosition = Vector2.new(0, 0)
 	UI.ModalFrame.Visible          = true
@@ -2203,10 +2254,24 @@ local function openSystemPromptModal()
 	UI.ToolResultViewModal.Visible = false
 	UI.SystemPromptModal.Visible   = true
 	UI.BrowserLogsModal.Visible    = false
+	UI.SetMultiAPIKeyModal.Visible = false
 	UI.SystemPromptTextBox.TextEditable   = true
 	UI.SystemPromptTextBox.Text           = Config.userSystemPrompt
 	UI.SystemPromptTextBox.PlaceholderText = Prompt.build(false)
 	UI.ModalFrame.Visible = true
+end
+
+local function openMultiAPIKeyModal()
+	if UI.ModalTitleLabel then UI.ModalTitleLabel.Text = "API Keys" end
+	UI.ModalInner.Visible          = true
+	UI.ConfirmationFrame.Visible   = false
+	UI.SearchModelModal.Visible    = false
+	UI.ToolResultViewModal.Visible = false
+	UI.SystemPromptModal.Visible   = false
+	UI.BrowserLogsModal.Visible    = false
+	UI.SetMultiAPIKeyModal.Visible = true
+	UI.MultiAPIKeyTextBox.Text     = table.concat(Config.openrouterKeys or {}, "\n")
+	UI.ModalFrame.Visible          = true
 end
 
 UI.ModalOpenButton.MouseButton1Click:Connect(openModal)
@@ -2217,6 +2282,7 @@ UI.ModalCloseButton.MouseButton1Click:Connect(function()
 	UI.SearchModelModal.Visible    = true
 	UI.ToolResultViewModal.Visible = false
 	UI.SystemPromptModal.Visible   = false
+	UI.SetMultiAPIKeyModal.Visible = false
 end)
 
 local function openConfirmationModal()
@@ -2241,6 +2307,26 @@ end)
 
 UI.SystemPromptResetButton.MouseButton1Click:Connect(function()
 	UI.SystemPromptTextBox.Text = ""
+end)
+
+UI.SetMultipleAPIKeysButton.MouseButton1Click:Connect(openMultiAPIKeyModal)
+
+UI.MultiAPIKeySaveButton.MouseButton1Click:Connect(function()
+	local raw = UI.MultiAPIKeyTextBox.Text
+	local keys = {}
+	for line in raw:gmatch("[^\n]+") do
+		local k = line:match("^%s*(.-)%s*$")
+		if k ~= "" then keys[#keys + 1] = k end
+	end
+	Config.openrouterKeys = keys
+	Config.openrouterKeyIndex = 0
+	Config.save()
+	UI.ModalFrame.Visible          = false
+	UI.SetMultiAPIKeyModal.Visible = false
+end)
+
+UI.MultiAPIKeyClearButton.MouseButton1Click:Connect(function()
+	UI.MultiAPIKeyTextBox.Text = ""
 end)
 
 local _hfSearchTask = nil
@@ -2324,19 +2410,23 @@ local function buildHeaders()
 	end
 	return {
 		["Content-Type"]  = "application/json",
-		["Authorization"] = "Bearer " .. Config.apiKey,
+		["Authorization"] = "Bearer " .. Config.getActiveKey(),
 	}
 end
 
 local RETRY_ATTEMPTS = 3
 local RETRY_DELAY    = 4
 
-local function requestWithRetry(url, method, headers, body, onRetry)
+local function requestWithRetry(url, method, headersOrFn, body, onRetry)
 	local res
+	local function getHeaders()
+		return type(headersOrFn) == "function" and headersOrFn() or headersOrFn
+	end
 	for attempt = 1, RETRY_ATTEMPTS do
-		res = Http.request(url, method, headers, body)
+		res = Http.request(url, method, getHeaders(), body)
 		if res and res.StatusCode ~= 429 then break end
 		if attempt < RETRY_ATTEMPTS then
+			Config.rotateKey()
 			if onRetry then
 				onRetry(attempt, RETRY_ATTEMPTS - 1)
 			else
@@ -2997,10 +3087,10 @@ local function runCodeAgent(userText)
 			return j:gsub('"properties":%[%]', '"properties":{}')
 		end
 
-		local res = requestWithRetry(buildUrl(), "POST", buildHeaders(), buildCodeBody(Agt.codeHistory))
+		local res = requestWithRetry(buildUrl(), "POST", buildHeaders, buildCodeBody(Agt.codeHistory))
 		if isContextError(res) then
 			Toast.show("History trimmed", "Context too long — retrying with less history", "warn", 3)
-			res = requestWithRetry(buildUrl(), "POST", buildHeaders(), buildCodeBody(trimHistory(Agt.codeHistory)))
+			res = requestWithRetry(buildUrl(), "POST", buildHeaders, buildCodeBody(trimHistory(Agt.codeHistory)))
 		end
 		if not res or res.StatusCode ~= 200 then
 			updateCodeStatus(statusFrame, "Request failed (" .. (res and tostring(res.StatusCode) or "no response") .. ")", false)
@@ -3130,11 +3220,11 @@ local function runAgentLoop(userText)
 			if lbl then lbl.Text = "Rate limited — retrying in " .. RETRY_DELAY .. "s (" .. attempt .. "/" .. maxAttempts .. ")" end
 		end
 
-		local res = requestWithRetry(buildUrl(), "POST", buildHeaders(), buildBody(), onRateLimit)
+		local res = requestWithRetry(buildUrl(), "POST", buildHeaders, buildBody(), onRateLimit)
 		if _retryFrame then _retryFrame:Destroy(); _retryFrame = nil end
 		if isContextError(res) then
 			Toast.show("History trimmed", "Context too long — retrying with less history", "warn", 3)
-			res = requestWithRetry(buildUrl(), "POST", buildHeaders(), buildBody(trimHistory(Agt.history)))
+			res = requestWithRetry(buildUrl(), "POST", buildHeaders, buildBody(trimHistory(Agt.history)))
 		end
 		if not res or res.StatusCode ~= 200 then
 			if generatingFrame then generatingFrame:Destroy(); generatingFrame = nil end
