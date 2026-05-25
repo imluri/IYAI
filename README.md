@@ -86,6 +86,10 @@ Auto-updates on every run — `IYAI.iy` pulls the latest version from GitHub eac
 - GUI is parented to `gethui` to avoid game detection
 - Toast notifications appear top-right for saves, errors, rate limits, and connection tests
 
+## Best Free Models
+- **Owl Alpha** via OpenRouter - `openrouter/owl-alpha` (free, good at handling complex tasks)
+- **GLM-4.5** via OpenRouter - `z-ai/glm-4.5-air:free` (free, good at reasoning, rate limits 20 request/minute)
+
 ## Recommended Models
 - **DeepSeek** via OpenRouter — `deepseek/deepseek-chat-v3-5` (paid, extremely strong tool use, best value)
 - **Google AI Studio** — `gemini-2.0-flash` (free tier, fast, solid tool use)
