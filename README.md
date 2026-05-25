@@ -1,5 +1,9 @@
 # IYAI
 
+<p align="center">
+  <img src="logo.png" alt="IYAI" width="200"/>
+</p>
+
 An AI assistant plugin for Infinite Yield. Talk to it in plain English and it'll inspect instances, read properties, run code, and modify the game world using live data from your session.
 
 ## Install
@@ -30,7 +34,12 @@ Chat with the AI. It has full tool access and acts autonomously:
 For anything that involves computation or bulk changes — "find the closest player", "rename all parts under X" — it writes and runs a Lua script instead of making a dozen individual tool calls.
 
 ### Code
-A built-in code editor. The AI writes here; you can run or copy it yourself.
+A built-in multi-tab code editor. The AI writes here; you can run or copy it yourself.
+
+Tabs can be created, switched, and managed manually or by the AI. Ask it to "write X to Tab 2" or "read Tab 1" and it'll target the right tab without switching your view.
+
+### Skills
+Load custom `.md` skill files from `IYAI/skills/`. Each skill is a cheat sheet injected into the AI's system prompt — useful for game-specific APIs, custom workflows, or frequently needed patterns. Toggle skills on or off per-session; state is saved to disk.
 
 ### History
 Full session history. Every conversation is saved with a title, timestamp, and message count. Click any entry to restore it — the full message thread reloads.
@@ -39,9 +48,15 @@ Full session history. Every conversation is saved with a title, timestamp, and m
 Lists every tool available to the AI, grouped by category, with descriptions.
 
 ### Settings
-Set your API key, pick a provider, and choose a model. There's a live model picker that fetches available models from the API. For HuggingFace it searches the catalogue on demand as you type. Switching providers saves and restores your key and model per provider. Buttons let you test your connection and validate credentials.
+Set your API key, pick a provider, and choose a model. There's a live model picker that fetches available models from the API. For HuggingFace it searches the catalogue on demand as you type. Switching providers saves and restores your key, model, and key mode per provider.
 
-**Providers:** OpenRouter · Mistral · Groq · Google AI Studio · Pollinations · HuggingFace · Ollama
+**API key modes** (per provider):
+- **Single** — one key, standard usage
+- **Multi** — paste multiple keys (one per line); IYAI rotates to the next key automatically on every rate limit (429). Switching to multi mode migrates your existing single key into the pool. The single key is always appended to the pool even if not listed, so you never lose access.
+
+Buttons let you test your connection and validate credentials.
+
+**Providers:** OpenRouter · Mistral · Groq · Google AI Studio · Pollinations · HuggingFace · Ollama · 9router · OpenCode
 
 ### Browser
 Connects IYAI to the [IYAI Web UI](https://imluri.github.io/iyai) — a browser-based companion that mirrors the plugin. Once the local bridge is running and both sides connect, you can:
@@ -64,7 +79,7 @@ Auto-updates on every run — `IYAI.iy` pulls the latest version from GitHub eac
 
 ## Notes
 - The AI scouts before acting: it checks instances exist and understands the structure before making changes. Quality depends on the model
-- Rate-limited responses (429) retry up to 3 times automatically with a notification
+- Rate-limited responses (429) retry up to 3 times automatically with a notification; in multi-key mode the next key is tried on each retry
 - API errors show inline in the chat with the full response body accessible for debugging
 - Stop button cuts the AI off mid-response
 - Script reading uses `decompile()` in executor environments
