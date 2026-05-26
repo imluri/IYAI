@@ -1,12 +1,9 @@
 # IYAI
 
-<p align="center">
-  <img src="logo.png" alt="IYAI" width="200"/>
-</p>
 
-<p align="center">
-  <video src="demo.mp4" controls width="800"></video>
-</p>
+https://github.com/user-attachments/assets/7d229f47-b360-4af5-ab7b-2a4b6289966d
+
+
 
 An AI assistant plugin for Infinite Yield. Talk to it in plain English and it'll inspect instances, read properties, run code, and modify the game world using live data from your session.
 
