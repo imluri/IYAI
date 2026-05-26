@@ -13,7 +13,7 @@ local Config = {
 	userSystemPrompt   = "",
 	providerData       = {},  -- [host] = { apiKey, model }
 	openrouterKeys     = {},  -- multi-key rotation list
-	openrouterKeyIndex = 0,   -- current index (0 = start from 1 on next use)
+	openrouterKeyIndex = 1,   -- current index (1-based)
 	apiKeyMode         = "single", -- "single" or "multi"
 }
 
