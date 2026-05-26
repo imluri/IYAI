@@ -3357,7 +3357,7 @@ local function runAgentLoop(userText)
 
 			local taskFrame = addTaskFrame("busy")
 			local lbl = taskFrame:FindFirstChildWhichIsA("TextLabel", true)
-			if lbl then lbl.Text = fnName end
+			if lbl then lbl.Text = formatToolName(fnName) end
 			bridgePost("/roblox/result", { type = "tool_start", name = fnName })
 			local result = Tools.run(fnName, fnArgs)
 			local failed = result:find("^Tool error") or result:find("^Unknown tool")
