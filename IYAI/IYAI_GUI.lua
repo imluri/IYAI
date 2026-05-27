@@ -3127,8 +3127,9 @@ local function runCodeAgent(userText)
 
 		local seenCodeCalls = {}
 		for _, call in ipairs(toolCalls) do
-			local fnName = call["function"] and call["function"].name or ""
-			local fnArgs = call["function"] and call["function"].arguments or ""
+			local fnName  = call["function"] and call["function"].name or ""
+			local rawArgs = call["function"] and call["function"].arguments or ""
+			local fnArgs  = type(rawArgs) == "table" and HS:JSONEncode(rawArgs) or tostring(rawArgs)
 			local callKey = fnName .. "|" .. fnArgs
 			if seenCodeCalls[callKey] then continue end
 			seenCodeCalls[callKey] = true
@@ -3142,12 +3143,10 @@ local function runCodeAgent(userText)
 				if added   > 0 then diffSummary = diffSummary .. string.format('<font color="#4ec94e">+%d</font> ', added) end
 				if removed > 0 then diffSummary = diffSummary .. string.format('<font color="#e05252">-%d</font> ', removed) end
 			end
-			table.insert(Agt.codeHistory, {
-				role         = "tool",
-				tool_call_id = call.id or fnName,
-				name         = fnName,
-				content      = result,
-			})
+			local codeToolEntry = Config.host == "Ollama"
+				and { role = "tool", tool_name = fnName, content = result }
+				or  { role = "tool", tool_call_id = call.id or fnName, name = fnName, content = result }
+			table.insert(Agt.codeHistory, codeToolEntry)
 		end
 	end
 
@@ -3320,18 +3319,17 @@ local function runAgentLoop(userText)
 		agentDone = false
 		local seenCalls = {}
 		for _, call in ipairs(toolCalls) do
-			local fnName = call["function"] and call["function"].name or ""
-			local fnArgs = call["function"] and call["function"].arguments or ""
+			local fnName  = call["function"] and call["function"].name or ""
+			local rawArgs = call["function"] and call["function"].arguments or ""
+			local fnArgs  = type(rawArgs) == "table" and HS:JSONEncode(rawArgs) or tostring(rawArgs)
 			local callKey = fnName .. "|" .. fnArgs
 			if seenCalls[callKey] then continue end
 			seenCalls[callKey] = true
 			if seenGlobal[callKey] then
-				table.insert(Agt.history, {
-					role         = "tool",
-					tool_call_id = call.id or fnName,
-					name         = fnName,
-					content      = "Already executed. Call done() with your final response.",
-				})
+				local toolEntry = Config.host == "Ollama"
+					and { role = "tool", tool_name = fnName, content = "Already executed. Call done() with your final response." }
+					or  { role = "tool", tool_call_id = call.id or fnName, name = fnName, content = "Already executed. Call done() with your final response." }
+				table.insert(Agt.history, toolEntry)
 				continue
 			end
 			seenGlobal[callKey] = true
@@ -3380,12 +3378,10 @@ local function runAgentLoop(userText)
 			if not failed and CODE_WRITE_TOOLS[fnName] then
 				addPostAction("View Code →", function() UI.CurrentPage.Value = "Code" end)
 			end
-			table.insert(Agt.history, {
-				role         = "tool",
-				tool_call_id = call.id or fnName,
-				name         = fnName,
-				content      = result,
-			})
+			local toolEntry = Config.host == "Ollama"
+				and { role = "tool", tool_name = fnName, content = result }
+				or  { role = "tool", tool_call_id = call.id or fnName, name = fnName, content = result }
+			table.insert(Agt.history, toolEntry)
 		end
 		if agentDone then break end
 	end
