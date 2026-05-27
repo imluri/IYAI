@@ -2593,6 +2593,7 @@ local function buildBody(history)
 	local ok, json = pcall(HS.JSONEncode, HS, body)
 	if not ok then error("buildBody failed: " .. tostring(json), 2) end
 	json = json:gsub('"properties":%[%]', '"properties":{}')
+	json = json:gsub('"arguments":%[%]', '"arguments":{}')
 	return json
 end
 
