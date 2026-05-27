@@ -2549,7 +2549,16 @@ local function buildMessages(history)
 	local skillsCtx  = getEnabledSkillsContext()
 	if skillsCtx then sysContent = sysContent .. "\n\n" .. skillsCtx end
 	local msgs = {{ role = "system", content = sysContent }}
-	for _, m in ipairs(history or Agt.history) do table.insert(msgs, m) end
+	for _, m in ipairs(history or Agt.history) do
+		if Config.host == "Ollama" and m.role == "assistant" and m.content == nil then
+			local copy = {}
+			for k, v in pairs(m) do copy[k] = v end
+			copy.content = ""
+			table.insert(msgs, copy)
+		else
+			table.insert(msgs, m)
+		end
+	end
 	return msgs
 end
 
@@ -2576,8 +2585,10 @@ local function buildBody(history)
 	if #defs > 0 then
 		local toolDefs = {}
 		for _, e in ipairs(defs) do toolDefs[#toolDefs+1] = e.definition end
-		body.tools       = toolDefs
-		body.tool_choice = "auto"
+		body.tools = toolDefs
+		if Config.host ~= "Ollama" then
+			body.tool_choice = "auto"
+		end
 	end
 	local ok, json = pcall(HS.JSONEncode, HS, body)
 	if not ok then error("buildBody failed: " .. tostring(json), 2) end
