@@ -2319,7 +2319,7 @@ UI.MultiAPIKeySaveButton.MouseButton1Click:Connect(function()
 		if k ~= "" then keys[#keys + 1] = k end
 	end
 	Config.openrouterKeys = keys
-	Config.openrouterKeyIndex = 0
+	Config.openrouterKeyIndex = 1
 	Config.save()
 	UI.ModalFrame.Visible          = false
 	UI.SetMultiAPIKeyModal.Visible = false
