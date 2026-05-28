@@ -150,160 +150,160 @@ local UI = {
 	ScrollingFrameMainChat = G2L["13"],
 	ListLayout             = G2L["14"],
 	ElementTemplate        = G2L["16"],
-	TotalElements          = G2L["49"],
-	isAssistantBusy        = G2L["4a"],
-	InputFrame             = G2L["52"],
-	TextBoxInput           = G2L["53"],
-	SendButton             = G2L["57"],
-	StopButton             = G2L["59"],
-	ActionsFrame           = G2L["5b"],
-	NewChatButton          = G2L["5e"],
+	TotalElements          = G2L["4b"],
+	isAssistantBusy        = G2L["4c"],
+	InputFrame             = G2L["54"],
+	TextBoxInput           = G2L["55"],
+	SendButton             = G2L["59"],
+	StopButton             = G2L["5b"],
+	ActionsFrame           = G2L["5d"],
+	NewChatButton          = G2L["60"],
 	-- Settings page
-	SettingsPage           = G2L["62"],
-	Settings_SF            = G2L["63"],
-	APIKeyFrame                = G2L["64"],
-	APIKeyLabel                = G2L["66"],
-	APIKeyBox                  = G2L["67"],
-	APIKeySingleButton         = G2L["6c"],
-	APIKeyMultiButton          = G2L["70"],
-	SetMultipleAPIKeysButton   = G2L["72"],
-	HostSelectFrame            = G2L["74"],
-	HostTitle              = G2L["75"],
-	HostFrame              = G2L["76"],
-	HostButtons            = G2L["76"]:GetChildren(),
-	ModelSelectFrame       = G2L["9d"],
-	ModelFrame             = G2L["9f"],
-	ModelBox               = G2L["a0"],
-	DropdownButton         = G2L["a3"],
+	SettingsPage           = G2L["64"],
+	Settings_SF            = G2L["65"],
+	APIKeyFrame                = G2L["66"],
+	APIKeyLabel                = G2L["68"],
+	APIKeyBox                  = G2L["69"],
+	APIKeySingleButton         = G2L["6e"],
+	APIKeyMultiButton          = G2L["72"],
+	SetMultipleAPIKeysButton   = G2L["74"],
+	HostSelectFrame            = G2L["76"],
+	HostTitle              = G2L["77"],
+	HostFrame              = G2L["78"],
+	HostButtons            = G2L["78"]:GetChildren(),
+	ModelSelectFrame       = G2L["9f"],
+	ModelFrame             = G2L["a1"],
+	ModelBox               = G2L["a2"],
+	DropdownButton         = G2L["a5"],
 	DropdownList           = Instance.new("Frame"),
-	TestFrame              = G2L["a6"],
-	ConnectionButton       = G2L["a9"],
-	CredentialButton       = G2L["b0"],
-	ConnectionIconColor    = G2L["ac"],
-	CredentialIconColor    = G2L["b3"],
-	MaxStepFrame           = G2L["b7"],
-	MaxStepBox             = G2L["ba"],
-	MaxStepResetButton     = G2L["bd"],
-	TemperatureBox         = G2L["c3"],
-	TemperatureResetButton = G2L["c6"],
-	SystemPromptFrame      = G2L["c8"],
-	SystemPromptButton     = G2L["ca"],
-	UnsavedChanges         = G2L["cc"],
-	TextLabel              = G2L["ce"],
-	SaveButton             = G2L["d0"],
-	RevertButton           = G2L["d2"],
+	TestFrame              = G2L["a8"],
+	ConnectionButton       = G2L["ab"],
+	CredentialButton       = G2L["b2"],
+	ConnectionIconColor    = G2L["ae"],
+	CredentialIconColor    = G2L["b5"],
+	MaxStepFrame           = G2L["b9"],
+	MaxStepBox             = G2L["bc"],
+	MaxStepResetButton     = G2L["bf"],
+	TemperatureBox         = G2L["c5"],
+	TemperatureResetButton = G2L["c8"],
+	SystemPromptFrame      = G2L["ca"],
+	SystemPromptButton     = G2L["cc"],
+	UnsavedChanges         = G2L["ce"],
+	TextLabel              = G2L["d0"],
+	SaveButton             = G2L["d2"],
+	RevertButton           = G2L["d4"],
 	-- Code page
-	CodePage               = G2L["d5"],
-	CodeTopFrame           = G2L["d6"],
-	CodeActionsFrame       = G2L["d7"],
-	CodeClearButton        = G2L["da"],
-	CodeCopyButton         = G2L["de"],
-	RunButton              = G2L["e2"],
-	TabsFrame              = G2L["e5"],
-	TabsScrollingFrame     = G2L["e6"],
-	TabButtonTemplate      = G2L["e7"],
-	NewTabButton           = G2L["ea"],
-	CodeSF                 = G2L["ed"],
-	CodeBox                = G2L["ef"],
-	IntelLabel             = G2L["f1"],
-	LineLabel              = G2L["f2"],
+	CodePage               = G2L["d7"],
+	CodeTopFrame           = G2L["d8"],
+	CodeActionsFrame       = G2L["d9"],
+	CodeClearButton        = G2L["dc"],
+	CodeCopyButton         = G2L["e0"],
+	RunButton              = G2L["e4"],
+	TabsFrame              = G2L["e7"],
+	TabsScrollingFrame     = G2L["e8"],
+	TabButtonTemplate      = G2L["e9"],
+	NewTabButton           = G2L["ec"],
+	CodeSF                 = G2L["ef"],
+	CodeBox                = G2L["f1"],
+	IntelLabel             = G2L["f3"],
+	LineLabel              = G2L["f4"],
 	-- Tools page
-	ToolsPage              = G2L["f4"],
-	ToolsSF                = G2L["f5"],
-	ToolsElementTemplate   = G2L["f8"],
-	ToolsGroupFrame        = G2L["f9"],
-	ToolsGroupInner        = G2L["fb"],
-	ToolsGroupTitle        = G2L["fc"],
-	ToolsToolFrame         = G2L["100"],
-	ToolsToolNameDesc      = G2L["103"],
-	ToolsTotalElements     = G2L["105"],
+	ToolsPage              = G2L["f6"],
+	ToolsSF                = G2L["f7"],
+	ToolsElementTemplate   = G2L["fa"],
+	ToolsGroupFrame        = G2L["fb"],
+	ToolsGroupInner        = G2L["fd"],
+	ToolsGroupTitle        = G2L["fe"],
+	ToolsToolFrame         = G2L["102"],
+	ToolsToolNameDesc      = G2L["105"],
+	ToolsTotalElements     = G2L["107"],
 	-- Startup page
-	StartupPageSF          = G2L["10a"],
-	StartupPageLayout      = G2L["10b"],
-	StartupElemTemplate    = G2L["10d"],
-	StartupGroupFrame      = G2L["10e"],
-	StartupGroupInner      = G2L["110"],
-	StartupGroupTitle      = G2L["111"],
-	StartupToolFrame       = G2L["115"],
-	StartupToolNameDesc    = G2L["118"],
-	StartupTotalElems      = G2L["11a"],
+	StartupPageSF          = G2L["10c"],
+	StartupPageLayout      = G2L["10d"],
+	StartupElemTemplate    = G2L["10f"],
+	StartupGroupFrame      = G2L["110"],
+	StartupGroupInner      = G2L["112"],
+	StartupGroupTitle      = G2L["113"],
+	StartupToolFrame       = G2L["117"],
+	StartupToolNameDesc    = G2L["11a"],
+	StartupTotalElems      = G2L["11c"],
 	-- History page
-	HistoryPage            = G2L["11d"],
-	HistorySF              = G2L["11e"],
-	HistoryTemplate        = G2L["122"],
-	HistoryToolFrame       = G2L["12b"],
-	HistoryTotalElements   = G2L["145"],
-	HistoryPageTip         = G2L["146"],
-	HistoryButtonFrame     = G2L["1af"],
+	HistoryPage            = G2L["11f"],
+	HistorySF              = G2L["120"],
+	HistoryTemplate        = G2L["124"],
+	HistoryToolFrame       = G2L["12d"],
+	HistoryTotalElements   = G2L["147"],
+	HistoryPageTip         = G2L["148"],
+	HistoryButtonFrame     = G2L["1b1"],
 	-- Browser page
-	BrowserPage            = G2L["148"],
-	BrowserDotYou          = G2L["14e"],
-	BrowserDotBridge       = G2L["155"],
-	BrowserDotWeb          = G2L["15b"],
-	BrowserIconBridge      = G2L["153"],
-	BrowserLabelBridge     = G2L["154"],
-	BrowserIconWeb         = G2L["159"],
-	BrowserLabelWeb        = G2L["15a"],
-	BrowserGrad1           = G2L["163"],
-	BrowserGrad2           = G2L["167"],
-	BrowserInstructions    = G2L["160"],
-	BrowserLogsTextBox     = G2L["1ec"],
-	ConnectToBrowserButton = G2L["51"],
-	ForceRefreshButton     = G2L["178"],
-	OpenBrowserLogsButton  = G2L["176"],
-	BrowserButtonHitbox    = G2L["1ae"],
+	BrowserPage            = G2L["14a"],
+	BrowserDotYou          = G2L["150"],
+	BrowserDotBridge       = G2L["157"],
+	BrowserDotWeb          = G2L["15d"],
+	BrowserIconBridge      = G2L["155"],
+	BrowserLabelBridge     = G2L["156"],
+	BrowserIconWeb         = G2L["15b"],
+	BrowserLabelWeb        = G2L["15c"],
+	BrowserGrad1           = G2L["165"],
+	BrowserGrad2           = G2L["169"],
+	BrowserInstructions    = G2L["162"],
+	BrowserLogsTextBox     = G2L["1ee"],
+	ConnectToBrowserButton = G2L["53"],
+	ForceRefreshButton     = G2L["17a"],
+	OpenBrowserLogsButton  = G2L["178"],
+	BrowserButtonHitbox    = G2L["1b0"],
 	-- Skills page
-	SkillsPage             = G2L["17a"],
-	SkillsSF               = G2L["173"],
-	SkillsTemplate         = G2L["176"],
-	SkillsGroupFrame       = G2L["177"],
-	SkillsPageTip          = G2L["192"],
-	SkillsTotalElements    = G2L["191"],
-	SkillsRefreshButton    = G2L["195"],
-	SkillsRefreshText      = G2L["197"],
-	SkillsButtonHitbox     = G2L["1b0"],
+	SkillsPage             = G2L["17c"],
+	SkillsSF               = G2L["175"],
+	SkillsTemplate         = G2L["178"],
+	SkillsGroupFrame       = G2L["179"],
+	SkillsPageTip          = G2L["194"],
+	SkillsTotalElements    = G2L["193"],
+	SkillsRefreshButton    = G2L["197"],
+	SkillsRefreshText      = G2L["199"],
+	SkillsButtonHitbox     = G2L["1b2"],
 	-- Sidebar & topbar
-	LeftSidebar            = G2L["198"],
-	TopBar                 = G2L["1bf"],
-	CloseButton            = G2L["1c1"],
-	MinimizeButton         = G2L["1c4"],
-	Highlight              = G2L["1c5"],
+	LeftSidebar            = G2L["19a"],
+	TopBar                 = G2L["1c1"],
+	CloseButton            = G2L["1c3"],
+	MinimizeButton         = G2L["1c6"],
+	Highlight              = G2L["1c7"],
 	-- Modal
-	ModalFrame             = G2L["1c6"],
-	ModalInner             = G2L["1c8"],
-	ModalCloseButton       = G2L["1ca"],
-	SearchModelModal       = G2L["1cb"],
-	ModalSearchBox         = G2L["1cd"],
-	ModalSF                = G2L["1d1"],
-	ExampleModelBtn        = G2L["1d2"],
-	ModalSearchButton      = G2L["1d0"],
-	ModalOpenButton        = G2L["a3"],
-	ToolResultViewModal    = G2L["1d5"],
-	ToolResultSF           = G2L["1d7"],
-	ToolResultTextBox      = G2L["1da"],
-	ModalTitleLabel        = G2L["1db"],
-	SystemPromptModal      = G2L["1dd"],
-	SystemPromptSF         = G2L["1df"],
-	SystemPromptTextBox    = G2L["1e0"],
-	SystemPromptResetButton = G2L["1e5"],
-	SystemPromptSaveButton  = G2L["1e6"],
-	BrowserLogsModal       = G2L["1e7"],
+	ModalFrame             = G2L["1c8"],
+	ModalInner             = G2L["1ca"],
+	ModalCloseButton       = G2L["1cc"],
+	SearchModelModal       = G2L["1cd"],
+	ModalSearchBox         = G2L["1cf"],
+	ModalSF                = G2L["1d3"],
+	ExampleModelBtn        = G2L["1d4"],
+	ModalSearchButton      = G2L["1d2"],
+	ModalOpenButton        = G2L["a5"],
+	ToolResultViewModal    = G2L["1d7"],
+	ToolResultSF           = G2L["1d9"],
+	ToolResultTextBox      = G2L["1dc"],
+	ModalTitleLabel        = G2L["1dd"],
+	SystemPromptModal      = G2L["1df"],
+	SystemPromptSF         = G2L["1e1"],
+	SystemPromptTextBox    = G2L["1e2"],
+	SystemPromptResetButton = G2L["1e7"],
+	SystemPromptSaveButton  = G2L["1e8"],
+	BrowserLogsModal       = G2L["1e9"],
 	-- Multi API key modal
-	SetMultiAPIKeyModal    = G2L["1ed"],
-	MultiAPIKeyTextBox     = G2L["1f0"],
-	MultiAPIKeyClearButton = G2L["1f6"],
-	MultiAPIKeySaveButton  = G2L["1f7"],
+	SetMultiAPIKeyModal    = G2L["1ef"],
+	MultiAPIKeyTextBox     = G2L["1f2"],
+	MultiAPIKeyClearButton = G2L["1f8"],
+	MultiAPIKeySaveButton  = G2L["1f9"],
 	-- Confirmation modal
-	ConfirmationFrame      = G2L["1f8"],
-	ConfirmYesButton       = G2L["1fc"],
-	ConfirmNoButton        = G2L["1fd"],
-	ConfirmTextLabel       = G2L["1fe"],
+	ConfirmationFrame      = G2L["1fa"],
+	ConfirmYesButton       = G2L["1fe"],
+	ConfirmNoButton        = G2L["1ff"],
+	ConfirmTextLabel       = G2L["200"],
 	-- Misc
-	IntroFrame             = G2L["200"],
-	IYAIToastContainer     = G2L["203"],
-	ToastTemplate          = G2L["204"],
-	CurrentPage            = G2L["210"],
-	OpenConversationHistoryButton = G2L["50"],
+	IntroFrame             = G2L["202"],
+	IYAIToastContainer     = G2L["205"],
+	ToastTemplate          = G2L["206"],
+	CurrentPage            = G2L["212"],
+	OpenConversationHistoryButton = G2L["52"],
 }
 -- ── Main logic ────────────────────────────────────────────────────────────────
 
@@ -321,7 +321,7 @@ local Clr = {
     sfull = NumberSequence.new{ NumberSequenceKeypoint.new(0, 1), NumberSequenceKeypoint.new(0.5, 0),   NumberSequenceKeypoint.new(1, 1) },
 }
 
-local VERSION           = G2L["211"] and G2L["211"].Value or ""
+local VERSION           = G2L["213"] and G2L["213"].Value or ""
 local Tween             = TweenInfo.new(0.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut)
 local DefaultIYAISize   = UDim2.new(0, 600, 0, 400)
 local MinimizedIYAISize = UDim2.new(0, 160, 0, 25)
@@ -750,12 +750,23 @@ local function addResponse(rawText, usage)
 		end
 	end
 
+	local function wireResponseCopyBtn(elem, content)
+		local copyBtn = elem:FindFirstChild("CopyButton", true)
+		if copyBtn then
+			copyBtn.MouseButton1Click:Connect(function()
+				pcall(setclipboard, content)
+				Toast.show("Copied", "Response copied to clipboard", "ok", 2)
+			end)
+		end
+	end
+
 	if #segments == 1 and segments[1].type == "text" then
 		local elem = addElement("AssistantResponse", "", false)
 		local textLabel = findContentLabel(elem)
 		if textLabel then
 			typewriteInto(textLabel, markdownToRichText(segments[1].content) .. (usage and "\n" or ""))
 		end
+		wireResponseCopyBtn(elem, segments[1].content)
 		lastElem = elem
 	else
 		for _, seg in ipairs(segments) do
@@ -768,6 +779,7 @@ local function addResponse(rawText, usage)
 						textLabel.RichText = true
 						textLabel.Text = stripped
 					end
+					wireResponseCopyBtn(elem, seg.content)
 					lastElem = elem
 				end
 			else
@@ -2550,10 +2562,10 @@ local function buildMessages(history)
 	if skillsCtx then sysContent = sysContent .. "\n\n" .. skillsCtx end
 	local msgs = {{ role = "system", content = sysContent }}
 	for _, m in ipairs(history or Agt.history) do
-		if Config.host == "Ollama" and m.role == "assistant" and m.content == nil then
-			local copy = {}
-			for k, v in pairs(m) do copy[k] = v end
-			copy.content = ""
+		if Config.host == "Ollama" then
+			-- Ollama: strip thinking/reasoning fields and ensure content is always a string
+			local copy = { role = m.role, content = type(m.content) == "string" and m.content or "" }
+			if m.tool_calls then copy.tool_calls = m.tool_calls end
 			table.insert(msgs, copy)
 		else
 			table.insert(msgs, m)
@@ -3092,11 +3104,13 @@ local function runCodeAgent(userText)
 					for _, e in ipairs(Tools.getDefinitions()) do t[#t+1] = e.definition end
 					return t
 				end)(),
-				tool_choice = "auto",
 				stream      = false,
 			}
+			if Config.host ~= "Ollama" then body.tool_choice = "auto" end
 			local j = HS:JSONEncode(body)
-			return j:gsub('"properties":%[%]', '"properties":{}')
+			j = j:gsub('"properties":%[%]', '"properties":{}')
+			j = j:gsub('"arguments":%[%]', '"arguments":{}')
+			return j
 		end
 
 		local res = requestWithRetry(buildUrl(), "POST", buildHeaders, buildCodeBody(Agt.codeHistory))
@@ -3282,6 +3296,13 @@ local function runAgentLoop(userText)
 						tokenLabel.Visible = true
 					end
 				end
+				local copyBtn = generatingFrame:FindFirstChild("CopyButton", true)
+				if copyBtn then
+					copyBtn.MouseButton1Click:Connect(function()
+						pcall(setclipboard, rawContent)
+						Toast.show("Copied", "Response copied to clipboard", "ok", 2)
+					end)
+				end
 				recordRender({t = "ai", text = rawContent})
 			else
 				if generatingFrame then generatingFrame:Destroy(); generatingFrame = nil end
@@ -3351,6 +3372,13 @@ local function runAgentLoop(userText)
 						  tokenLabel.Text    = Config.model .. "  ↑ " .. (usage.prompt_tokens or 0) .. "  ↓ " .. (usage.completion_tokens or 0)
 						 tokenLabel.Visible = true
 						end
+						end
+						local copyBtn = generatingFrame:FindFirstChild("CopyButton", true)
+						if copyBtn then
+							copyBtn.MouseButton1Click:Connect(function()
+								pcall(setclipboard, message)
+								Toast.show("Copied", "Response copied to clipboard", "ok", 2)
+							end)
 						end
 						recordRender({t = "ai", text = message})
 						generatingFrame = nil
