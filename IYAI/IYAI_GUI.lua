@@ -1746,9 +1746,11 @@ end)
 -- (helper functions, credential handlers, UI populators) stays inside the
 -- block and is captured by the closures it wires up.
 
-local _onSettingsSaved  -- forward-declared; wired to sendSyncState after bridge section loads
-local saveSettings       -- forward-declared so CloseButton handler can call it
-local _uisBegan          -- forward-declared so CloseButton can disconnect it
+local _onSettingsSaved        -- forward-declared; wired to sendSyncState after bridge section loads
+local saveSettings            -- forward-declared so CloseButton handler can call it
+local _uisBegan               -- forward-declared so CloseButton can disconnect it
+local hostBtnName             -- used by applyUrlDetection outside the do-block
+local updateApiKeyVisibility  -- used by applyUrlDetection outside the do-block
 
 local Set = {
 	host      = Config.host,
@@ -1817,7 +1819,7 @@ UI.MaxStepBox.Text     = tostring(Config.maxSteps)
 UI.TemperatureBox.Text = tostring(Config.temperature)
 Set.host    = Config.host
 
-local function hostBtnName(b)
+function hostBtnName(b)  -- assigns to outer forward-declared local
 	local lbl = b:FindFirstChildWhichIsA("TextLabel")
 	return lbl and lbl.Text or b.Text
 end
@@ -1995,7 +1997,7 @@ _uisBegan = UIS.InputBegan:Connect(function(input)
 	if not inside(UI.DropdownList) and not inside(UI.ModelFrame) then closeDropdown() end
 end)
 
-local function updateApiKeyVisibility(host)
+function updateApiKeyVisibility(host)  -- assigns to outer forward-declared local
 	if UI.APIKeyFrame then
 		local p = Providers.get(host)
 		UI.APIKeyFrame.Visible = p == nil or p.requiresKey
