@@ -1,7 +1,85 @@
 -- tools/Script.lua  |  Script-related tools
--- Returns function(Tools) — call it to register source and run.
+-- Returns function(Tools, Http) — call it to register source and run.
 
-return function(Tools)
+return function(Tools, Http)
+
+	local UNC_URL   = "https://raw.githubusercontent.com/imluri/IYAI/refs/heads/main/IYAI/modules/integrations/unc_test.lua"
+	local UNC_CACHE = "iyai_data/cache/unc_test.lua"
+
+	local function fetchUncSrc()
+		-- 1. Try the local module path (when installed from full repo clone)
+		if isfile and isfile("IYAI/modules/integrations/unc_test.lua") then
+			local ok, src = pcall(readfile, "IYAI/modules/integrations/unc_test.lua")
+			if ok and src and src ~= "" then return src end
+		end
+		-- 2. Try the cached download
+		if isfile and isfile(UNC_CACHE) then
+			local ok, src = pcall(readfile, UNC_CACHE)
+			if ok and src and src ~= "" then return src end
+		end
+		-- 3. Fetch from GitHub
+		if not (Http and Http.request) then return nil, "No local copy and no Http available." end
+		local res = Http.request(UNC_URL, "GET", { ["User-Agent"] = "IYAI" }, nil)
+		if not res or res.StatusCode ~= 200 then
+			return nil, "Fetch failed: " .. tostring(res and res.StatusCode or "no response")
+		end
+		local src = res.Body or ""
+		if src == "" then return nil, "Fetched empty body." end
+		-- 4. Cache for next time
+		if writefile and isfolder and makefolder then
+			pcall(function()
+				if not isfolder("iyai_data")       then makefolder("iyai_data")       end
+				if not isfolder("iyai_data/cache") then makefolder("iyai_data/cache") end
+				writefile(UNC_CACHE, src)
+			end)
+		end
+		return src
+	end
+
+	local function resolvePath(path)
+		if not path or path == "" or path == "game" then return game end
+		local inst = game
+		for part in path:gmatch("[^%.]+") do
+			if part ~= "game" then
+				local child = inst:FindFirstChild(part)
+				if not child then return nil, "Not found: " .. part end
+				inst = child
+			end
+		end
+		return inst
+	end
+
+	-- source: read script source
+	Tools.register({
+		group = "Script",
+		definition = {
+			type = "function",
+			["function"] = {
+				name        = "source",
+				description = "Get the Lua source of a Script, LocalScript, or ModuleScript.",
+				parameters  = {
+					type       = "object",
+					properties = {
+						path = { type = "string", description = "Full path to the script" },
+					},
+					required = { "path" }
+				}
+			}
+		},
+		handler = function(args)
+			local inst, err = resolvePath(args.path)
+			if not inst then return "Error: " .. tostring(err) end
+			if not inst:IsA("LuaSourceContainer") then
+				return "Error: not a script — " .. inst.ClassName
+			end
+			local src = ""
+			pcall(function() src = inst.Source end)
+			if src == "" then return "Source not accessible." end
+			return #src > 4000
+				and (src:sub(1, 4000) .. "\n...[truncated, " .. #src .. " total chars]")
+				or  src
+		end
+	})
 
 	Tools.register({
 		group = "Script",
@@ -50,9 +128,9 @@ return function(Tools)
 			}
 		},
 		handler = function(_args)
-			local ok, src = pcall(readfile, "IYAI/modules/integrations/unc_test.lua")
-			if not ok or not src or src == "" then
-				return "Error: IYAI/modules/integrations/unc_test.lua not found in workspace."
+			local src, fetchErr = fetchUncSrc()
+			if not src then
+				return "Error: couldn't get unc_test.lua. " .. tostring(fetchErr or "unknown")
 			end
 
 			_G.__unc_running_ref = nil

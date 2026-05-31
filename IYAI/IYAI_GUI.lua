@@ -65,6 +65,33 @@ loadMod("modules/tools/Web.lua")(Tools, Http)
 loadMod("modules/tools/SynapseDocs.lua")(Tools, Http)
 
 local Prompt = loadMod("modules/Prompt.lua")(Http)
+local Memory = loadMod("modules/Memory.lua")()
+
+-- ── Bootstrap Gui.lua to iyai_data/ ──────────────────────────────────────────
+-- AI-generated UI scripts call loadstring(readfile("iyai_data/Gui.lua"))().
+-- Ensure that file exists: prefer local dev copy, fall back to GitHub, cache once.
+do
+	local TARGET   = "iyai_data/Gui.lua"
+	local SRC_PATH = "IYAI/modules/Gui.lua"
+	local URL      = "https://raw.githubusercontent.com/imluri/IYAI/refs/heads/main/IYAI/modules/Gui.lua"
+	if writefile and not (isfile and isfile(TARGET)) then
+		local src
+		if readfile and isfile and isfile(SRC_PATH) then
+			local ok, s = pcall(readfile, SRC_PATH)
+			if ok and s and s ~= "" then src = s end
+		end
+		if not src and Http and Http.request then
+			local res = Http.request(URL, "GET", { ["User-Agent"] = "IYAI" }, nil)
+			if res and res.StatusCode == 200 and res.Body and res.Body ~= "" then
+				src = res.Body
+			end
+		end
+		if src then
+			if isfolder and makefolder and not isfolder("iyai_data") then pcall(makefolder, "iyai_data") end
+			pcall(writefile, TARGET, src)
+		end
+	end
+end
 
 -- ── M: shared module-scope state container ───────────────────────────────────
 -- Luau caps each function at 200 locals. This file runs as one giant closure,
@@ -195,162 +222,162 @@ local UI = {
 	-- Settings page
 	SettingsPage           = G2L["58"],
 	Settings_SF            = G2L["59"],
-	APIKeyFrame                = G2L["9c"],
-	APIKeyLabel                = G2L["9e"],
-	APIKeyBox                  = G2L["9f"],
-	APIKeySingleButton         = G2L["a4"],
-	APIKeyMultiButton          = G2L["a8"],
-	SetMultipleAPIKeysButton   = G2L["aa"],
-	HostSelectFrame            = G2L["90"],
-	HostTitle              = G2L["91"],
-	HostSelectTextButton   = G2L["97"],
-	HostSelectTextBox      = G2L["94"],
-	HostSelectIcon         = G2L["99"],
-	HostSelectLabel        = G2L["9b"],
-	HostProviderModal      = G2L["1d6"],
-	HostFrame              = G2L["93"],
+	APIKeyFrame                = G2L["9b"],
+	APIKeyLabel                = G2L["9d"],
+	APIKeyBox                  = G2L["9e"],
+	APIKeySingleButton         = G2L["a3"],
+	APIKeyMultiButton          = G2L["a7"],
+	SetMultipleAPIKeysButton   = G2L["a9"],
+	HostSelectFrame            = G2L["8f"],
+	HostTitle              = G2L["90"],
+	HostSelectTextButton   = G2L["96"],
+	HostSelectTextBox      = G2L["93"],
+	HostSelectIcon         = G2L["98"],
+	HostSelectLabel        = G2L["9a"],
+	HostProviderModal      = G2L["1d5"],
+	HostFrame              = G2L["1d8"],
 	HostButtons            = {},
-	HostTemplateButton     = G2L["1db"],
+	HostTemplateButton     = G2L["1da"],
 	HostProviderSF         = G2L["1d9"],
-	ModelSelectFrame       = G2L["61"],
-	ModelFrame             = G2L["63"],
-	ModelBox               = G2L["64"],
-	DropdownButton         = G2L["67"],
+	ModelSelectFrame       = G2L["60"],
+	ModelFrame             = G2L["62"],
+	ModelBox               = G2L["63"],
+	DropdownButton         = G2L["66"],
 	DropdownList           = Instance.new("Frame"),
-	TestFrame              = G2L["6a"],
-	ConnectionButton       = G2L["6d"],
-	CredentialButton       = G2L["74"],
-	ConnectionIconColor    = G2L["70"],
-	CredentialIconColor    = G2L["77"],
-	MaxStepFrame           = G2L["7b"],
-	MaxStepBox             = G2L["7e"],
-	MaxStepResetButton     = G2L["81"],
-	TemperatureBox         = G2L["87"],
-	TemperatureResetButton = G2L["8a"],
-	SystemPromptFrame      = G2L["8c"],
-	SystemPromptButton     = G2L["8e"],
+	TestFrame              = G2L["69"],
+	ConnectionButton       = G2L["6c"],
+	CredentialButton       = G2L["73"],
+	ConnectionIconColor    = G2L["6f"],
+	CredentialIconColor    = G2L["76"],
+	MaxStepFrame           = G2L["7a"],
+	MaxStepBox             = G2L["7d"],
+	MaxStepResetButton     = G2L["80"],
+	TemperatureBox         = G2L["86"],
+	TemperatureResetButton = G2L["89"],
+	SystemPromptFrame      = G2L["8b"],
+	SystemPromptButton     = G2L["8d"],
 	-- Usage
 	UsageFrame             = G2L["5a"],
 	UsageTotalLabel        = G2L["5c"],
 	UsageSessionLabel      = G2L["5d"],
-	LoadFreeButton         = G2L["5f"],
-	UnsavedChanges         = G2L["ac"],
-	TextLabel              = G2L["ae"],
-	SaveButton             = G2L["b0"],
-	RevertButton           = G2L["b2"],
+	LoadFreeButton         = G2L["5e"],
+	UnsavedChanges         = G2L["ab"],
+	TextLabel              = G2L["ad"],
+	SaveButton             = G2L["af"],
+	RevertButton           = G2L["b1"],
 	-- Code page
-	CodePage               = G2L["b5"],
-	CodeTopFrame           = G2L["b6"],
-	CodeActionsFrame       = G2L["b7"],
-	CodeClearButton        = G2L["ba"],
-	CodeCopyButton         = G2L["be"],
-	RunButton              = G2L["c2"],
-	TabsFrame              = G2L["c5"],
-	TabsScrollingFrame     = G2L["c6"],
-	TabButtonTemplate      = G2L["c7"],
-	NewTabButton           = G2L["ca"],
-	CodeSF                 = G2L["cd"],
-	CodeBox                = G2L["cf"],
-	IntelLabel             = G2L["d1"],
-	LineLabel              = G2L["d2"],
+	CodePage               = G2L["b4"],
+	CodeTopFrame           = G2L["b5"],
+	CodeActionsFrame       = G2L["b6"],
+	CodeClearButton        = G2L["b9"],
+	CodeCopyButton         = G2L["bd"],
+	RunButton              = G2L["c1"],
+	TabsFrame              = G2L["c4"],
+	TabsScrollingFrame     = G2L["c5"],
+	TabButtonTemplate      = G2L["c6"],
+	NewTabButton           = G2L["c9"],
+	CodeSF                 = G2L["cc"],
+	CodeBox                = G2L["ce"],
+	IntelLabel             = G2L["d0"],
+	LineLabel              = G2L["d1"],
 	-- Tools page
-	ToolsPage              = G2L["d4"],
-	ToolsSF                = G2L["d5"],
-	ToolsElementTemplate   = G2L["d8"],
-	ToolsGroupFrame        = G2L["d9"],
-	ToolsGroupInner        = G2L["db"],
-	ToolsGroupTitle        = G2L["dc"],
-	ToolsToolFrame         = G2L["e0"],
-	ToolsToolNameDesc      = G2L["e3"],
-	ToolsTotalElements     = G2L["e5"],
+	ToolsPage              = G2L["d3"],
+	ToolsSF                = G2L["d4"],
+	ToolsElementTemplate   = G2L["d7"],
+	ToolsGroupFrame        = G2L["d8"],
+	ToolsGroupInner        = G2L["da"],
+	ToolsGroupTitle        = G2L["db"],
+	ToolsToolFrame         = G2L["df"],
+	ToolsToolNameDesc      = G2L["e2"],
+	ToolsTotalElements     = G2L["e4"],
 	-- Startup page
-	StartupPageSF          = G2L["ea"],
-	StartupPageLayout      = G2L["eb"],
-	StartupElemTemplate    = G2L["ed"],
-	StartupGroupFrame      = G2L["ee"],
-	StartupGroupInner      = G2L["e9"],
-	StartupGroupTitle      = G2L["f1"],
-	StartupToolFrame       = G2L["f5"],
-	StartupToolNameDesc    = G2L["f8"],
-	StartupTotalElems      = G2L["fa"],
+	StartupPageSF          = G2L["e9"],
+	StartupPageLayout      = G2L["ea"],
+	StartupElemTemplate    = G2L["ec"],
+	StartupGroupFrame      = G2L["ed"],
+	StartupGroupInner      = G2L["ef"],
+	StartupGroupTitle      = G2L["f0"],
+	StartupToolFrame       = G2L["f4"],
+	StartupToolNameDesc    = G2L["f7"],
+	StartupTotalElems      = G2L["f9"],
 	-- History page
-	HistoryPage            = G2L["fd"],
-	HistorySF              = G2L["fe"],
-	HistoryTemplate        = G2L["102"],
-	HistoryToolFrame       = G2L["10b"],
-	HistoryTotalElements   = G2L["125"],
-	HistoryPageTip         = G2L["126"],
-	HistoryButtonFrame     = G2L["18a"],
+	HistoryPage            = G2L["fc"],
+	HistorySF              = G2L["fd"],
+	HistoryTemplate        = G2L["101"],
+	HistoryToolFrame       = G2L["10a"],
+	HistoryTotalElements   = G2L["124"],
+	HistoryPageTip         = G2L["125"],
+	HistoryButtonFrame     = G2L["189"],
 	-- Browser page
-	BrowserPage            = G2L["128"],
-	BrowserDotYou          = G2L["12e"],
-	BrowserDotBridge       = G2L["135"],
-	BrowserDotWeb          = G2L["13b"],
-	BrowserIconBridge      = G2L["133"],
-	BrowserLabelBridge     = G2L["134"],
-	BrowserIconWeb         = G2L["139"],
-	BrowserLabelWeb        = G2L["13a"],
-	BrowserGrad1           = G2L["143"],
-	BrowserGrad2           = G2L["147"],
-	BrowserInstructions    = G2L["148"],
-	BrowserLogsTextBox     = G2L["1ca"],
+	BrowserPage            = G2L["127"],
+	BrowserDotYou          = G2L["12d"],
+	BrowserDotBridge       = G2L["134"],
+	BrowserDotWeb          = G2L["13a"],
+	BrowserIconBridge      = G2L["132"],
+	BrowserLabelBridge     = G2L["133"],
+	BrowserIconWeb         = G2L["138"],
+	BrowserLabelWeb        = G2L["139"],
+	BrowserGrad1           = G2L["142"],
+	BrowserGrad2           = G2L["146"],
+	BrowserInstructions    = G2L["147"],
+	BrowserLogsTextBox     = G2L["1c9"],
 	ConnectToBrowserButton = G2L["47"],
-	ForceRefreshButton     = G2L["158"],
-	OpenBrowserLogsButton  = G2L["156"],
-	BrowserButtonHitbox    = G2L["17e"],
+	ForceRefreshButton     = G2L["157"],
+	OpenBrowserLogsButton  = G2L["155"],
+	BrowserButtonHitbox    = G2L["184"],
 	-- Skills page
-	SkillsPage             = G2L["15a"],
-	SkillsSF               = G2L["15b"],
-	SkillsTemplate         = G2L["15e"],
-	SkillsGroupFrame       = G2L["15f"],
-	SkillsPageTip          = G2L["172"],
-	SkillsTotalElements    = G2L["171"],
-	SkillsRefreshButton    = G2L["175"],
-	SkillsRefreshText      = G2L["177"],
-	SkillsButtonHitbox     = G2L["193"],
+	SkillsPage             = G2L["159"],
+	SkillsSF               = G2L["15a"],
+	SkillsTemplate         = G2L["15d"],
+	SkillsGroupFrame       = G2L["15e"],
+	SkillsPageTip          = G2L["171"],
+	SkillsTotalElements    = G2L["170"],
+	SkillsRefreshButton    = G2L["174"],
+	SkillsRefreshText      = G2L["176"],
+	SkillsButtonHitbox     = G2L["192"],
 	-- Sidebar & topbar
-	LeftSidebar            = G2L["178"],
-	SidebarContainer       = G2L["17b"],
-	TopBar                 = G2L["19e"],
-	CloseButton            = G2L["1a0"],
-	MinimizeButton         = G2L["1a3"],
-	ResizeLabel            = G2L["1ec"],
-	Highlight              = G2L["17a"],
+	LeftSidebar            = G2L["177"],
+	SidebarContainer       = G2L["17a"],
+	TopBar                 = G2L["19d"],
+	CloseButton            = G2L["19f"],
+	MinimizeButton         = G2L["1a2"],
+	ResizeLabel            = G2L["1eb"],
+	Highlight              = G2L["179"],
 	-- Modal
-	ModalFrame             = G2L["1a4"],
-	ModalInner             = G2L["1a6"],
-	ModalCloseButton       = G2L["1a8"],
-	SearchModelModal       = G2L["1a9"],
-	ModalSearchBox         = G2L["1ab"],
-	ModalSF                = G2L["1af"],
-	ExampleModelBtn        = G2L["1b0"],
-	ModalSearchButton      = G2L["1ae"],
-	ModalOpenButton        = G2L["67"],
-	ToolResultViewModal    = G2L["1b3"],
-	ToolResultSF           = G2L["1b5"],
-	ToolResultTextBox      = G2L["1b8"],
-	ModalTitleLabel        = G2L["1b9"],
-	SystemPromptModal      = G2L["1bb"],
-	SystemPromptSF         = G2L["1bd"],
-	SystemPromptTextBox    = G2L["1be"],
-	SystemPromptResetButton = G2L["1c3"],
-	SystemPromptSaveButton  = G2L["1c4"],
-	BrowserLogsModal       = G2L["1c5"],
+	ModalFrame             = G2L["1a3"],
+	ModalInner             = G2L["1a5"],
+	ModalCloseButton       = G2L["1a7"],
+	SearchModelModal       = G2L["1a8"],
+	ModalSearchBox         = G2L["1aa"],
+	ModalSF                = G2L["1ae"],
+	ExampleModelBtn        = G2L["1af"],
+	ModalSearchButton      = G2L["1ad"],
+	ModalOpenButton        = G2L["66"],
+	ToolResultViewModal    = G2L["1b2"],
+	ToolResultSF           = G2L["1b4"],
+	ToolResultTextBox      = G2L["1b7"],
+	ModalTitleLabel        = G2L["1b8"],
+	SystemPromptModal      = G2L["1ba"],
+	SystemPromptSF         = G2L["1bc"],
+	SystemPromptTextBox    = G2L["1bd"],
+	SystemPromptResetButton = G2L["1c2"],
+	SystemPromptSaveButton  = G2L["1c3"],
+	BrowserLogsModal       = G2L["1c4"],
 	-- Multi API key modal
-	SetMultiAPIKeyModal    = G2L["1cb"],
-	MultiAPIKeyTextBox     = G2L["1ce"],
-	MultiAPIKeyClearButton = G2L["1d4"],
-	MultiAPIKeySaveButton  = G2L["1d5"],
+	SetMultiAPIKeyModal    = G2L["1ca"],
+	MultiAPIKeyTextBox     = G2L["1cd"],
+	MultiAPIKeyClearButton = G2L["1d3"],
+	MultiAPIKeySaveButton  = G2L["1d4"],
 	-- Confirmation modal
-	ConfirmationFrame      = G2L["1e1"],
-	ConfirmYesButton       = G2L["1e5"],
-	ConfirmNoButton        = G2L["1e6"],
-	ConfirmTextLabel       = G2L["1e7"],
+	ConfirmationFrame      = G2L["1e0"],
+	ConfirmYesButton       = G2L["1e4"],
+	ConfirmNoButton        = G2L["1e5"],
+	ConfirmTextLabel       = G2L["1e6"],
 	-- Misc
-	IntroFrame             = G2L["1e9"],
-	IYAIToastContainer     = G2L["1ed"],
-	ToastTemplate          = G2L["1ee"],
-	CurrentPage            = G2L["1fa"],
+	IntroFrame             = G2L["1e8"],
+	IYAIToastContainer     = G2L["1ec"],
+	ToastTemplate          = G2L["1ed"],
+	CurrentPage            = G2L["1f9"],
 	OpenConversationHistoryButton = G2L["46"],
 }
 -- ── Main logic ────────────────────────────────────────────────────────────────
@@ -370,7 +397,12 @@ local Clr = {
     sfull = NumberSequence.new{ NumberSequenceKeypoint.new(0, 1), NumberSequenceKeypoint.new(0.5, 0),   NumberSequenceKeypoint.new(1, 1) },
 }
 
-local VERSION           = G2L["1fb"] and G2L["1fb"].Value or ""
+-- Look up the Version StringValue by name, not by G2L ID — hardcoded IDs
+-- aren't remapped after a G2L export and silently break with empty text.
+local VERSION = (function()
+	local v = UI.ScreenGui and UI.ScreenGui:FindFirstChild("Version")
+	return (v and v.Value) or ""
+end)()
 local Tween             = TweenInfo.new(0.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut)
 local DefaultIYAISize   = UDim2.new(0, 600, 0, 400)
 local MinimizedIYAISize = UDim2.new(0, 160, 0, 25)
@@ -1310,6 +1342,61 @@ local function tabListStr()
 	for i, t in ipairs(Tabs.list) do names[i] = i .. ": " .. t.name end
 	return table.concat(names, ", ")
 end
+
+-- ── Memory tools (per-game persistent notes) ─────────────────────────────────
+Tools.register({
+	group = "Memory",
+	definition = {
+		type = "function",
+		["function"] = {
+			name        = "remember",
+			description = "Save a fact about THIS specific game (current PlaceId) so it auto-loads into your context every future session. Use for: game-specific quirks (anti-cheat behavior, remote endpoint patterns, NPC spawn rules), user preferences for this game (ESP color, walkspeed), discovered values (passwords, codes, IDs). Keep each fact one sentence. Don't remember chitchat or temporary state.",
+			parameters  = {
+				type = "object",
+				properties = {
+					fact = { type = "string", description = "A single fact to persist for this game." }
+				},
+				required = { "fact" }
+			}
+		}
+	},
+	handler = function(args)
+		local ok, parsed = pcall(HS.JSONDecode, HS, args)
+		if not ok or type(parsed) ~= "table" or type(parsed.fact) ~= "string" then
+			return "Error: invalid arguments. Pass { fact = \"...\" }."
+		end
+		if Memory.remember(parsed.fact) then
+			return "Remembered for PlaceId " .. tostring(game.PlaceId) .. ": " .. parsed.fact
+		end
+		return "Error: writefile unavailable — cannot persist memory."
+	end
+})
+
+Tools.register({
+	group = "Memory",
+	definition = {
+		type = "function",
+		["function"] = {
+			name        = "forget",
+			description = "Remove remembered facts containing a query substring. Use when a fact becomes outdated or wrong.",
+			parameters  = {
+				type = "object",
+				properties = {
+					query = { type = "string", description = "Substring; any remembered line containing this is removed (case-insensitive)." }
+				},
+				required = { "query" }
+			}
+		}
+	},
+	handler = function(args)
+		local ok, parsed = pcall(HS.JSONDecode, HS, args)
+		if not ok or type(parsed) ~= "table" or type(parsed.query) ~= "string" then
+			return "Error: invalid arguments. Pass { query = \"...\" }."
+		end
+		local n = Memory.forget(parsed.query)
+		return "Forgot " .. n .. " line(s) matching: " .. parsed.query
+	end
+})
 
 Tools.register({
 	group = CODE_TOOL_GROUP,
@@ -2429,6 +2516,11 @@ end)
 local _uisChanged, _uisEnded
 
 UI.CloseButton.MouseButton1Click:Connect(function()
+	-- Auto-save unsaved settings so we don't silently discard them on close
+	if UI.UnsavedChanges and UI.UnsavedChanges.Visible then
+		local ok = pcall(saveSettings)
+		if ok then Toast.show("Auto-saved", "Unsaved settings saved on close", "ok", 2) end
+	end
 	if _uisBegan  then _uisBegan:Disconnect()  end
 	if _uisChanged then _uisChanged:Disconnect() end
 	if _uisEnded   then _uisEnded:Disconnect()   end
@@ -2480,10 +2572,21 @@ local function requestWithRetry(url, method, headersOrFn, body, onRetry)
 		return type(headersOrFn) == "function" and headersOrFn() or headersOrFn
 	end
 	for attempt = 1, RETRY_ATTEMPTS do
+		-- Slow-request watchdog: fires a toast at 15s so the user knows the
+		-- plugin isn't hung. The actual request continues until provider timeout.
+		local done = false
+		task.delay(15, function()
+			if not done then
+				Toast.show("Slow request", "Provider is taking longer than usual… still waiting", "warn", 5)
+			end
+		end)
 		res = Http.request(url, method, getHeaders(), body)
+		done = true
 		if res and res.StatusCode ~= 429 then break end
 		if attempt < RETRY_ATTEMPTS then
-			Config.rotateKey()
+			-- In multi-key mode, the next call to Config.getActiveKey() (via
+			-- buildHeaders on the next iteration) auto-advances to the next
+			-- key. No explicit rotation call needed.
 			if onRetry then
 				onRetry(attempt, RETRY_ATTEMPTS - 1)
 			else
@@ -2599,24 +2702,84 @@ local function saveSkillsEnabled()
 	end)
 end
 
-local function loadSkillFiles()
-	M.Sk.loaded = {}
-	pcall(function()
-		if not listfiles then return end
-		local files = listfiles("IYAI/skills")
-		if not files then return end
-		for _, path in ipairs(files) do
-			if path:match("%.md$") then
-				local ok, text = pcall(readfile, path)
-				if ok and text and text ~= "" then
-					local name, desc, content = parseSkillMd(text)
-					local fname = path:match("[^/\\]+$") or path
-					if name == "" then name = fname:gsub("%.md$", "") end
-					table.insert(M.Sk.loaded, { name = name, desc = desc, content = content, file = fname })
-				end
+-- Bootstrap skills from GitHub when no local IYAI/skills/ folder exists.
+-- Primary: GitHub Contents API → dynamic directory listing (always current).
+-- Fallback: hardcoded list, used when the API rate-limits (60 req/hr unauth).
+local SKILLS_API_URL     = "https://api.github.com/repos/imluri/IYAI/contents/IYAI/skills"
+local SKILLS_GITHUB_BASE = "https://raw.githubusercontent.com/imluri/IYAI/refs/heads/main/IYAI/skills/"
+local SKILLS_CACHE_DIR   = "iyai_data/skills_cache"
+local KNOWN_SKILLS_FALLBACK = {
+	"gc_scan.md", "gui_playbook.md", "hook_remote.md",
+	"interaction_triggers.md", "metatable_hook.md", "scan_remotes.md",
+}
+
+local function fetchSkillManifest()
+	if not (Http and Http.request) then return nil end
+	local res = Http.request(SKILLS_API_URL, "GET", { ["User-Agent"] = "IYAI" }, nil)
+	if not res or res.StatusCode ~= 200 or not res.Body then return nil end
+	local ok, data = pcall(HS.JSONDecode, HS, res.Body)
+	if not ok or type(data) ~= "table" then return nil end
+	local names = {}
+	for _, entry in ipairs(data) do
+		if type(entry) == "table" and entry.name and entry.name:match("%.md$") then
+			names[#names+1] = entry.name
+		end
+	end
+	return #names > 0 and names or nil
+end
+
+local function bootstrapSkillsCache()
+	if not (Http and Http.request and writefile) then return false end
+	if isfolder and makefolder then
+		if not isfolder("iyai_data")     then pcall(makefolder, "iyai_data")     end
+		if not isfolder(SKILLS_CACHE_DIR) then pcall(makefolder, SKILLS_CACHE_DIR) end
+	end
+	-- Discover skill list: GitHub API first, hardcoded fallback if rate-limited
+	local names = fetchSkillManifest() or KNOWN_SKILLS_FALLBACK
+	for _, fname in ipairs(names) do
+		local cachePath = SKILLS_CACHE_DIR .. "/" .. fname
+		if not (isfile and isfile(cachePath)) then
+			local res = Http.request(SKILLS_GITHUB_BASE .. fname, "GET", { ["User-Agent"] = "IYAI" }, nil)
+			if res and res.StatusCode == 200 and res.Body and res.Body ~= "" then
+				pcall(writefile, cachePath, res.Body)
 			end
 		end
-	end)
+	end
+	return true
+end
+
+local function safeListFiles(dir)
+	if not listfiles then return nil end
+	local ok, files = pcall(listfiles, dir)
+	return ok and files or nil
+end
+
+local function loadSkillFiles()
+	M.Sk.loaded = {}
+	-- 1. Try local IYAI/skills/ folder (dev install)
+	local files = safeListFiles("IYAI/skills")
+	-- 2. Fall back to cached GitHub copies in iyai_data/skills_cache/
+	if not files or #files == 0 then
+		files = safeListFiles(SKILLS_CACHE_DIR)
+	end
+	-- 3. If still nothing, fetch the cache from GitHub now and retry
+	if not files or #files == 0 then
+		if bootstrapSkillsCache() then
+			files = safeListFiles(SKILLS_CACHE_DIR)
+		end
+	end
+	if not files then return end
+	for _, path in ipairs(files) do
+		if path:match("%.md$") then
+			local ok, text = pcall(readfile, path)
+			if ok and text and text ~= "" then
+				local name, desc, content = parseSkillMd(text)
+				local fname = path:match("[^/\\]+$") or path
+				if name == "" then name = fname:gsub("%.md$", "") end
+				table.insert(M.Sk.loaded, { name = name, desc = desc, content = content, file = fname })
+			end
+		end
+	end
 end
 
 local function getEnabledSkills()
@@ -2742,6 +2905,13 @@ local function buildMessages(history)
 	local sysContent = custom ~= "" and custom or Prompt.build(true, nil, isOllamaFormat())
 	local skillsCtx  = getEnabledSkillsContext()
 	if skillsCtx then sysContent = sysContent .. "\n\n" .. skillsCtx end
+	local memContent = Memory.read()
+	if memContent ~= "" then
+		sysContent = sysContent
+			.. "\n\n## Game Memory (PlaceId " .. tostring(game.PlaceId) .. ")"
+			.. "\nFacts you've remembered about this specific game across sessions. Use these as ground truth."
+			.. "\n\n" .. memContent
+	end
 	local msgs = {{ role = "system", content = sysContent }}
 	for _, m in ipairs(history or Agt.history) do
 		if isOllamaFormat() then
@@ -2882,7 +3052,17 @@ end
 
 local function parseMessage(responseBody)
 	local ok, data = pcall(HS.JSONDecode, HS, responseBody)
-	if not ok then return nil, nil, "JSON decode failed: " .. tostring(data) end
+	if not ok then
+		-- Common non-JSON response: HTML error page from a gateway/CDN
+		local preview = (responseBody or ""):sub(1, 200)
+		return nil, nil, "Response wasn't valid JSON. Provider may be down or returning an HTML error.\n  Preview: " .. preview
+	end
+	-- Surface explicit API errors cleanly (OpenAI/OpenRouter put them in data.error)
+	if type(data) == "table" and data.error then
+		local e = data.error
+		local em = type(e) == "table" and (e.message or e.code or "(no message)") or tostring(e)
+		return nil, nil, "API error: " .. tostring(em)
+	end
 	local msg = isOllamaFormat()
 		and data.message
 		or  (data.choices and data.choices[1] and data.choices[1].message)

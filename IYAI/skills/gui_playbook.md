@@ -8,7 +8,7 @@ description: Use this when writing any script that needs a ScreenGui window with
 Never write raw GUI instance code. Always load the GUI builder module first:
 
 ```lua
-local GUI = loadstring(readfile("IYAI/modules/Gui.lua"))()
+local GUI = loadstring(readfile("iyai_data/Gui.lua"))()
 ```
 
 This module enforces consistent styling, draggable windows, and the close button automatically. You do not need to create ScreenGui, Frames, drag logic, or close buttons manually — the module handles all of it.
@@ -115,7 +115,7 @@ win.content -- the ScrollingFrame that holds all elements
 ## Full example
 
 ```lua
-local GUI = loadstring(readfile("IYAI/modules/Gui.lua"))()
+local GUI = loadstring(readfile("iyai_data/Gui.lua"))()
 
 local win = GUI.window("Line ESP", 350, 220)
 

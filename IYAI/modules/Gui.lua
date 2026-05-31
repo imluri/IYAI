@@ -2,7 +2,7 @@
 -- Provides a simple API for creating consistent draggable windows.
 --
 -- Usage (in any executor script):
---   local GUI = loadstring(readfile("IYAI/modules/Gui.lua"))()
+--   local GUI = loadstring(readfile("iyai_data/Gui.lua"))()
 --   local win = GUI.window("My Tool", 350, 260)
 --   win:button("Enable", function() print("clicked") end)
 --   win:label("Status: off")
