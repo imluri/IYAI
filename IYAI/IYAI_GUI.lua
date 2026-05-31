@@ -65,6 +65,14 @@ loadMod("modules/tools/Web.lua")(Tools, Http)
 loadMod("modules/tools/SynapseDocs.lua")(Tools, Http)
 
 local Prompt = loadMod("modules/Prompt.lua")(Http)
+
+-- ── M: shared module-scope state container ───────────────────────────────────
+-- Luau caps each function at 200 locals. This file runs as one giant closure,
+-- so we collapse many module-scope `local`s into fields of this table — one
+-- local slot instead of N. Add new module-scope state here as M.foo, not as
+-- `local foo` at the top level.
+local M = {}
+
 local nl = string.char(10)
 local function markdownToRichText(text, baseSize)
 	baseSize = baseSize or 14
@@ -2560,7 +2568,7 @@ end
 
 -- ── Skills system ─────────────────────────────────────────────────────────────
 
-local Sk = { file = "iyai_data/skills.json", enabled = {}, loaded = {} }
+M.Sk = { file = "iyai_data/skills.json", enabled = {}, loaded = {} }
 
 local function parseSkillMd(text)
 	local name    = text:match("^%-%-%-[^\n]*\nname:%s*(.-)%s*\n") or ""
@@ -2571,14 +2579,14 @@ local function parseSkillMd(text)
 end
 
 local function loadSkillsEnabled()
-	Sk.enabled = {}
+	M.Sk.enabled = {}
 	pcall(function()
 		if not readfile then return end
-		local ok, raw = pcall(readfile, Sk.file)
+		local ok, raw = pcall(readfile, M.Sk.file)
 		if not ok or not raw or raw == "" then return end
 		local ok2, data = pcall(HS.JSONDecode, HS, raw)
 		if ok2 and type(data) == "table" then
-			for k, v in pairs(data) do Sk.enabled[k] = v == true end
+			for k, v in pairs(data) do M.Sk.enabled[k] = v == true end
 		end
 	end)
 end
@@ -2586,13 +2594,13 @@ end
 local function saveSkillsEnabled()
 	pcall(function()
 		if not writefile then return end
-		local ok, json = pcall(HS.JSONEncode, HS, Sk.enabled)
-		if ok then pcall(writefile, Sk.file, json) end
+		local ok, json = pcall(HS.JSONEncode, HS, M.Sk.enabled)
+		if ok then pcall(writefile, M.Sk.file, json) end
 	end)
 end
 
 local function loadSkillFiles()
-	Sk.loaded = {}
+	M.Sk.loaded = {}
 	pcall(function()
 		if not listfiles then return end
 		local files = listfiles("IYAI/skills")
@@ -2604,7 +2612,7 @@ local function loadSkillFiles()
 					local name, desc, content = parseSkillMd(text)
 					local fname = path:match("[^/\\]+$") or path
 					if name == "" then name = fname:gsub("%.md$", "") end
-					table.insert(Sk.loaded, { name = name, desc = desc, content = content, file = fname })
+					table.insert(M.Sk.loaded, { name = name, desc = desc, content = content, file = fname })
 				end
 			end
 		end
@@ -2613,8 +2621,8 @@ end
 
 local function getEnabledSkills()
 	local out = {}
-	for _, skill in ipairs(Sk.loaded) do
-		if Sk.enabled[skill.file] ~= false then
+	for _, skill in ipairs(M.Sk.loaded) do
+		if M.Sk.enabled[skill.file] ~= false then
 			table.insert(out, skill)
 		end
 	end
@@ -3265,8 +3273,8 @@ local function populateSkillsPage()
 	end
 	UI.SkillsTotalElements.Value = 0
 
-	for _, skill in ipairs(Sk.loaded) do
-		local enabled = Sk.enabled[skill.file] ~= false  -- default on
+	for _, skill in ipairs(M.Sk.loaded) do
+		local enabled = M.Sk.enabled[skill.file] ~= false  -- default on
 
 		local card  = UI.SkillsGroupFrame:Clone()
 		local inner = card:FindFirstChildWhichIsA("Frame")
@@ -3292,8 +3300,8 @@ local function populateSkillsPage()
 			local capturedBg     = bg
 			local capturedButton = button
 			button.MouseButton1Click:Connect(function()
-				local isOn = Sk.enabled[capturedSkill.file] ~= false
-				Sk.enabled[capturedSkill.file] = not isOn
+				local isOn = M.Sk.enabled[capturedSkill.file] ~= false
+				M.Sk.enabled[capturedSkill.file] = not isOn
 				setToggleVisual(capturedBg, capturedButton, not isOn)
 				saveSkillsEnabled()
 			end)
@@ -3323,15 +3331,15 @@ task.spawn(function()
 	if UI.CurrentPage.Value == "Skills" then
 		populateSkillsPage()
 	end
-	local n = #Sk.loaded
+	local n = #M.Sk.loaded
 	if n > 0 then
 		Toast.show("Skills", n .. " skill" .. (n == 1 and "" or "s") .. " loaded", "ok", 3)
 	end
 	-- Push updated list to any connected browser
 	if Br and Br.active and n > 0 then
 		local skillsList = {}
-		for _, sk in ipairs(Sk.loaded) do
-			skillsList[#skillsList+1] = { name = sk.name, desc = sk.desc or "", enabled = Sk.enabled[sk.file] ~= false }
+		for _, sk in ipairs(M.Sk.loaded) do
+			skillsList[#skillsList+1] = { name = sk.name, desc = sk.desc or "", enabled = M.Sk.enabled[sk.file] ~= false }
 		end
 		bridgePost("/roblox/result", { type = "skills_state", skills = skillsList })
 	end
@@ -3341,7 +3349,7 @@ UI.SkillsRefreshButton.MouseButton1Click:Connect(function()
 	loadSkillsEnabled()
 	loadSkillFiles()
 	populateSkillsPage()
-	local n = #Sk.loaded
+	local n = #M.Sk.loaded
 	Toast.show("Skills", n .. " skill" .. (n == 1 and "" or "s") .. " loaded", "ok", 3)
 end)
 
@@ -3900,8 +3908,8 @@ local function sendSyncState()
 
 	-- skills
 	local skillsList = {}
-	for _, sk in ipairs(Sk.loaded) do
-		skillsList[#skillsList+1] = { name = sk.name, desc = sk.desc or "", enabled = Sk.enabled[sk.file] ~= false }
+	for _, sk in ipairs(M.Sk.loaded) do
+		skillsList[#skillsList+1] = { name = sk.name, desc = sk.desc or "", enabled = M.Sk.enabled[sk.file] ~= false }
 	end
 
 	bridgePost("/roblox/result", {
@@ -4050,17 +4058,17 @@ local function startBridgePoll()
 					elseif msg.type == "get_skills" then
 						task.spawn(function()
 							local skillsList = {}
-							for _, sk in ipairs(Sk.loaded) do
-								skillsList[#skillsList+1] = { name = sk.name, desc = sk.desc or "", enabled = Sk.enabled[sk.file] ~= false }
+							for _, sk in ipairs(M.Sk.loaded) do
+								skillsList[#skillsList+1] = { name = sk.name, desc = sk.desc or "", enabled = M.Sk.enabled[sk.file] ~= false }
 							end
 							bridgePost("/roblox/result", { type = "skills_state", skills = skillsList })
 						end)
 					elseif msg.type == "toggle_skill" and msg.name then
 						task.spawn(function()
-							for _, sk in ipairs(Sk.loaded) do
+							for _, sk in ipairs(M.Sk.loaded) do
 								if sk.name == msg.name then
-									local isOn = Sk.enabled[sk.file] ~= false
-									Sk.enabled[sk.file] = not isOn
+									local isOn = M.Sk.enabled[sk.file] ~= false
+									M.Sk.enabled[sk.file] = not isOn
 									saveSkillsEnabled()
 									sendSyncState()
 									break
@@ -4245,54 +4253,53 @@ UI.ConnectToBrowserButton.MouseButton1Click:Connect(function()
 end)
 
 -- ── Drag & Resize ─────────────────────────────────────────────────────────────
+-- Wrapped in a do-block so the locals here don't count against the module's
+-- 200-local register limit. The InputChanged/InputEnded connections capture
+-- the locals as upvalues, so they stay alive for the lifetime of the script.
+do
+	local dragging, dragStart, startPos     = false, nil, nil
+	local resizing, resizeStart, startSize  = false, nil, nil
+	local MIN_W, MIN_H                      = 320, 240
 
-local dragging    = false
-local dragStart   = nil
-local startPos    = nil
-
-local MIN_W, MIN_H = 320, 240
-local resizing    = false
-local resizeStart = nil
-local startSize   = nil
-
-UI.TopBar.InputBegan:Connect(function(input)
-	if input.UserInputType == Enum.UserInputType.MouseButton1 then
-		dragging  = true
-		dragStart = input.Position
-		startPos  = UI.IYAI.Position
-	end
-end)
-
-if UI.ResizeLabel then
-	UI.ResizeLabel.InputBegan:Connect(function(input)
+	UI.TopBar.InputBegan:Connect(function(input)
 		if input.UserInputType == Enum.UserInputType.MouseButton1 then
-			resizing    = true
-			resizeStart = input.Position
-			startSize   = UI.IYAI.Size
+			dragging  = true
+			dragStart = input.Position
+			startPos  = UI.IYAI.Position
+		end
+	end)
+
+	if UI.ResizeLabel then
+		UI.ResizeLabel.InputBegan:Connect(function(input)
+			if input.UserInputType == Enum.UserInputType.MouseButton1 then
+				resizing    = true
+				resizeStart = input.Position
+				startSize   = UI.IYAI.Size
+			end
+		end)
+	end
+
+	_uisChanged = UIS.InputChanged:Connect(function(input)
+		if input.UserInputType ~= Enum.UserInputType.MouseMovement then return end
+		if dragging then
+			local delta = input.Position - dragStart
+			UI.IYAI.Position = UDim2.new(
+				startPos.X.Scale, startPos.X.Offset + delta.X,
+				startPos.Y.Scale, startPos.Y.Offset + delta.Y
+			)
+		elseif resizing then
+			local delta = input.Position - resizeStart
+			local newW  = math.max(MIN_W, startSize.X.Offset + delta.X)
+			local newH  = math.max(MIN_H, startSize.Y.Offset + delta.Y)
+			UI.IYAI.Size    = UDim2.new(startSize.X.Scale, newW, startSize.Y.Scale, newH)
+			DefaultIYAISize = UI.IYAI.Size
+		end
+	end)
+
+	_uisEnded = UIS.InputEnded:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 then
+			dragging = false
+			resizing = false
 		end
 	end)
 end
-
-_uisChanged = UIS.InputChanged:Connect(function(input)
-	if input.UserInputType ~= Enum.UserInputType.MouseMovement then return end
-	if dragging then
-		local delta = input.Position - dragStart
-		UI.IYAI.Position = UDim2.new(
-			startPos.X.Scale, startPos.X.Offset + delta.X,
-			startPos.Y.Scale, startPos.Y.Offset + delta.Y
-		)
-	elseif resizing then
-		local delta = input.Position - resizeStart
-		local newW  = math.max(MIN_W, startSize.X.Offset + delta.X)
-		local newH  = math.max(MIN_H, startSize.Y.Offset + delta.Y)
-		UI.IYAI.Size    = UDim2.new(startSize.X.Scale, newW, startSize.Y.Scale, newH)
-		DefaultIYAISize = UI.IYAI.Size
-	end
-end)
-
-_uisEnded = UIS.InputEnded:Connect(function(input)
-	if input.UserInputType == Enum.UserInputType.MouseButton1 then
-		dragging = false
-		resizing = false
-	end
-end)
