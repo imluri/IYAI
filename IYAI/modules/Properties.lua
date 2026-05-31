@@ -6,8 +6,8 @@ return function(Http)
 	local Classes = {}
 	local Methods = {}
 
-	local CACHE_FILE     = "IYAI_api_dump.json"
-	local CACHE_VER_FILE = "IYAI_api_version.txt"
+	local CACHE_FILE     = "iyai_data/api_dump.json"
+	local CACHE_VER_FILE = "iyai_data/api_version.txt"
 
 	local function fetchApiData()
 		local vRes = Http.request("https://setup.rbxcdn.com/versionQTStudio", "GET", {})
@@ -28,6 +28,7 @@ return function(Http)
 
 		-- Cache to file for future loads
 		if writefile then
+			if isfolder and makefolder and not isfolder("iyai_data") then pcall(makefolder, "iyai_data") end
 			pcall(writefile, CACHE_FILE, dRes.Body)
 			pcall(writefile, CACHE_VER_FILE, version)
 		end

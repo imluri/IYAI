@@ -1,0 +1,101 @@
+[
+  {
+    "name": "OpenRouter",
+    "icon": "rbxassetid://88246357492813",
+    "baseUrl": "https://openrouter.ai/api/v1",
+    "modelsUrl": "https://openrouter.ai/api/v1/models",
+    "requiresKey": true,
+    "modelsFormat": "openai",
+    "urlPatterns": ["openrouter"]
+  },
+  {
+    "name": "Ollama",
+    "icon": "rbxassetid://136028604328894",
+    "baseUrl": null,
+    "modelsUrl": null,
+    "requiresKey": false,
+    "modelsFormat": "ollama",
+    "urlPatterns": ["localhost", "11434"]
+  },
+  {
+    "name": "Ollama ☁️",
+    "icon": "rbxassetid://136028604328894",
+    "baseUrl": "https://ollama.com",
+    "modelsUrl": "https://ollama.com/api/tags",
+    "requiresKey": true,
+    "modelsFormat": "ollama",
+    "urlPatterns": ["ollama%.com"]
+  },
+  {
+    "name": "Mistral",
+    "icon": "rbxassetid://104043776192224",
+    "baseUrl": "https://api.mistral.ai/v1",
+    "modelsUrl": "https://api.mistral.ai/v1/models",
+    "requiresKey": true,
+    "modelsFormat": "openai",
+    "urlPatterns": ["mistral%.ai"]
+  },
+  {
+    "name": "Groq",
+    "icon": "rbxassetid://135447140359444",
+    "baseUrl": "https://api.groq.com/openai/v1",
+    "modelsUrl": "https://api.groq.com/openai/v1/models",
+    "requiresKey": true,
+    "modelsFormat": "openai",
+    "urlPatterns": ["groq%.com"]
+  },
+  {
+    "name": "Pollinations",
+    "icon": "rbxassetid://75323955386400",
+    "baseUrl": "https://gen.pollinations.ai/v1",
+    "modelsUrl": "https://gen.pollinations.ai/v1/models",
+    "requiresKey": false,
+    "modelsFormat": "openai",
+    "urlPatterns": ["pollinations"]
+  },
+  {
+    "name": "HuggingFace",
+    "icon": "rbxassetid://106116930029262",
+    "baseUrl": "https://api-inference.huggingface.co/v1",
+    "modelsUrl": "https://router.huggingface.co/v1/models",
+    "requiresKey": true,
+    "modelsFormat": "openai",
+    "urlPatterns": ["huggingface"]
+  },
+  {
+    "name": "Google AI Studio",
+    "icon": "rbxassetid://105212340588125",
+    "baseUrl": "https://generativelanguage.googleapis.com/v1beta/openai",
+    "modelsUrl": "https://generativelanguage.googleapis.com/v1beta/openai/models",
+    "requiresKey": true,
+    "modelsFormat": "openai",
+    "urlPatterns": ["googleapis", "generativelanguage"]
+  },
+  {
+    "name": "9router",
+    "icon": "rbxassetid://134250684364641",
+    "baseUrl": "https://api.9router.io/v1",
+    "modelsUrl": "http://localhost:20128/v1/models",
+    "requiresKey": true,
+    "modelsFormat": "openai",
+    "urlPatterns": ["9router"]
+  },
+  {
+    "name": "OpenCode",
+    "icon": "rbxassetid://75680920855699",
+    "baseUrl": "https://opencode.ai/zen/v1",
+    "modelsUrl": "https://opencode.ai/zen/v1/models",
+    "requiresKey": true,
+    "modelsFormat": "openai",
+    "urlPatterns": ["opencode"]
+  },
+  {
+    "name": "Bluesminds",
+    "icon": "rbxassetid://93325310621079",
+    "baseUrl": "https://api.bluesminds.com/v1",
+    "modelsUrl": "https://api.bluesminds.com/v1/models",
+    "requiresKey": true,
+    "modelsFormat": "openai",
+    "urlPatterns": ["bluesminds"]
+  }
+]

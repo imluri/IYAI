@@ -3,19 +3,6 @@
 
 return function(Tools)
 
-	local function resolvePath(path)
-		if not path or path == "" or path == "game" then return game end
-		local inst = game
-		for part in path:gmatch("[^%.]+") do
-			if part ~= "game" then
-				local child = inst:FindFirstChild(part)
-				if not child then return nil, "Not found: " .. part end
-				inst = child
-			end
-		end
-		return inst
-	end
-
 	Tools.register({
 		group = "Script",
 		definition = {

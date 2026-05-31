@@ -4,6 +4,17 @@
 local BASE = ...
 BASE = type(BASE) == "string" and BASE:gsub("/$", "") or ""
 
+local function ensureParentFolders(filePath)
+	if not (isfolder and makefolder) then return end
+	local dir = filePath:match("^(.+)/[^/]+$")
+	if not dir then return end
+	local cur = ""
+	for seg in dir:gmatch("[^/]+") do
+		cur = cur == "" and seg or (cur .. "/" .. seg)
+		if not isfolder(cur) then pcall(makefolder, cur) end
+	end
+end
+
 local function loadMod(relPath)
 	local src
 	if BASE ~= "" then
@@ -14,15 +25,25 @@ local function loadMod(relPath)
 		elseif request          then ok, res = pcall(request, p) end
 		if ok and res and res.StatusCode == 200 and res.Body and res.Body ~= "" then
 			src = res.Body
+			if writefile then
+				local localPath = "iyai_data/" .. relPath
+				pcall(function()
+					ensureParentFolders(localPath)
+					writefile(localPath, src)
+				end)
+			end
 		else
 			warn("[IYAI] Remote module failed (" .. relPath .. "), trying local.")
 		end
 	end
 	if not src then
-		local localPath = "IYAI/" .. relPath
-		if readfile and isfile and isfile(localPath) then
-			local ok2, raw = pcall(readfile, localPath)
-			if ok2 and raw and raw ~= "" then src = raw end
+		-- Try core folder first (dev/repo), then _IYAI cache (non-dev)
+		for _, prefix in ipairs({"IYAI/", "iyai_data/"}) do
+			local localPath = prefix .. relPath
+			if readfile and isfile and isfile(localPath) then
+				local ok2, raw = pcall(readfile, localPath)
+				if ok2 and raw and raw ~= "" then src = raw; break end
+			end
 		end
 	end
 	if not src then error("[IYAI] Cannot load module: " .. relPath) end
@@ -32,7 +53,8 @@ local function loadMod(relPath)
 end
 
 local Http   = loadMod("modules/Http.lua")
-local Config = loadMod("modules/Config.lua")
+local Config    = loadMod("modules/Config.lua")
+local Providers = loadMod("modules/Providers.lua")
 local Toast  = loadMod("modules/Toast.lua")
 local Tools         = loadMod("modules/Tools.lua")
 local propFns = loadMod("modules/Properties.lua")(Http)
@@ -40,6 +62,8 @@ loadMod("modules/tools/Explorer.lua")(Tools, propFns.getProperties, propFns.getM
 loadMod("modules/tools/Script.lua")(Tools, Http)
 loadMod("modules/tools/IY.lua")(Tools)
 loadMod("modules/tools/Web.lua")(Tools, Http)
+loadMod("modules/tools/SynapseDocs.lua")(Tools, Http)
+
 local Prompt = loadMod("modules/Prompt.lua")(Http)
 local nl = string.char(10)
 local function markdownToRichText(text, baseSize)
@@ -120,12 +144,14 @@ local HS  = game:GetService("HttpService")
 local G2L = loadMod("modules/Layout.lua")
 
 -- Destroy Studio-only LocalScripts before parenting — prevents executors running them
-for _, key in ipairs({"2", "d"}) do
-	pcall(function() if G2L[key] then G2L[key]:Destroy() end end)
+for _, inst in pairs(G2L) do
+	if typeof(inst) == "Instance" and (inst:IsA("LocalScript") or inst:IsA("Script")) then
+		pcall(function() inst:Destroy() end)
+	end
 end
 
 -- Hide before any frame renders — fade-in tween reveals it later
-if G2L["e"] then G2L["e"].GroupTransparency = 1 end
+if G2L["2"] then G2L["2"].GroupTransparency = 1 end
 
 -- Parent to a hidden container to avoid detection
 local function getHiddenContainer()
@@ -144,173 +170,188 @@ G2L["1"].Parent = _container
 
 local UI = {
 	ScreenGui              = G2L["1"],
-	IYAI                   = G2L["e"],
-	ContentPages           = G2L["11"],
-	AgentPage              = G2L["12"],
-	ScrollingFrameMainChat = G2L["13"],
-	ListLayout             = G2L["14"],
-	ElementTemplate        = G2L["16"],
-	TotalElements          = G2L["4b"],
-	isAssistantBusy        = G2L["4c"],
-	InputFrame             = G2L["54"],
-	TextBoxInput           = G2L["55"],
-	SendButton             = G2L["59"],
-	StopButton             = G2L["5b"],
-	ActionsFrame           = G2L["5d"],
-	NewChatButton          = G2L["60"],
+	IYAI                   = G2L["2"],
+	ContentPages           = G2L["5"],
+	AgentPage              = G2L["6"],
+	ScrollingFrameMainChat = G2L["7"],
+	ListLayout             = G2L["8"],
+	ElementTemplate        = G2L["a"],
+	TotalElements          = G2L["3f"],
+	isAssistantBusy        = G2L["40"],
+	InputFrame             = G2L["48"],
+	TextBoxInput           = G2L["49"],
+	SendButton             = G2L["4d"],
+	StopButton             = G2L["4f"],
+	ActionsFrame           = G2L["51"],
+	NewChatButton          = G2L["54"],
 	-- Settings page
-	SettingsPage           = G2L["64"],
-	Settings_SF            = G2L["65"],
-	APIKeyFrame                = G2L["66"],
-	APIKeyLabel                = G2L["68"],
-	APIKeyBox                  = G2L["69"],
-	APIKeySingleButton         = G2L["6e"],
-	APIKeyMultiButton          = G2L["72"],
-	SetMultipleAPIKeysButton   = G2L["74"],
-	HostSelectFrame            = G2L["76"],
-	HostTitle              = G2L["77"],
-	HostFrame              = G2L["78"],
-	HostButtons            = G2L["78"]:GetChildren(),
-	ModelSelectFrame       = G2L["9f"],
-	ModelFrame             = G2L["a1"],
-	ModelBox               = G2L["a2"],
-	DropdownButton         = G2L["a5"],
+	SettingsPage           = G2L["58"],
+	Settings_SF            = G2L["59"],
+	APIKeyFrame                = G2L["9c"],
+	APIKeyLabel                = G2L["9e"],
+	APIKeyBox                  = G2L["9f"],
+	APIKeySingleButton         = G2L["a4"],
+	APIKeyMultiButton          = G2L["a8"],
+	SetMultipleAPIKeysButton   = G2L["aa"],
+	HostSelectFrame            = G2L["90"],
+	HostTitle              = G2L["91"],
+	HostSelectTextButton   = G2L["97"],
+	HostSelectTextBox      = G2L["94"],
+	HostSelectIcon         = G2L["99"],
+	HostSelectLabel        = G2L["9b"],
+	HostProviderModal      = G2L["1d6"],
+	HostFrame              = G2L["93"],
+	HostButtons            = {},
+	HostTemplateButton     = G2L["1db"],
+	HostProviderSF         = G2L["1d9"],
+	ModelSelectFrame       = G2L["61"],
+	ModelFrame             = G2L["63"],
+	ModelBox               = G2L["64"],
+	DropdownButton         = G2L["67"],
 	DropdownList           = Instance.new("Frame"),
-	TestFrame              = G2L["a8"],
-	ConnectionButton       = G2L["ab"],
-	CredentialButton       = G2L["b2"],
-	ConnectionIconColor    = G2L["ae"],
-	CredentialIconColor    = G2L["b5"],
-	MaxStepFrame           = G2L["b9"],
-	MaxStepBox             = G2L["bc"],
-	MaxStepResetButton     = G2L["bf"],
-	TemperatureBox         = G2L["c5"],
-	TemperatureResetButton = G2L["c8"],
-	SystemPromptFrame      = G2L["ca"],
-	SystemPromptButton     = G2L["cc"],
-	UnsavedChanges         = G2L["ce"],
-	TextLabel              = G2L["d0"],
-	SaveButton             = G2L["d2"],
-	RevertButton           = G2L["d4"],
+	TestFrame              = G2L["6a"],
+	ConnectionButton       = G2L["6d"],
+	CredentialButton       = G2L["74"],
+	ConnectionIconColor    = G2L["70"],
+	CredentialIconColor    = G2L["77"],
+	MaxStepFrame           = G2L["7b"],
+	MaxStepBox             = G2L["7e"],
+	MaxStepResetButton     = G2L["81"],
+	TemperatureBox         = G2L["87"],
+	TemperatureResetButton = G2L["8a"],
+	SystemPromptFrame      = G2L["8c"],
+	SystemPromptButton     = G2L["8e"],
+	-- Usage
+	UsageFrame             = G2L["5a"],
+	UsageTotalLabel        = G2L["5c"],
+	UsageSessionLabel      = G2L["5d"],
+	LoadFreeButton         = G2L["5f"],
+	UnsavedChanges         = G2L["ac"],
+	TextLabel              = G2L["ae"],
+	SaveButton             = G2L["b0"],
+	RevertButton           = G2L["b2"],
 	-- Code page
-	CodePage               = G2L["d7"],
-	CodeTopFrame           = G2L["d8"],
-	CodeActionsFrame       = G2L["d9"],
-	CodeClearButton        = G2L["dc"],
-	CodeCopyButton         = G2L["e0"],
-	RunButton              = G2L["e4"],
-	TabsFrame              = G2L["e7"],
-	TabsScrollingFrame     = G2L["e8"],
-	TabButtonTemplate      = G2L["e9"],
-	NewTabButton           = G2L["ec"],
-	CodeSF                 = G2L["ef"],
-	CodeBox                = G2L["f1"],
-	IntelLabel             = G2L["f3"],
-	LineLabel              = G2L["f4"],
+	CodePage               = G2L["b5"],
+	CodeTopFrame           = G2L["b6"],
+	CodeActionsFrame       = G2L["b7"],
+	CodeClearButton        = G2L["ba"],
+	CodeCopyButton         = G2L["be"],
+	RunButton              = G2L["c2"],
+	TabsFrame              = G2L["c5"],
+	TabsScrollingFrame     = G2L["c6"],
+	TabButtonTemplate      = G2L["c7"],
+	NewTabButton           = G2L["ca"],
+	CodeSF                 = G2L["cd"],
+	CodeBox                = G2L["cf"],
+	IntelLabel             = G2L["d1"],
+	LineLabel              = G2L["d2"],
 	-- Tools page
-	ToolsPage              = G2L["f6"],
-	ToolsSF                = G2L["f7"],
-	ToolsElementTemplate   = G2L["fa"],
-	ToolsGroupFrame        = G2L["fb"],
-	ToolsGroupInner        = G2L["fd"],
-	ToolsGroupTitle        = G2L["fe"],
-	ToolsToolFrame         = G2L["102"],
-	ToolsToolNameDesc      = G2L["105"],
-	ToolsTotalElements     = G2L["107"],
+	ToolsPage              = G2L["d4"],
+	ToolsSF                = G2L["d5"],
+	ToolsElementTemplate   = G2L["d8"],
+	ToolsGroupFrame        = G2L["d9"],
+	ToolsGroupInner        = G2L["db"],
+	ToolsGroupTitle        = G2L["dc"],
+	ToolsToolFrame         = G2L["e0"],
+	ToolsToolNameDesc      = G2L["e3"],
+	ToolsTotalElements     = G2L["e5"],
 	-- Startup page
-	StartupPageSF          = G2L["10c"],
-	StartupPageLayout      = G2L["10d"],
-	StartupElemTemplate    = G2L["10f"],
-	StartupGroupFrame      = G2L["110"],
-	StartupGroupInner      = G2L["112"],
-	StartupGroupTitle      = G2L["113"],
-	StartupToolFrame       = G2L["117"],
-	StartupToolNameDesc    = G2L["11a"],
-	StartupTotalElems      = G2L["11c"],
+	StartupPageSF          = G2L["ea"],
+	StartupPageLayout      = G2L["eb"],
+	StartupElemTemplate    = G2L["ed"],
+	StartupGroupFrame      = G2L["ee"],
+	StartupGroupInner      = G2L["e9"],
+	StartupGroupTitle      = G2L["f1"],
+	StartupToolFrame       = G2L["f5"],
+	StartupToolNameDesc    = G2L["f8"],
+	StartupTotalElems      = G2L["fa"],
 	-- History page
-	HistoryPage            = G2L["11f"],
-	HistorySF              = G2L["120"],
-	HistoryTemplate        = G2L["124"],
-	HistoryToolFrame       = G2L["12d"],
-	HistoryTotalElements   = G2L["147"],
-	HistoryPageTip         = G2L["148"],
-	HistoryButtonFrame     = G2L["1b1"],
+	HistoryPage            = G2L["fd"],
+	HistorySF              = G2L["fe"],
+	HistoryTemplate        = G2L["102"],
+	HistoryToolFrame       = G2L["10b"],
+	HistoryTotalElements   = G2L["125"],
+	HistoryPageTip         = G2L["126"],
+	HistoryButtonFrame     = G2L["18a"],
 	-- Browser page
-	BrowserPage            = G2L["14a"],
-	BrowserDotYou          = G2L["150"],
-	BrowserDotBridge       = G2L["157"],
-	BrowserDotWeb          = G2L["15d"],
-	BrowserIconBridge      = G2L["155"],
-	BrowserLabelBridge     = G2L["156"],
-	BrowserIconWeb         = G2L["15b"],
-	BrowserLabelWeb        = G2L["15c"],
-	BrowserGrad1           = G2L["165"],
-	BrowserGrad2           = G2L["169"],
-	BrowserInstructions    = G2L["162"],
-	BrowserLogsTextBox     = G2L["1ee"],
-	ConnectToBrowserButton = G2L["53"],
-	ForceRefreshButton     = G2L["17a"],
-	OpenBrowserLogsButton  = G2L["178"],
-	BrowserButtonHitbox    = G2L["1b0"],
+	BrowserPage            = G2L["128"],
+	BrowserDotYou          = G2L["12e"],
+	BrowserDotBridge       = G2L["135"],
+	BrowserDotWeb          = G2L["13b"],
+	BrowserIconBridge      = G2L["133"],
+	BrowserLabelBridge     = G2L["134"],
+	BrowserIconWeb         = G2L["139"],
+	BrowserLabelWeb        = G2L["13a"],
+	BrowserGrad1           = G2L["143"],
+	BrowserGrad2           = G2L["147"],
+	BrowserInstructions    = G2L["148"],
+	BrowserLogsTextBox     = G2L["1ca"],
+	ConnectToBrowserButton = G2L["47"],
+	ForceRefreshButton     = G2L["158"],
+	OpenBrowserLogsButton  = G2L["156"],
+	BrowserButtonHitbox    = G2L["17e"],
 	-- Skills page
-	SkillsPage             = G2L["17c"],
-	SkillsSF               = G2L["175"],
-	SkillsTemplate         = G2L["178"],
-	SkillsGroupFrame       = G2L["179"],
-	SkillsPageTip          = G2L["194"],
-	SkillsTotalElements    = G2L["193"],
-	SkillsRefreshButton    = G2L["197"],
-	SkillsRefreshText      = G2L["199"],
-	SkillsButtonHitbox     = G2L["1b2"],
+	SkillsPage             = G2L["15a"],
+	SkillsSF               = G2L["15b"],
+	SkillsTemplate         = G2L["15e"],
+	SkillsGroupFrame       = G2L["15f"],
+	SkillsPageTip          = G2L["172"],
+	SkillsTotalElements    = G2L["171"],
+	SkillsRefreshButton    = G2L["175"],
+	SkillsRefreshText      = G2L["177"],
+	SkillsButtonHitbox     = G2L["193"],
 	-- Sidebar & topbar
-	LeftSidebar            = G2L["19a"],
-	TopBar                 = G2L["1c1"],
-	CloseButton            = G2L["1c3"],
-	MinimizeButton         = G2L["1c6"],
-	Highlight              = G2L["1c7"],
+	LeftSidebar            = G2L["178"],
+	SidebarContainer       = G2L["17b"],
+	TopBar                 = G2L["19e"],
+	CloseButton            = G2L["1a0"],
+	MinimizeButton         = G2L["1a3"],
+	ResizeLabel            = G2L["1ec"],
+	Highlight              = G2L["17a"],
 	-- Modal
-	ModalFrame             = G2L["1c8"],
-	ModalInner             = G2L["1ca"],
-	ModalCloseButton       = G2L["1cc"],
-	SearchModelModal       = G2L["1cd"],
-	ModalSearchBox         = G2L["1cf"],
-	ModalSF                = G2L["1d3"],
-	ExampleModelBtn        = G2L["1d4"],
-	ModalSearchButton      = G2L["1d2"],
-	ModalOpenButton        = G2L["a5"],
-	ToolResultViewModal    = G2L["1d7"],
-	ToolResultSF           = G2L["1d9"],
-	ToolResultTextBox      = G2L["1dc"],
-	ModalTitleLabel        = G2L["1dd"],
-	SystemPromptModal      = G2L["1df"],
-	SystemPromptSF         = G2L["1e1"],
-	SystemPromptTextBox    = G2L["1e2"],
-	SystemPromptResetButton = G2L["1e7"],
-	SystemPromptSaveButton  = G2L["1e8"],
-	BrowserLogsModal       = G2L["1e9"],
+	ModalFrame             = G2L["1a4"],
+	ModalInner             = G2L["1a6"],
+	ModalCloseButton       = G2L["1a8"],
+	SearchModelModal       = G2L["1a9"],
+	ModalSearchBox         = G2L["1ab"],
+	ModalSF                = G2L["1af"],
+	ExampleModelBtn        = G2L["1b0"],
+	ModalSearchButton      = G2L["1ae"],
+	ModalOpenButton        = G2L["67"],
+	ToolResultViewModal    = G2L["1b3"],
+	ToolResultSF           = G2L["1b5"],
+	ToolResultTextBox      = G2L["1b8"],
+	ModalTitleLabel        = G2L["1b9"],
+	SystemPromptModal      = G2L["1bb"],
+	SystemPromptSF         = G2L["1bd"],
+	SystemPromptTextBox    = G2L["1be"],
+	SystemPromptResetButton = G2L["1c3"],
+	SystemPromptSaveButton  = G2L["1c4"],
+	BrowserLogsModal       = G2L["1c5"],
 	-- Multi API key modal
-	SetMultiAPIKeyModal    = G2L["1ef"],
-	MultiAPIKeyTextBox     = G2L["1f2"],
-	MultiAPIKeyClearButton = G2L["1f8"],
-	MultiAPIKeySaveButton  = G2L["1f9"],
+	SetMultiAPIKeyModal    = G2L["1cb"],
+	MultiAPIKeyTextBox     = G2L["1ce"],
+	MultiAPIKeyClearButton = G2L["1d4"],
+	MultiAPIKeySaveButton  = G2L["1d5"],
 	-- Confirmation modal
-	ConfirmationFrame      = G2L["1fa"],
-	ConfirmYesButton       = G2L["1fe"],
-	ConfirmNoButton        = G2L["1ff"],
-	ConfirmTextLabel       = G2L["200"],
+	ConfirmationFrame      = G2L["1e1"],
+	ConfirmYesButton       = G2L["1e5"],
+	ConfirmNoButton        = G2L["1e6"],
+	ConfirmTextLabel       = G2L["1e7"],
 	-- Misc
-	IntroFrame             = G2L["202"],
-	IYAIToastContainer     = G2L["205"],
-	ToastTemplate          = G2L["206"],
-	CurrentPage            = G2L["212"],
-	OpenConversationHistoryButton = G2L["52"],
+	IntroFrame             = G2L["1e9"],
+	IYAIToastContainer     = G2L["1ed"],
+	ToastTemplate          = G2L["1ee"],
+	CurrentPage            = G2L["1fa"],
+	OpenConversationHistoryButton = G2L["46"],
 }
 -- ── Main logic ────────────────────────────────────────────────────────────────
 
 local Clr = {
-    ok    = Color3.fromRGB(109, 217, 161),
-    err   = Color3.fromRGB(171, 108, 108),
-    idle  = Color3.fromRGB(41,  41,  41),
+    ok      = Color3.fromRGB(109, 217, 161),
+    err     = Color3.fromRGB(171, 108, 108),
+    idle    = Color3.fromRGB(41,  41,  41),
+    pending = Color3.fromRGB(217, 180, 80),
     tools = {
         Script   = Color3.fromRGB(109, 217, 161),
         Web      = Color3.fromRGB(86,  156, 214),
@@ -321,11 +362,24 @@ local Clr = {
     sfull = NumberSequence.new{ NumberSequenceKeypoint.new(0, 1), NumberSequenceKeypoint.new(0.5, 0),   NumberSequenceKeypoint.new(1, 1) },
 }
 
-local VERSION           = G2L["213"] and G2L["213"].Value or ""
+local VERSION           = G2L["1fb"] and G2L["1fb"].Value or ""
 local Tween             = TweenInfo.new(0.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut)
 local DefaultIYAISize   = UDim2.new(0, 600, 0, 400)
 local MinimizedIYAISize = UDim2.new(0, 160, 0, 25)
 local Minimized         = false
+
+-- Fit the GUI to the current viewport on startup
+do
+	local vp     = workspace.CurrentCamera.ViewportSize
+	local margin = 20
+	local w = math.min(600, vp.X - margin)
+	local h = math.min(400, vp.Y - margin)
+	w = math.max(w, 300)
+	h = math.max(h, 200)
+	DefaultIYAISize = UDim2.new(0, w, 0, h)
+	UI.IYAI.Size     = DefaultIYAISize
+	UI.IYAI.Position = UDim2.new(0.5, -w/2, 0.5, -h/2)
+end
 local modelList         = {}
 local _loading          = false
 
@@ -416,45 +470,36 @@ local function fetchModelsFromOpenAIEndpoint(url, authKey)
 	end
 end
 
-local function fetchOpenRouterModels()  fetchModelsFromOpenAIEndpoint("https://openrouter.ai/api/v1/models",                                    "")             end
-local function fetchMistralModels()     fetchModelsFromOpenAIEndpoint("https://api.mistral.ai/v1/models",                                    Config.apiKey)  end
-local function fetchGroqModels()        fetchModelsFromOpenAIEndpoint("https://api.groq.com/openai/v1/models",                               Config.apiKey)  end
-local function fetchHuggingFaceModels() fetchModelsFromOpenAIEndpoint("https://router.huggingface.co/v1/models",                             Config.apiKey)  end
-local function fetchGoogleModels()      fetchModelsFromOpenAIEndpoint("https://generativelanguage.googleapis.com/v1beta/openai/models",       Config.apiKey)  end
-local function fetch9routerModels()     fetchModelsFromOpenAIEndpoint("http://localhost:20128/v1/models",                                    Config.apiKey)  end
-local function fetchOpenCodeModels()    fetchModelsFromOpenAIEndpoint("https://opencode.ai/zen/v1/models",                                   Config.apiKey)  end
+local function isOllamaFormat()
+	local p = Providers.get(Config.host)
+	return p ~= nil and p.modelsFormat == "ollama"
+end
 
 local function autoTestOnStart()
 	task.spawn(function()
-		if Config.host == "Ollama" then
-			local res = Http.request(Config.ollamaUrl .. "/api/tags", "GET", {})
+		local p = Providers.get(Config.host)
+		if not p then return end
+		if p.modelsFormat == "ollama" then
+			local url = p.modelsUrl or (Config.ollamaUrl .. "/api/tags")
+			local headers = p.authModels and { ["Authorization"] = "Bearer " .. Config.apiKey } or {}
+			local res = Http.request(url, "GET", headers)
 			local ok, data = pcall(HS.JSONDecode, HS, res and res.Body or "")
 			if ok and data and data.models then modelList = data.models end
-		elseif Config.host == "Mistral" then
-			fetchMistralModels()
-		elseif Config.host == "Groq" then
-			fetchGroqModels()
-		elseif Config.host == "Pollinations" then
-			fetchModelsFromOpenAIEndpoint("https://gen.pollinations.ai/v1/models", Config.apiKey)
-		elseif Config.host == "HuggingFace" then
-			fetchHuggingFaceModels()
-		elseif Config.host == "Google AI Studio" then
-			fetchGoogleModels()
-		elseif Config.host == "9router" then
-			fetch9routerModels()
-		elseif Config.host == "OpenCode" then
-			fetchOpenCodeModels()
-		else
-			fetchOpenRouterModels()
+		elseif p.modelsUrl then
+			local key = p.authModels and Config.apiKey or ""
+			fetchModelsFromOpenAIEndpoint(p.modelsUrl, key)
 		end
 	end)
+	local p   = Providers.get(Config.host)
 	local key = Config.apiKey
-	if key == "" and Config.host ~= "Ollama" then
+	if key == "" and p and p.requiresKey then
 		Toast.show("No API Key", "Set your API key in Settings", "err", 5)
 		task.delay(1, function() UI.CurrentPage.Value = "Settings" end)
 		return
 	end
-	if Config.host == "Ollama" then
+	if Config.host == "Ollama ☁️" then
+		Toast.show("Ollama ☁️", "Cloud mode — make sure your API key is set", "ok", 4)
+	elseif Config.host == "Ollama" then
 		local res = Http.request(Config.ollamaUrl .. "/api/tags", "GET", {})
 		if res and res.StatusCode == 200 then
 			Toast.show("Connected", "Ollama is reachable", "ok", 3)
@@ -462,82 +507,16 @@ local function autoTestOnStart()
 			Toast.show("Offline", "Cannot reach Ollama — check Settings", "err", 5)
 			task.delay(1, function() UI.CurrentPage.Value = "Settings" end)
 		end
-	elseif Config.host == "Pollinations" then
-		local res = Http.request("https://gen.pollinations.ai/v1/models", "GET", {
-			["Authorization"] = "Bearer " .. key,
-		})
+	elseif p and p.modelsUrl then
+		local headers = p.authModels and { ["Authorization"] = "Bearer " .. key } or {}
+		local res = Http.request(p.modelsUrl, "GET", headers)
 		if res and res.StatusCode == 200 then
-			Toast.show("Connected", "Pollinations key is valid", "ok", 3)
+			Toast.show("Connected", Config.host .. " key is valid", "ok", 3)
 		elseif res and res.StatusCode == 401 then
-			Toast.show("Invalid Key", "Pollinations key rejected — update in Settings", "err", 5)
+			Toast.show("Invalid Key", Config.host .. " key rejected — update in Settings", "err", 5)
 			task.delay(1, function() UI.CurrentPage.Value = "Settings" end)
 		else
-			Toast.show("Connection Failed", "Could not reach Pollinations", "err", 5)
-			task.delay(1, function() UI.CurrentPage.Value = "Settings" end)
-		end
-	elseif Config.host == "HuggingFace" then
-		local res = Http.request("https://router.huggingface.co/v1/models", "GET", {
-			["Authorization"] = "Bearer " .. key,
-		})
-		if res and res.StatusCode == 200 then
-			Toast.show("Connected", "HuggingFace token is valid", "ok", 3)
-		elseif res and res.StatusCode == 401 then
-			Toast.show("Invalid Key", "HuggingFace token rejected — update in Settings", "err", 5)
-			task.delay(1, function() UI.CurrentPage.Value = "Settings" end)
-		else
-			Toast.show("Connection Failed", "Could not reach HuggingFace", "err", 5)
-			task.delay(1, function() UI.CurrentPage.Value = "Settings" end)
-		end
-	elseif Config.host == "Groq" then
-		local res = Http.request("https://api.groq.com/openai/v1/models", "GET", {
-			["Authorization"] = "Bearer " .. key,
-		})
-		if res and res.StatusCode == 200 then
-			Toast.show("Connected", "Groq key is valid", "ok", 3)
-		elseif res and res.StatusCode == 401 then
-			Toast.show("Invalid Key", "Groq key rejected — update in Settings", "err", 5)
-			task.delay(1, function() UI.CurrentPage.Value = "Settings" end)
-		else
-			Toast.show("Connection Failed", "Could not reach Groq", "err", 5)
-			task.delay(1, function() UI.CurrentPage.Value = "Settings" end)
-		end
-	elseif Config.host == "Google AI Studio" then
-		local res = Http.request("https://generativelanguage.googleapis.com/v1beta/openai/models", "GET", {
-			["Authorization"] = "Bearer " .. key,
-		})
-		if res and res.StatusCode == 200 then
-			Toast.show("Connected", "Google AI Studio key is valid", "ok", 3)
-		elseif res and res.StatusCode == 401 then
-			Toast.show("Invalid Key", "Google key rejected — update in Settings", "err", 5)
-			task.delay(1, function() UI.CurrentPage.Value = "Settings" end)
-		else
-			Toast.show("Connection Failed", "Could not reach Google AI Studio", "err", 5)
-			task.delay(1, function() UI.CurrentPage.Value = "Settings" end)
-		end
-	elseif Config.host == "Mistral" then
-		local res = Http.request("https://api.mistral.ai/v1/models", "GET", {
-			["Authorization"] = "Bearer " .. key,
-		})
-		if res and res.StatusCode == 200 then
-			Toast.show("Connected", "Mistral key is valid", "ok", 3)
-		elseif res and res.StatusCode == 401 then
-			Toast.show("Invalid Key", "Mistral key rejected — update in Settings", "err", 5)
-			task.delay(1, function() UI.CurrentPage.Value = "Settings" end)
-		else
-			Toast.show("Connection Failed", "Could not reach Mistral", "err", 5)
-			task.delay(1, function() UI.CurrentPage.Value = "Settings" end)
-		end
-	else
-		local res = Http.request("https://openrouter.ai/api/v1/auth/key", "GET", {
-			["Authorization"] = "Bearer " .. key,
-		})
-		if res and res.StatusCode == 200 then
-			Toast.show("Connected", "OpenRouter key is valid", "ok", 3)
-		elseif res and res.StatusCode == 401 then
-			Toast.show("Invalid Key", "API key rejected — update in Settings", "err", 5)
-			task.delay(1, function() UI.CurrentPage.Value = "Settings" end)
-		else
-			Toast.show("Connection Failed", "Could not reach OpenRouter", "err", 5)
+			Toast.show("Connection Failed", "Could not reach " .. Config.host, "err", 5)
 			task.delay(1, function() UI.CurrentPage.Value = "Settings" end)
 		end
 	end
@@ -580,7 +559,7 @@ end)
 
 UI.LeftSidebar.Size = SIDEBAR_CLOSED
 
-for _, v in pairs(UI.LeftSidebar:GetChildren()) do
+for _, v in pairs(UI.SidebarContainer:GetChildren()) do
 	if not v:IsA("Frame") then continue end
 	local Hitbox = v:FindFirstChild("Hitbox")
 	if not Hitbox then continue end
@@ -591,7 +570,7 @@ end
 
 UI.Highlight.Position = UDim2.new(0, 0, 0, 0)
 UI.CurrentPage.Changed:Connect(function(page)
-	local target = UI.LeftSidebar:FindFirstChild(page .. "ButtonFrame")
+	local target = UI.SidebarContainer:FindFirstChild(page .. "ButtonFrame")
 	if not target then return end
 	TS:Create(UI.Highlight, TweenInfo.new(0.1), {
 		Position = UDim2.new(0, 0, 0,
@@ -631,6 +610,49 @@ local function scrollBottom()
 end
 
 local Agt = { history = {}, sessionId = nil, renders = nil, replaying = false, step = 0, aborted = false, codeHistory = {} }
+
+-- ── Usage tracking ─────────────────────────────────────────────────────────────
+
+local USAGE_FILE = "iyai_data/usage.json"
+local Usage = { total = 0, session = 0 }
+
+local function loadUsage()
+	if not (readfile and isfile and isfile(USAGE_FILE)) then return end
+	local ok, raw = pcall(readfile, USAGE_FILE)
+	if not ok or not raw or raw == "" then return end
+	local ok2, data = pcall(HS.JSONDecode, HS, raw)
+	if ok2 and type(data) == "table" and type(data.total) == "number" then
+		Usage.total = data.total
+	end
+end
+
+local function saveUsage()
+	if not writefile then return end
+	ensureParentFolders(USAGE_FILE)
+	pcall(writefile, USAGE_FILE, HS:JSONEncode({ total = Usage.total }))
+end
+
+local function updateUsageLabels()
+	local function fmt(n)
+		if n >= 1e6 then return string.format("%.1fM", n / 1e6)
+		elseif n >= 1e3 then return string.format("%.1fk", n / 1e3)
+		else return tostring(n) end
+	end
+	if UI.UsageTotalLabel   then UI.UsageTotalLabel.Text   = "So far, you've used " .. fmt(Usage.total) .. " tokens" end
+	if UI.UsageSessionLabel then UI.UsageSessionLabel.Text = "On this conversation, " .. fmt(Usage.session) .. " tokens" end
+end
+
+local function addTokens(prompt, completion)
+	local n = (prompt or 0) + (completion or 0)
+	if n <= 0 then return end
+	Usage.total   = Usage.total   + n
+	Usage.session = Usage.session + n
+	updateUsageLabels()
+	saveUsage()
+end
+
+loadUsage()
+updateUsageLabels()
 
 local function recordRender(entry)
 	if Agt.renders and not Agt.replaying then
@@ -809,6 +831,7 @@ local function addResponse(rawText, usage)
 				local prompt     = usage.prompt_tokens     or 0
 				local completion = usage.completion_tokens or 0
 				tokenLabel.Text  = Config.model .. "  ↑ " .. prompt .. "  ↓ " .. completion
+				addTokens(prompt, completion)
 			else
 				tokenLabel:Destroy()
 			end
@@ -1622,7 +1645,7 @@ local Set = {
 	loadKey   = true,
 	keyFocus  = false,
 	filtList  = {},
-	allHosts  = {"OpenRouter", "Ollama", "Mistral", "Groq", "Pollinations", "HuggingFace", "Google AI Studio", "9router", "OpenCode"},
+	allHosts  = (function() local t = {} for _, p in ipairs(Providers.list) do t[#t+1] = p.name end return t end)(),
 	cache     = {},
 }
 
@@ -1635,10 +1658,29 @@ local function maskKey(key)
 	return string.rep("•", #key - visible) .. key:sub(-visible)
 end
 
+-- PROVIDER_INFO and URL_PATTERNS replaced by Providers module
+
 local function updateHostLabel(host)
-	if not UI.HostTitle then return end
-	UI.HostTitle.RichText = true
-	UI.HostTitle.Text = 'Host Provider  <font size="11" color="#A1A5A2">(' .. host .. ')</font>'
+	if UI.HostTitle then
+		UI.HostTitle.RichText = true
+		UI.HostTitle.Text = 'Host Provider  <font size="11" color="#A1A5A2">(' .. host .. ')</font>'
+	end
+	local p = Providers.get(host)
+	if UI.HostSelectIcon then
+		UI.HostSelectIcon.Image = p and p.icon or "rbxassetid://98245295559168"
+	end
+	if UI.HostSelectLabel then
+		UI.HostSelectLabel.Text = host
+	end
+	if UI.HostSelectTextBox then
+		local url = p and p.displayUrl
+		if url == nil then
+			url = Config.ollamaUrl or "http://localhost:11434"
+		end
+		if url and url ~= "" then
+			UI.HostSelectTextBox.Text = url
+		end
+	end
 end
 
 for _, h in ipairs(Set.allHosts) do
@@ -1662,10 +1704,26 @@ UI.MaxStepBox.Text     = tostring(Config.maxSteps)
 UI.TemperatureBox.Text = tostring(Config.temperature)
 Set.host    = Config.host
 
+local function hostBtnName(b)
+	local lbl = b:FindFirstChildWhichIsA("TextLabel")
+	return lbl and lbl.Text or b.Text
+end
+
+for i, p in ipairs(Providers.list) do
+	local btn  = UI.HostTemplateButton:Clone()
+	local icon = btn:FindFirstChildWhichIsA("ImageLabel")
+	local lbl  = btn:FindFirstChildWhichIsA("TextLabel")
+	if icon then icon.Image = p.icon end
+	if lbl  then lbl.Text  = p.name end
+	local name = p.name
+	btn.LayoutOrder = i
+	btn.Visible     = true
+	btn.Parent      = UI.HostProviderSF
+	table.insert(UI.HostButtons, btn)
+end
+
 for _, b in pairs(UI.HostButtons) do
-	if b:IsA("TextButton") then
-		b.BackgroundTransparency = b.Text == Set.host and 0.9 or 1
-	end
+	b.BackgroundTransparency = hostBtnName(b) == Set.host and 0.9 or 1
 end
 
 updateHostLabel(Set.host)
@@ -1826,7 +1884,12 @@ end)
 
 local function updateApiKeyVisibility(host)
 	if UI.APIKeyFrame then
-		UI.APIKeyFrame.Visible = host ~= "Ollama"
+		local p = Providers.get(host)
+		UI.APIKeyFrame.Visible = p == nil or p.requiresKey
+	end
+	if UI.HostTitle then
+		UI.HostTitle.RichText = true
+		UI.HostTitle.Text = 'Host Provider  <font size="11" color="#A1A5A2">(' .. host .. ')</font>'
 	end
 	applyAPIKeyMode(Config.apiKeyMode)
 end
@@ -1836,23 +1899,25 @@ updateApiKeyVisibility(Set.host)
 for _, btn in pairs(UI.HostButtons) do
 	if not btn:IsA("TextButton") then continue end
 	btn.MouseButton1Click:Connect(function()
-		-- Save current provider's unsaved key+model to cache
 		Set.cache[Set.host] = { key = UI.APIKeyBox.Text, model = UI.ModelBox.Text, mode = Config.apiKeyMode }
-		Set.host = btn.Text
+		Set.host    = hostBtnName(btn)
+		Config.host = Set.host
 		for _, b in pairs(UI.HostButtons) do
 			if b:IsA("TextButton") then
-				b.BackgroundTransparency = b.Text == Set.host and 0.9 or 1
+				b.BackgroundTransparency = hostBtnName(b) == Set.host and 0.9 or 1
 			end
 		end
 		UI.ConnectionIconColor.BackgroundColor3 = Clr.idle
 		UI.CredentialIconColor.BackgroundColor3 = Clr.idle
-		-- Restore new provider's key+model
 		_loading = true; Set.loadKey = true
 		applyProviderToUI(Set.host)
 		_loading = false; Set.loadKey = false
 		updateApiKeyVisibility(Set.host)
 		updateHostLabel(Set.host)
 		UI.UnsavedChanges.Visible = true
+		-- Close the HostProviderModal
+		UI.ModalFrame.Visible = false
+		UI.ModalInner.Visible = false
 	end)
 end
 
@@ -1860,40 +1925,18 @@ local function setConnStatus(ok)   UI.ConnectionIconColor.BackgroundColor3 = ok 
 local function setCredStatus(ok)   UI.CredentialIconColor.BackgroundColor3 = ok and Clr.ok or Clr.err end
 
 UI.ConnectionButton.MouseButton1Click:Connect(function()
+	UI.ConnectionIconColor.BackgroundColor3 = Clr.pending
+	local p   = Providers.get(Set.host)
+	local key = UI.APIKeyBox.Text
 	local res
 	if Set.host == "Ollama" then
 		res = Http.request(Config.ollamaUrl .. "/api/tags", "GET", {})
-	elseif Set.host == "Pollinations" then
-		res = Http.request("https://gen.pollinations.ai/v1/models", "GET", {
-			["Authorization"] = "Bearer " .. UI.APIKeyBox.Text,
-		})
-	elseif Set.host == "Groq" then
-		res = Http.request("https://api.groq.com/openai/v1/models", "GET", {
-			["Authorization"] = "Bearer " .. UI.APIKeyBox.Text,
-		})
-	elseif Set.host == "Mistral" then
-		res = Http.request("https://api.mistral.ai/v1/models", "GET", {
-			["Authorization"] = "Bearer " .. UI.APIKeyBox.Text,
-		})
-	elseif Set.host == "HuggingFace" then
-		res = Http.request("https://router.huggingface.co/v1/models", "GET", {
-			["Authorization"] = "Bearer " .. UI.APIKeyBox.Text,
-		})
-	elseif Set.host == "Google AI Studio" then
-		res = Http.request("https://generativelanguage.googleapis.com/v1beta/openai/models", "GET", {
-			["Authorization"] = "Bearer " .. UI.APIKeyBox.Text,
-		})
-	elseif Set.host == "9router" then
-		res = Http.request("http://localhost:20128/v1/models", "GET", {
-			["Authorization"] = "Bearer " .. UI.APIKeyBox.Text,
-		})
-	elseif Set.host == "OpenCode" then
-		res = Http.request("https://opencode.ai/zen/v1/models", "GET", {
-			["Authorization"] = "Bearer " .. UI.APIKeyBox.Text,
-		})
+	elseif p and p.modelsUrl then
+		local headers = (p.authModels and key ~= "") and { ["Authorization"] = "Bearer " .. key } or {}
+		res = Http.request(p.modelsUrl, "GET", headers)
 	else
 		res = Http.request("https://openrouter.ai/api/v1/models", "GET", {
-			["Authorization"] = "Bearer " .. UI.APIKeyBox.Text,
+			["Authorization"] = "Bearer " .. key,
 		})
 	end
 	if not res or res.StatusCode ~= 200 then
@@ -1905,13 +1948,13 @@ UI.ConnectionButton.MouseButton1Click:Connect(function()
 	Toast.show("Connected", Set.host .. " is reachable", "ok", 3)
 	local ok, data = pcall(HS.JSONDecode, HS, res.Body)
 	if not ok then return end
-	if Set.host == "Ollama" and data.models then
+	if p and p.modelsFormat == "ollama" and data.models then
 		modelList = data.models
 		populateDropdown(data.models)
 		if UI.ModelBox.Text == "" and #data.models > 0 then
 			_loading = true; UI.ModelBox.Text = data.models[1].name; _loading = false
 		end
-	elseif Set.host ~= "Ollama" and data.data then
+	elseif data.data then
 		modelList = {}
 		for _, m in ipairs(data.data) do table.insert(modelList, { name = m.id }) end
 		table.sort(modelList, function(a, b) return a.name < b.name end)
@@ -1922,123 +1965,38 @@ UI.ConnectionButton.MouseButton1Click:Connect(function()
 	end
 end)
 
-UI.CredentialButton.MouseButton1Click:Connect(function()
-	local key = UI.APIKeyBox.Text
-	if Set.host ~= "Ollama" and key == "" then
-		Toast.show("No API Key", "Enter an API key first", "err", 3) return
-	end
-	if Set.host == "Ollama" then
+local _credHandlers = {
+	noauth = function(p, key)
 		local res = Http.request(Config.ollamaUrl .. "/api/tags", "GET", {})
-			if res and res.StatusCode == 200 then
-			setCredStatus(true)
-			Toast.show("OK", "Ollama has no auth — connection is fine", "ok", 3)
+		if res and res.StatusCode == 200 then
+			setCredStatus(true);  Toast.show("OK", "Ollama has no auth — connection is fine", "ok", 3)
 		else
-			setCredStatus(false)
-			Toast.show("Failed", "Could not reach Ollama", "err", 4)
+			setCredStatus(false); Toast.show("Failed", "Could not reach Ollama", "err", 4)
 		end
-	elseif Set.host == "Pollinations" then
-		-- Send a minimal chat request; public endpoint returns 200 regardless of auth on /models
+	end,
+	pollinations = function(p, key)
 		local body = HS:JSONEncode({ model = "openai", messages = {{ role = "user", content = "hi" }}, max_tokens = 1 })
-		local res = Http.request("https://gen.pollinations.ai/v1/chat/completions", "POST", {
-			["Content-Type"]  = "application/json",
-			["Authorization"] = "Bearer " .. key,
-		}, body)
-			if not res then
-			setCredStatus(false); Toast.show("Failed", "No response from Pollinations", "err", 4)
-		elseif res.StatusCode == 200 then
-			setCredStatus(true);  Toast.show("Valid Key", "Pollinations key accepted", "ok", 3)
-		elseif res.StatusCode == 401 then
-			setCredStatus(false); Toast.show("Invalid Key", "Pollinations key rejected (401)", "err", 4)
-		else
-			setCredStatus(false); Toast.show("Failed", "Status " .. res.StatusCode, "err", 4)
+		local res = Http.request(p.credUrl, "POST", { ["Content-Type"] = "application/json", ["Authorization"] = "Bearer " .. key }, body)
+		if not res then setCredStatus(false); Toast.show("Failed", "No response from " .. p.name, "err", 4)
+		elseif res.StatusCode == 200 then setCredStatus(true);  Toast.show("Valid Key", p.name .. " key accepted", "ok", 3)
+		elseif res.StatusCode == 401 then setCredStatus(false); Toast.show("Invalid Key", p.name .. " key rejected (401)", "err", 4)
+		else                              setCredStatus(false); Toast.show("Failed", "Status " .. res.StatusCode, "err", 4)
 		end
-	elseif Set.host == "Groq" then
-		local res = Http.request("https://api.groq.com/openai/v1/models", "GET", {
-			["Authorization"] = "Bearer " .. key,
-		})
-			if not res then
-			setCredStatus(false); Toast.show("Failed", "No response from Groq", "err", 4)
-		elseif res.StatusCode == 200 then
-			setCredStatus(true);  Toast.show("Valid Key", "Groq key accepted", "ok", 3)
-		elseif res.StatusCode == 401 then
-			setCredStatus(false); Toast.show("Invalid Key", "Groq key rejected (401)", "err", 4)
-		else
-			setCredStatus(false); Toast.show("Failed", "Status " .. res.StatusCode, "err", 4)
-		end
-	elseif Set.host == "Mistral" then
-		local res = Http.request("https://api.mistral.ai/v1/models", "GET", {
-			["Authorization"] = "Bearer " .. key,
-		})
-			if not res then
-			setCredStatus(false); Toast.show("Failed", "No response from Mistral", "err", 4)
-		elseif res.StatusCode == 200 then
-			setCredStatus(true);  Toast.show("Valid Key", "Mistral key accepted", "ok", 3)
-		elseif res.StatusCode == 401 then
-			setCredStatus(false); Toast.show("Invalid Key", "Mistral key rejected (401)", "err", 4)
-		else
-			setCredStatus(false); Toast.show("Failed", "Status " .. res.StatusCode, "err", 4)
-		end
-	elseif Set.host == "HuggingFace" then
-		-- /api/whoami requires auth; /v1/models is public and always returns 200
-		local res = Http.request("https://huggingface.co/api/whoami", "GET", {
-			["Authorization"] = "Bearer " .. key,
-		})
-			if not res then
-			setCredStatus(false); Toast.show("Failed", "No response from HuggingFace", "err", 4)
+	end,
+	huggingface = function(p, key)
+		local res = Http.request(p.credUrl, "GET", { ["Authorization"] = "Bearer " .. key })
+		if not res then setCredStatus(false); Toast.show("Failed", "No response from HuggingFace", "err", 4)
 		elseif res.StatusCode == 200 then
 			local ok, data = pcall(HS.JSONDecode, HS, res.Body)
 			local name = ok and data and (data.name or data.fullname) or "unknown"
 			setCredStatus(true); Toast.show("Valid Token", "Logged in as " .. tostring(name), "ok", 3)
-		elseif res.StatusCode == 401 then
-			setCredStatus(false); Toast.show("Invalid Token", "HuggingFace token rejected (401)", "err", 4)
-		else
-			setCredStatus(false); Toast.show("Failed", "Status " .. res.StatusCode, "err", 4)
+		elseif res.StatusCode == 401 then setCredStatus(false); Toast.show("Invalid Token", "HuggingFace token rejected (401)", "err", 4)
+		else                              setCredStatus(false); Toast.show("Failed", "Status " .. res.StatusCode, "err", 4)
 		end
-	elseif Set.host == "Google AI Studio" then
-		local res = Http.request("https://generativelanguage.googleapis.com/v1beta/openai/models", "GET", {
-			["Authorization"] = "Bearer " .. key,
-		})
-			if not res then
-			setCredStatus(false); Toast.show("Failed", "No response from Google AI Studio", "err", 4)
-		elseif res.StatusCode == 200 then
-			setCredStatus(true);  Toast.show("Valid Key", "Google AI Studio key accepted", "ok", 3)
-		elseif res.StatusCode == 401 then
-			setCredStatus(false); Toast.show("Invalid Key", "Google key rejected (401)", "err", 4)
-		else
-			setCredStatus(false); Toast.show("Failed", "Status " .. res.StatusCode, "err", 4)
-		end
-	elseif Set.host == "9router" then
-		local res = Http.request("http://localhost:20128/v1/models", "GET", {
-			["Authorization"] = "Bearer " .. key,
-		})
-		if not res then
-			setCredStatus(false); Toast.show("Failed", "Cannot reach 9router — is it running?", "err", 4)
-		elseif res.StatusCode == 200 then
-			setCredStatus(true);  Toast.show("Connected", "9router is reachable", "ok", 3)
-		elseif res.StatusCode == 401 then
-			setCredStatus(false); Toast.show("Invalid Key", "9router key rejected (401)", "err", 4)
-		else
-			setCredStatus(false); Toast.show("Failed", "Status " .. res.StatusCode, "err", 4)
-		end
-	elseif Set.host == "OpenCode" then
-		local res = Http.request("https://opencode.ai/zen/v1/models", "GET", {
-			["Authorization"] = "Bearer " .. key,
-		})
-		if not res then
-			setCredStatus(false); Toast.show("Failed", "No response from OpenCode", "err", 4)
-		elseif res.StatusCode == 200 then
-			setCredStatus(true);  Toast.show("Valid Key", "OpenCode key accepted", "ok", 3)
-		elseif res.StatusCode == 401 then
-			setCredStatus(false); Toast.show("Invalid Key", "OpenCode key rejected (401)", "err", 4)
-		else
-			setCredStatus(false); Toast.show("Failed", "Status " .. res.StatusCode, "err", 4)
-		end
-	else
-		local res = Http.request("https://openrouter.ai/api/v1/auth/key", "GET", {
-			["Authorization"] = "Bearer " .. key,
-		})
-			if not res then
-			setCredStatus(false); Toast.show("Failed", "No response from server", "err", 4)
+	end,
+	openrouter = function(p, key)
+		local res = Http.request(p.credUrl, "GET", { ["Authorization"] = "Bearer " .. key })
+		if not res then setCredStatus(false); Toast.show("Failed", "No response from server", "err", 4)
 		elseif res.StatusCode == 200 then
 			local ok, data = pcall(HS.JSONDecode, HS, res.Body)
 			if ok and data.data then
@@ -2052,12 +2010,32 @@ UI.CredentialButton.MouseButton1Click:Connect(function()
 			else
 				setCredStatus(true); Toast.show("Valid Key", "Credential accepted", "ok", 3)
 			end
-		elseif res.StatusCode == 401 then
-			setCredStatus(false); Toast.show("Invalid Key", "API key rejected (401)", "err", 4)
-		else
-			setCredStatus(false); Toast.show("Failed", "Status " .. res.StatusCode, "err", 4)
+		elseif res.StatusCode == 401 then setCredStatus(false); Toast.show("Invalid Key", "API key rejected (401)", "err", 4)
+		else                              setCredStatus(false); Toast.show("Failed", "Status " .. res.StatusCode, "err", 4)
 		end
+	end,
+	standard = function(p, key)
+		local url = p.credUrl or p.modelsUrl
+		local res = Http.request(url, "GET", { ["Authorization"] = "Bearer " .. key })
+		if not res then setCredStatus(false); Toast.show("Failed", "No response from " .. p.name, "err", 4)
+		elseif res.StatusCode == 200 then setCredStatus(true);  Toast.show("Valid Key", p.name .. " key accepted", "ok", 3)
+		elseif res.StatusCode == 401 then setCredStatus(false); Toast.show("Invalid Key", p.name .. " key rejected (401)", "err", 4)
+		else                              setCredStatus(false); Toast.show("Failed", "Status " .. res.StatusCode, "err", 4)
+		end
+	end,
+}
+
+UI.CredentialButton.MouseButton1Click:Connect(function()
+	UI.CredentialIconColor.BackgroundColor3 = Clr.pending
+	local p   = Providers.get(Set.host)
+	local key = UI.APIKeyBox.Text
+	if p and p.requiresKey and key == "" then
+		UI.CredentialIconColor.BackgroundColor3 = Clr.idle
+		Toast.show("No API Key", "Enter an API key first", "err", 3) return
 	end
+	local fmt     = p and p.credFormat or "standard"
+	local handler = _credHandlers[fmt] or _credHandlers.standard
+	handler(p or { name = Set.host, credUrl = nil, modelsUrl = nil }, key)
 end)
 
 local function saveSettings()
@@ -2093,7 +2071,7 @@ local function revertSettings()
 	UI.TemperatureBox.Text = tostring(Config.temperature)
 	for _, b in pairs(UI.HostButtons) do
 		if b:IsA("TextButton") then
-			b.BackgroundTransparency = b.Text == Set.host and 0.9 or 1
+			b.BackgroundTransparency = hostBtnName(b) == Set.host and 0.9 or 1
 		end
 	end
 	updateApiKeyVisibility(Set.host)
@@ -2106,6 +2084,25 @@ end
 
 UI.SaveButton.MouseButton1Click:Connect(saveSettings)
 UI.RevertButton.MouseButton1Click:Connect(revertSettings)
+
+UI.LoadFreeButton.MouseButton1Click:Connect(function()
+	_loading = true; Set.loadKey = true
+	Set.cache[Set.host] = { key = UI.APIKeyBox.Text, model = UI.ModelBox.Text, mode = Config.apiKeyMode }
+	Set.host    = "Ollama ☁️"
+	Config.host = "Ollama ☁️"
+	Set.cache["Ollama ☁️"] = Set.cache["Ollama ☁️"] or { key = "", model = "", mode = "single" }
+	Set.cache["Ollama ☁️"].model = "qwen3-coder:480b-cloud"
+	applyProviderToUI("Ollama ☁️")
+	UI.ModelBox.Text = "qwen3-coder:480b-cloud"
+	updateHostLabel("Ollama ☁️")
+	for _, b in pairs(UI.HostButtons) do
+		b.BackgroundTransparency = hostBtnName(b) == Set.host and 0.9 or 1
+	end
+	updateApiKeyVisibility("Ollama ☁️")
+	_loading = false; Set.loadKey = false
+	UI.UnsavedChanges.Visible = true
+	Toast.show("Free Setup", "Set to qwen3-coder:480b-cloud via Ollama Cloud — add your API key from ollama.com/settings/keys", "ok", 6)
+end)
 
 -- ── Model Select Modal ────────────────────────────────────────────────────────
 
@@ -2191,32 +2188,29 @@ end
 local function modalFetch()
 	Modal.all = {}
 	local host = Set.host
+	local p    = Providers.get(host)
 	if host == "Ollama" then
 		local res = Http.request(Config.ollamaUrl .. "/api/tags", "GET", {})
 		local ok, data = pcall(HS.JSONDecode, HS, res and res.Body or "")
 		if ok and data and data.models then
-			for _, m in ipairs(data.models) do
-				table.insert(Modal.all, { name = m.name })
-			end
+			for _, m in ipairs(data.models) do table.insert(Modal.all, { name = m.name }) end
 		end
 	elseif host == "HuggingFace" then
 		fetchHuggingFaceModalSearch("")
 		return
-	else
-		local url = host == "Mistral"          and "https://api.mistral.ai/v1/models"
-			or    host == "Groq"               and "https://api.groq.com/openai/v1/models"
-			or    host == "Pollinations"       and "https://gen.pollinations.ai/v1/models"
-			or    host == "Google AI Studio"   and "https://generativelanguage.googleapis.com/v1beta/openai/models"
-			or    host == "9router"            and "http://localhost:20128/v1/models"
-			or    host == "OpenCode"           and "https://opencode.ai/zen/v1/models"
-			or    "https://openrouter.ai/api/v1/models"
-		local auth = host ~= "OpenRouter" and UI.APIKeyBox.Text or ""
-		local res = Http.request(url, "GET", auth ~= "" and { ["Authorization"] = "Bearer " .. auth } or {})
+	elseif p and p.modelsFormat == "ollama" and p.modelsUrl then
+		local headers = p.authModels and { ["Authorization"] = "Bearer " .. UI.APIKeyBox.Text } or {}
+		local res = Http.request(p.modelsUrl, "GET", headers)
+		local ok, data = pcall(HS.JSONDecode, HS, res and res.Body or "")
+		if ok and data and data.models then
+			for _, m in ipairs(data.models) do table.insert(Modal.all, { name = m.name }) end
+		end
+	elseif p and p.modelsUrl then
+		local auth = p.authModels and UI.APIKeyBox.Text or ""
+		local res = Http.request(p.modelsUrl, "GET", auth ~= "" and { ["Authorization"] = "Bearer " .. auth } or {})
 		local ok, data = pcall(HS.JSONDecode, HS, res and res.Body or "")
 		if ok and data and data.data then
-			for _, m in ipairs(data.data) do
-				table.insert(Modal.all, { name = m.id })
-			end
+			for _, m in ipairs(data.data) do table.insert(Modal.all, { name = m.id }) end
 			table.sort(Modal.all, function(a, b) return a.name < b.name end)
 		end
 	end
@@ -2226,16 +2220,20 @@ local function modalFetch()
 	modalRenderChunk()
 end
 
+local function showInnerModal(target)
+	for _, child in ipairs(UI.ModalInner:GetChildren()) do
+		if child:IsA("GuiObject") and child ~= UI.ModalCloseButton and child ~= UI.ModalTitleLabel then
+			child.Visible = (child == target)
+		end
+	end
+	UI.ConfirmationFrame.Visible = false
+	UI.ModalInner.Visible        = true
+	UI.ModalFrame.Visible        = true
+end
+
 local function openModal()
 	if UI.ModalTitleLabel then UI.ModalTitleLabel.Text = "Select Model" end
-	UI.ModalInner.Visible          = true
-	UI.ConfirmationFrame.Visible   = false
-	UI.SearchModelModal.Visible    = true
-	UI.ToolResultViewModal.Visible = false
-	UI.SystemPromptModal.Visible   = false
-	UI.BrowserLogsModal.Visible    = false
-	UI.SetMultiAPIKeyModal.Visible = false
-	UI.ModalFrame.Visible = true
+	showInnerModal(UI.SearchModelModal)
 	if UI.ModalSearchBox then UI.ModalSearchBox.Text = "" end
 	modalClearButtons()
 	task.spawn(modalFetch)
@@ -2243,16 +2241,9 @@ end
 
 local function openToolResultModal(fullText)
 	if UI.ModalTitleLabel then UI.ModalTitleLabel.Text = "Tool Output" end
-	UI.ModalInner.Visible          = true
-	UI.ConfirmationFrame.Visible   = false
-	UI.SearchModelModal.Visible    = false
-	UI.ToolResultViewModal.Visible = true
-	UI.SystemPromptModal.Visible   = false
-	UI.BrowserLogsModal.Visible    = false
-	UI.SetMultiAPIKeyModal.Visible = false
+	showInnerModal(UI.ToolResultViewModal)
 	UI.ToolResultTextBox.Text      = fullText
 	UI.ToolResultSF.CanvasPosition = Vector2.new(0, 0)
-	UI.ModalFrame.Visible          = true
 	task.defer(function()
 		UI.ToolResultSF.CanvasSize = UDim2.new(0, 0, 0, UI.ToolResultTextBox.AbsoluteSize.Y + 20)
 	end)
@@ -2260,41 +2251,76 @@ end
 
 local function openSystemPromptModal()
 	if UI.ModalTitleLabel then UI.ModalTitleLabel.Text = "System Prompt" end
-	UI.ModalInner.Visible          = true
-	UI.ConfirmationFrame.Visible   = false
-	UI.SearchModelModal.Visible    = false
-	UI.ToolResultViewModal.Visible = false
-	UI.SystemPromptModal.Visible   = true
-	UI.BrowserLogsModal.Visible    = false
-	UI.SetMultiAPIKeyModal.Visible = false
-	UI.SystemPromptTextBox.TextEditable   = true
-	UI.SystemPromptTextBox.Text           = Config.userSystemPrompt
-	UI.SystemPromptTextBox.PlaceholderText = Prompt.build(false)
-	UI.ModalFrame.Visible = true
+	showInnerModal(UI.SystemPromptModal)
+	UI.SystemPromptTextBox.TextEditable    = true
+	UI.SystemPromptTextBox.Text            = Config.userSystemPrompt
+	UI.SystemPromptTextBox.PlaceholderText = "Leave empty to use the default system prompt.\nType anything here to fully replace it."
 end
 
 local function openMultiAPIKeyModal()
 	if UI.ModalTitleLabel then UI.ModalTitleLabel.Text = "API Keys" end
-	UI.ModalInner.Visible          = true
-	UI.ConfirmationFrame.Visible   = false
-	UI.SearchModelModal.Visible    = false
-	UI.ToolResultViewModal.Visible = false
-	UI.SystemPromptModal.Visible   = false
-	UI.BrowserLogsModal.Visible    = false
-	UI.SetMultiAPIKeyModal.Visible = true
-	UI.MultiAPIKeyTextBox.Text     = table.concat(Config.openrouterKeys or {}, "\n")
-	UI.ModalFrame.Visible          = true
+	showInnerModal(UI.SetMultiAPIKeyModal)
+	UI.MultiAPIKeyTextBox.Text = table.concat(Config.openrouterKeys or {}, "\n")
 end
+
+local function openHostProviderModal()
+	if UI.ModalTitleLabel then UI.ModalTitleLabel.Text = "Host Provider" end
+	showInnerModal(UI.HostProviderModal)
+end
+
+UI.HostSelectTextButton.MouseButton1Click:Connect(openHostProviderModal)
+
+local CUSTOM_ICON = "rbxassetid://98245295559168"
+
+local function applyUrlDetection(url)
+	local detected = Providers.detectFromUrl(url)
+	if detected then
+		Set.host = detected
+		local p = Providers.get(detected)
+		if UI.HostSelectIcon  then UI.HostSelectIcon.Image = p and p.icon or CUSTOM_ICON end
+		if UI.HostSelectLabel then UI.HostSelectLabel.Text  = detected end
+		for _, b in pairs(UI.HostButtons) do
+			if b:IsA("TextButton") then
+				b.BackgroundTransparency = hostBtnName(b) == Set.host and 0.9 or 1
+			end
+		end
+	else
+		Set.host = "Custom"
+		if UI.HostSelectIcon  then UI.HostSelectIcon.Image = CUSTOM_ICON end
+		if UI.HostSelectLabel then UI.HostSelectLabel.Text  = "Custom" end
+		for _, b in pairs(UI.HostButtons) do
+			if b:IsA("TextButton") then
+				b.BackgroundTransparency = 1
+			end
+		end
+	end
+	updateApiKeyVisibility(Set.host)
+end
+
+local _urlDebounce = nil
+UI.HostSelectTextBox.Changed:Connect(function(prop)
+	if prop ~= "Text" then return end
+	if Set.loadKey then return end
+	if _urlDebounce then task.cancel(_urlDebounce) end
+	_urlDebounce = task.delay(0.4, function()
+		_urlDebounce = nil
+		applyUrlDetection(UI.HostSelectTextBox.Text)
+		UI.UnsavedChanges.Visible = true
+	end)
+end)
+
+UI.HostSelectTextBox.FocusLost:Connect(function()
+	if Set.loadKey then return end
+	if _urlDebounce then task.cancel(_urlDebounce); _urlDebounce = nil end
+	applyUrlDetection(UI.HostSelectTextBox.Text)
+	UI.UnsavedChanges.Visible = true
+end)
 
 UI.ModalOpenButton.MouseButton1Click:Connect(openModal)
 UI.ModalCloseButton.MouseButton1Click:Connect(function()
-	UI.ModalFrame.Visible          = false
-	UI.ModalInner.Visible          = false
-	UI.ConfirmationFrame.Visible   = false
-	UI.SearchModelModal.Visible    = true
-	UI.ToolResultViewModal.Visible = false
-	UI.SystemPromptModal.Visible   = false
-	UI.SetMultiAPIKeyModal.Visible = false
+	UI.ModalFrame.Visible        = false
+	UI.ModalInner.Visible        = false
+	UI.ConfirmationFrame.Visible = false
 end)
 
 local function openConfirmationModal()
@@ -2378,6 +2404,7 @@ UI.MinimizeButton.MouseButton1Click:Connect(function()
 		TS:Create(UI.IYAI, Tween, { Size = MinimizedIYAISize }):Play()
 		if authorLabel  then TS:Create(authorLabel,  Tween, { TextTransparency = 1 }):Play() end
 		if versionLabel then TS:Create(versionLabel, Tween, { TextTransparency = 1 }):Play() end
+		if UI.ResizeLabel then UI.ResizeLabel.Visible = false end
 		task.delay(0.15, function()
 			UI.ContentPages.Visible = false
 			UI.ModalFrame.Visible   = false
@@ -2387,6 +2414,7 @@ UI.MinimizeButton.MouseButton1Click:Connect(function()
 		TS:Create(UI.IYAI, Tween, { Size = DefaultIYAISize }):Play()
 		if authorLabel  then TS:Create(authorLabel,  Tween, { TextTransparency = 0.5 }):Play() end
 		if versionLabel then TS:Create(versionLabel, Tween, { TextTransparency = 0.5 }):Play() end
+		if UI.ResizeLabel then UI.ResizeLabel.Visible = true end
 	end
 end)
 
@@ -2405,25 +2433,34 @@ end)
 -- ── AI core ───────────────────────────────────────────────────────────────────
 
 local function buildUrl()
-	if Config.host == "Ollama"           then return Config.ollamaUrl .. "/api/chat" end
-	if Config.host == "Mistral"          then return "https://api.mistral.ai/v1/chat/completions" end
-	if Config.host == "Groq"             then return "https://api.groq.com/openai/v1/chat/completions" end
-	if Config.host == "Pollinations"     then return "https://gen.pollinations.ai/v1/chat/completions" end
-	if Config.host == "HuggingFace"      then return "https://router.huggingface.co/v1/chat/completions" end
-	if Config.host == "Google AI Studio" then return "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions" end
-	if Config.host == "9router"          then return "http://localhost:20128/v1/chat/completions" end
-	if Config.host == "OpenCode"         then return "https://opencode.ai/zen/v1/chat/completions" end
+	local p = Providers.get(Config.host)
+	if p and p.chatUrl then return p.chatUrl end
+	if Config.host == "Ollama" then return Config.ollamaUrl .. "/api/chat" end
+	if Config.host == "Custom" then
+		local base = UI.HostSelectTextBox and UI.HostSelectTextBox.Text or Config.customUrl or ""
+		base = base:gsub("/$", "")
+		return base ~= "" and (base .. "/chat/completions") or "https://openrouter.ai/api/v1/chat/completions"
+	end
 	return "https://openrouter.ai/api/v1/chat/completions"
 end
 
 local function buildHeaders()
-	if Config.host == "Ollama" then
-		return { ["Content-Type"] = "application/json" }
+	local headers = { ["Content-Type"] = "application/json" }
+	if not isOllamaFormat() or Config.host == "Ollama ☁️" then
+		-- Multi-key rotation uses Config.getActiveKey(); otherwise read from the
+		-- per-provider cache so unsaved host switches still use the right key.
+		local key
+		if (Config.apiKeyMode or "single") == "multi" then
+			key = Config.getActiveKey()
+		else
+			local cached = Set.cache[Config.host]
+			key = (cached and cached.key ~= "" and cached.key) or Config.apiKey
+		end
+		if key and key ~= "" then
+			headers["Authorization"] = "Bearer " .. key
+		end
 	end
-	return {
-		["Content-Type"]  = "application/json",
-		["Authorization"] = "Bearer " .. Config.getActiveKey(),
-	}
+	return headers
 end
 
 local RETRY_ATTEMPTS = 3
@@ -2459,6 +2496,59 @@ local function trimHistory(history)
 	return trimmed
 end
 
+local function compactHistory(history)
+	-- Build a plain text transcript (no tool_call structures, just readable text)
+	local lines = {}
+	for _, m in ipairs(history) do
+		if m.role == "user" then
+			lines[#lines+1] = "User: " .. (type(m.content) == "string" and m.content or "(message)")
+		elseif m.role == "assistant" then
+			local text = type(m.content) == "string" and m.content or ""
+			if m.tool_calls and #m.tool_calls > 0 then
+				local names = {}
+				for _, tc in ipairs(m.tool_calls) do
+					names[#names+1] = tc["function"] and tc["function"].name or "tool"
+				end
+				text = (text ~= "" and text .. " " or "") .. "[used: " .. table.concat(names, ", ") .. "]"
+			end
+			if text ~= "" then lines[#lines+1] = "Assistant: " .. text end
+		elseif m.role == "tool" then
+			local content = type(m.content) == "string" and m.content:sub(1, 200) or ""
+			lines[#lines+1] = "  → " .. (m.name or "tool") .. ": " .. content
+		end
+	end
+	if #lines == 0 then return nil end
+
+	local body = HS:JSONEncode({
+		model    = Config.model,
+		messages = {
+			{ role = "system", content = "Summarize the following conversation concisely. Preserve: what was asked, actions taken, code written, results found, and current task state. Output only the summary, no preamble." },
+			{ role = "user",   content = table.concat(lines, "\n") },
+		},
+		stream = false,
+	})
+
+	local res = requestWithRetry(buildUrl(), "POST", buildHeaders, body)
+	if not res or res.StatusCode ~= 200 then return nil end
+	local msg, _, err = parseMessage(res.Body)
+	if err or not msg then return nil end
+	local summary = type(msg.content) == "string" and msg.content:match("^%s*(.-)%s*$") or ""
+	if summary == "" then return nil end
+
+	-- Preserve the last user message (current request) after the summary
+	local lastUser = nil
+	for i = #history, 1, -1 do
+		if history[i].role == "user" then lastUser = history[i]; break end
+	end
+
+	local compacted = {
+		{ role = "user",      content = "Summary of our conversation so far:\n\n" .. summary },
+		{ role = "assistant", content = "Got it." },
+	}
+	if lastUser then compacted[#compacted+1] = lastUser end
+	return compacted
+end
+
 local function isContextError(res)
 	if not res then return false end
 	if res.StatusCode == 400 or res.StatusCode == 413 then
@@ -2470,7 +2560,7 @@ end
 
 -- ── Skills system ─────────────────────────────────────────────────────────────
 
-local Sk = { file = "iyai_skills.json", enabled = {}, loaded = {}, populated = false }
+local Sk = { file = "iyai_data/skills.json", enabled = {}, loaded = {} }
 
 local function parseSkillMd(text)
 	local name    = text:match("^%-%-%-[^\n]*\nname:%s*(.-)%s*\n") or ""
@@ -2521,48 +2611,132 @@ local function loadSkillFiles()
 	end)
 end
 
-local function getEnabledSkillsContext()
-	if #Sk.loaded == 0 then return nil end
-	local parts = {}
+local function getEnabledSkills()
+	local out = {}
 	for _, skill in ipairs(Sk.loaded) do
 		if Sk.enabled[skill.file] ~= false then
-			table.insert(parts, "## " .. skill.name .. "\n" .. skill.content)
+			table.insert(out, skill)
 		end
 	end
-	if #parts == 0 then return nil end
-	return "## Skill Guides\nThe following cheat sheets provide ready-made patterns for specific tasks:\n\n"
-		.. table.concat(parts, "\n\n---\n\n")
+	return out
 end
 
--- Load skills on startup; re-render if the page or bridge already asked before files were ready
+local function findEnabledSkill(query)
+	if type(query) ~= "string" or query == "" then return nil end
+	local q = query:lower():gsub("%.md$", "")
+	for _, s in ipairs(getEnabledSkills()) do
+		local name = (s.name or ""):lower()
+		local file = (s.file or ""):lower():gsub("%.md$", "")
+		if name == q or file == q then return s end
+	end
+	for _, s in ipairs(getEnabledSkills()) do
+		local name = (s.name or ""):lower()
+		if name:find(q, 1, true) then return s end
+	end
+	return nil
+end
+
+local function getEnabledSkillsContext()
+	local enabled = getEnabledSkills()
+	if #enabled == 0 then return nil end
+	local lines = {
+		"## Skill Guides",
+		"Detailed cheat sheets are available for specific tasks. The index below shows when each guide applies — call get_skill(name) to load the full content BEFORE starting work that matches the description.",
+		"",
+	}
+	for _, s in ipairs(enabled) do
+		local desc = (s.desc and s.desc ~= "") and s.desc or "(no description)"
+		lines[#lines+1] = "- " .. s.name .. ": " .. desc
+	end
+	return table.concat(lines, "\n")
+end
+
+Tools.register({
+	group = "Skills",
+	definition = {
+		type = "function",
+		["function"] = {
+			name        = "get_skill",
+			description = "Load the full content of a skill guide by name. Call this BEFORE starting work that matches a skill's description from the Skill Guides index in the system prompt. Returns the guide's full instructions, patterns, and examples.",
+			parameters  = {
+				type = "object",
+				properties = {
+					name = { type = "string", description = "Name of the skill to load (as shown in the Skill Guides index)." }
+				},
+				required = { "name" }
+			}
+		}
+	},
+	handler = function(args)
+		local ok, parsed = pcall(HS.JSONDecode, HS, args)
+		if not ok or type(parsed) ~= "table" then
+			return "Error: invalid arguments. Pass { name = \"skill name\" }."
+		end
+		local skill = findEnabledSkill(parsed.name)
+		if not skill then
+			local available = {}
+			for _, s in ipairs(getEnabledSkills()) do available[#available+1] = s.name end
+			if #available == 0 then return "No skills are currently enabled." end
+			return "Skill not found: " .. tostring(parsed.name) .. ". Available: " .. table.concat(available, ", ")
+		end
+		return skill.content
+	end
+})
+
+-- Load skills enabled state on startup (file list loaded after populateSkillsPage is defined)
 task.spawn(function()
 	loadSkillsEnabled()
-	loadSkillFiles()
-	-- If Skills page was opened before files finished loading, repopulate it now
-	if Sk.populated then
-		Sk.populated = false
-		task.defer(function()
-			populateSkillsPage()
-			Sk.populated = true
-		end)
-	end
-	-- Push updated list to any connected browser
-	if Br and Br.active and #Sk.loaded > 0 then
-		local skillsList = {}
-		for _, sk in ipairs(Sk.loaded) do
-			skillsList[#skillsList+1] = { name = sk.name, desc = sk.desc or "", enabled = Sk.enabled[sk.file] ~= false }
-		end
-		bridgePost("/roblox/result", { type = "skills_state", skills = skillsList })
-	end
 end)
 
+-- Ensure every assistant tool_calls message is followed by a tool result for each call.
+-- Strips orphaned tool messages and fills in missing results with a placeholder.
+local function sanitizeToolPairs(msgs)
+	local out = {}
+	local i = 1
+	while i <= #msgs do
+		local m = msgs[i]
+		if m.role == "tool" and (#out == 0 or out[#out].role == "tool" or (out[#out].role ~= "assistant" and not (out[#out].tool_calls))) then
+			-- Orphaned tool message — skip
+			i = i + 1
+		elseif m.role == "assistant" and m.tool_calls and #m.tool_calls > 0 then
+			-- Collect the tool messages that immediately follow
+			local j = i + 1
+			local followed = {}
+			while j <= #msgs and msgs[j].role == "tool" do
+				followed[#followed + 1] = msgs[j]
+				j = j + 1
+			end
+			-- Build a set of responded IDs
+			local responded = {}
+			for _, tm in ipairs(followed) do
+				if tm.tool_call_id then responded[tm.tool_call_id] = true end
+			end
+			table.insert(out, m)
+			for _, tm in ipairs(followed) do table.insert(out, tm) end
+			-- Fill in any missing tool responses so strict providers don't reject the payload
+			for _, tc in ipairs(m.tool_calls) do
+				local cid = tc.id or (tc["function"] and tc["function"].name) or ""
+				if cid ~= "" and not responded[cid] then
+					table.insert(out, { role = "tool", tool_call_id = cid, name = tc["function"] and tc["function"].name or cid, content = "(no result)" })
+				end
+			end
+			i = j
+		else
+			table.insert(out, m)
+			i = i + 1
+		end
+	end
+	return out
+end
+
 local function buildMessages(history)
-	local sysContent = Prompt.build(true, Config.userSystemPrompt)
+	local custom = type(Config.userSystemPrompt) == "string" and Config.userSystemPrompt:match("^%s*(.-)%s*$") or ""
+	local sysContent = custom ~= "" and custom or Prompt.build(true, nil, isOllamaFormat())
 	local skillsCtx  = getEnabledSkillsContext()
 	if skillsCtx then sysContent = sysContent .. "\n\n" .. skillsCtx end
 	local msgs = {{ role = "system", content = sysContent }}
 	for _, m in ipairs(history or Agt.history) do
-		if Config.host == "Ollama" then
+		if isOllamaFormat() then
 			-- Ollama: strip thinking/reasoning fields and ensure content is always a string
 			local copy = { role = m.role, content = type(m.content) == "string" and m.content or "" }
 			if m.tool_calls then copy.tool_calls = m.tool_calls end
@@ -2571,7 +2745,7 @@ local function buildMessages(history)
 			table.insert(msgs, m)
 		end
 	end
-	return msgs
+	return sanitizeToolPairs(msgs)
 end
 
 local function safeJsonEntry(entry)
@@ -2598,7 +2772,7 @@ local function buildBody(history)
 		local toolDefs = {}
 		for _, e in ipairs(defs) do toolDefs[#toolDefs+1] = e.definition end
 		body.tools = toolDefs
-		if Config.host ~= "Ollama" then
+		if not isOllamaFormat() then
 			body.tool_choice = "auto"
 		end
 	end
@@ -2609,14 +2783,121 @@ local function buildBody(history)
 	return json
 end
 
+-- ── Inline tool-call extraction (for models that emit tool calls as text) ────
+-- Some models ignore the OpenAI tool_calls schema and emit their function
+-- calls inline as XML-like markup in the message content (DeepSeek's DSML,
+-- Anthropic-style <function_calls>, etc.). We normalize and parse them into
+-- OpenAI-format tool_calls so the agent loop treats them uniformly.
+--
+-- Supported formats (all reduce to the same event walk after normalization):
+--   • Anthropic:  <function_calls><invoke name="T"><parameter name="P">V</parameter></invoke></function_calls>
+--   • DSML new:   < | DSML | invoke name="T">< | DSML | parameter name="P">V</| DSML | parameter></| DSML | invoke>
+--   • DSML old:   < | DSML | invoke name="T">< | DSML | invoke name="P">V</| DSML | invoke></| DSML | invoke>
+--   • Variants with extra attributes (e.g. string="true") on the tag
+
+local function extractInlineToolCalls(content)
+	if type(content) ~= "string" or content == "" then return nil, content end
+	if not (content:find("<invoke", 1, true)
+		or content:find("DSML", 1, true)
+		or content:find("<function_calls", 1, true)) then
+		return nil, content
+	end
+
+	-- Step 1: normalize DSML wrapper noise → plain XML tags
+	local norm = content
+		:gsub("<%s*|%s*DSML%s*|%s*", "<")
+		:gsub("</%s*|%s*DSML%s*|%s*", "</")
+
+	-- Step 2: collect all <invoke> and <parameter> open/close events
+	local events = {}
+	for pos, name, after in norm:gmatch("()<invoke%s+name=\"([^\"]+)\"[^>]*>()") do
+		events[#events+1] = { pos = pos, after = after, kind = "open",  name = name }
+	end
+	for pos, name, after in norm:gmatch("()<parameter%s+name=\"([^\"]+)\"[^>]*>()") do
+		events[#events+1] = { pos = pos, after = after, kind = "open",  name = name }
+	end
+	for pos, after in norm:gmatch("()</invoke%s*>()") do
+		events[#events+1] = { pos = pos, after = after, kind = "close" }
+	end
+	for pos, after in norm:gmatch("()</parameter%s*>()") do
+		events[#events+1] = { pos = pos, after = after, kind = "close" }
+	end
+	if #events == 0 then return nil, content end
+	table.sort(events, function(a, b) return a.pos < b.pos end)
+
+	-- Step 3: walk events with a depth stack — outermost = tool, nested = param
+	local calls, stack = {}, {}
+	local firstPos, lastPos
+	for _, ev in ipairs(events) do
+		firstPos = firstPos or ev.pos
+		lastPos = ev.after
+		if ev.kind == "open" then
+			local depth = #stack
+			if depth == 0 then
+				stack[#stack+1] = { kind = "tool",  name = ev.name, params = {} }
+			elseif depth == 1 then
+				stack[#stack+1] = { kind = "param", name = ev.name, contentStart = ev.after }
+			else
+				stack[#stack+1] = { kind = "opaque" }
+			end
+		else
+			local top = stack[#stack]
+			stack[#stack] = nil
+			if top and top.kind == "param" and stack[#stack] then
+				local val = norm:sub(top.contentStart, ev.pos - 1):match("^%s*(.-)%s*$") or ""
+				stack[#stack].params[top.name] = val
+			elseif top and top.kind == "tool" then
+				calls[#calls+1] = top
+			end
+		end
+	end
+	if #calls == 0 then return nil, content end
+
+	-- Step 4: strip the entire tool-call region + outer wrappers, return any prose left
+	local stripped = norm:sub(1, (firstPos or 1) - 1) .. norm:sub((lastPos or #norm) + 1)
+	stripped = stripped
+		:gsub("<tool_calls%s*>", ""):gsub("</tool_calls%s*>", "")
+		:gsub("<function_calls%s*>", ""):gsub("</function_calls%s*>", "")
+		:match("^%s*(.-)%s*$") or ""
+
+	-- Step 5: synthesize OpenAI-format tool_calls
+	local tool_calls = {}
+	for i, c in ipairs(calls) do
+		tool_calls[#tool_calls+1] = {
+			id = "inline_" .. i,
+			type = "function",
+			["function"] = { name = c.name, arguments = HS:JSONEncode(c.params or {}) }
+		}
+	end
+	return tool_calls, stripped
+end
+
 local function parseMessage(responseBody)
 	local ok, data = pcall(HS.JSONDecode, HS, responseBody)
 	if not ok then return nil, nil, "JSON decode failed: " .. tostring(data) end
-	local msg = Config.host == "Ollama"
+	local msg = isOllamaFormat()
 		and data.message
 		or  (data.choices and data.choices[1] and data.choices[1].message)
 	if not msg then return nil, nil, "Unexpected response shape: " .. responseBody end
-	return msg, data.usage, nil
+	-- Synthesize tool_calls from inline text formats when the provider didn't
+	-- normalize them (e.g. deepseek-v4-flash emitting DSML as plain content).
+	if (not msg.tool_calls or #msg.tool_calls == 0) and type(msg.content) == "string" then
+		local inline, stripped = extractInlineToolCalls(msg.content)
+		if inline then
+			msg.tool_calls = inline
+			msg.content    = stripped
+		end
+	end
+	local usage
+	if isOllamaFormat() then
+		-- Ollama returns token counts as top-level fields, not inside a usage object
+		if data.prompt_eval_count or data.eval_count then
+			usage = { prompt_tokens = data.prompt_eval_count or 0, completion_tokens = data.eval_count or 0 }
+		end
+	else
+		usage = data.usage
+	end
+	return msg, usage, nil
 end
 
 -- ── Session persistence ───────────────────────────────────────────────────────
@@ -2847,6 +3128,8 @@ local function clearChat()
 	Agt.renders   = nil
 	Agt.history = {}
 	Agt.step           = 0
+	Usage.session = 0
+	updateUsageLabels()
 	UI.TotalElements.Value = 0
 	for _, child in ipairs(UI.ScrollingFrameMainChat:GetChildren()) do
 		if child:IsA("GuiObject") and child ~= UI.ElementTemplate and child ~= GreetFrame then child:Destroy() end
@@ -3029,22 +3312,37 @@ local function populateSkillsPage()
 end
 
 UI.CurrentPage.Changed:Connect(function(page)
-	if page == "Skills" and not Sk.populated then
-		Sk.populated = true
+	if page == "Skills" then
 		populateSkillsPage()
 	end
 end)
 
+-- Full startup load (runs here so populateSkillsPage is in scope)
+task.spawn(function()
+	loadSkillFiles()
+	if UI.CurrentPage.Value == "Skills" then
+		populateSkillsPage()
+	end
+	local n = #Sk.loaded
+	if n > 0 then
+		Toast.show("Skills", n .. " skill" .. (n == 1 and "" or "s") .. " loaded", "ok", 3)
+	end
+	-- Push updated list to any connected browser
+	if Br and Br.active and n > 0 then
+		local skillsList = {}
+		for _, sk in ipairs(Sk.loaded) do
+			skillsList[#skillsList+1] = { name = sk.name, desc = sk.desc or "", enabled = Sk.enabled[sk.file] ~= false }
+		end
+		bridgePost("/roblox/result", { type = "skills_state", skills = skillsList })
+	end
+end)
+
 UI.SkillsRefreshButton.MouseButton1Click:Connect(function()
-	Sk.populated = false
 	loadSkillsEnabled()
 	loadSkillFiles()
 	populateSkillsPage()
-	Sk.populated = true
-	UI.SkillsRefreshText.TextTransparency = 0
-	TS:Create(UI.SkillsRefreshText, TweenInfo.new(1.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-		TextTransparency = 1,
-	}):Play()
+	local n = #Sk.loaded
+	Toast.show("Skills", n .. " skill" .. (n == 1 and "" or "s") .. " loaded", "ok", 3)
 end)
 
 -- ── Code agent ────────────────────────────────────────────────────────────────
@@ -3106,7 +3404,7 @@ local function runCodeAgent(userText)
 				end)(),
 				stream      = false,
 			}
-			if Config.host ~= "Ollama" then body.tool_choice = "auto" end
+			if not isOllamaFormat() then body.tool_choice = "auto" end
 			local j = HS:JSONEncode(body)
 			j = j:gsub('"properties":%[%]', '"properties":{}')
 			j = j:gsub('"arguments":%[%]', '"arguments":{}')
@@ -3115,8 +3413,16 @@ local function runCodeAgent(userText)
 
 		local res = requestWithRetry(buildUrl(), "POST", buildHeaders, buildCodeBody(Agt.codeHistory))
 		if isContextError(res) then
-			Toast.show("History trimmed", "Context too long — retrying with less history", "warn", 3)
-			res = requestWithRetry(buildUrl(), "POST", buildHeaders, buildCodeBody(trimHistory(Agt.codeHistory)))
+			Toast.show("Compacting", "Context too long — compacting conversation…", "warn", 5)
+			local compacted = compactHistory(Agt.codeHistory)
+			if compacted then
+				Agt.codeHistory = compacted
+				Toast.show("Compacted", "Conversation compacted — retrying", "ok", 3)
+				res = requestWithRetry(buildUrl(), "POST", buildHeaders, buildCodeBody(Agt.codeHistory))
+			else
+				Toast.show("History trimmed", "Compact failed — trimming instead", "warn", 3)
+				res = requestWithRetry(buildUrl(), "POST", buildHeaders, buildCodeBody(trimHistory(Agt.codeHistory)))
+			end
 		end
 		if not res or res.StatusCode ~= 200 then
 			updateCodeStatus(statusFrame, "Request failed (" .. (res and tostring(res.StatusCode) or "no response") .. ")", false)
@@ -3158,7 +3464,7 @@ local function runCodeAgent(userText)
 				if added   > 0 then diffSummary = diffSummary .. string.format('<font color="#4ec94e">+%d</font> ', added) end
 				if removed > 0 then diffSummary = diffSummary .. string.format('<font color="#e05252">-%d</font> ', removed) end
 			end
-			local codeToolEntry = Config.host == "Ollama"
+			local codeToolEntry = isOllamaFormat()
 				and { role = "tool", tool_name = fnName, content = result }
 				or  { role = "tool", tool_call_id = call.id or fnName, name = fnName, content = result }
 			table.insert(Agt.codeHistory, codeToolEntry)
@@ -3200,9 +3506,9 @@ local function runAgentLoop(userText)
 
 	local MAX_STEPS = Config.maxSteps
 	table.insert(Agt.history, { role = "user", content = userText })
-	local stepsDone  = 0
-	local agentDone  = false
-	local seenGlobal = {}  -- cross-step duplicate detection
+	local stepsDone    = 0
+	local agentDone    = false
+	local seenGlobal   = {}  -- cross-step duplicate detection
 
 	local generatingFrame = nil
 	local function genLabel()
@@ -3248,8 +3554,16 @@ local function runAgentLoop(userText)
 		local res = requestWithRetry(buildUrl(), "POST", buildHeaders, buildBody(), onRateLimit)
 		if _retryFrame then _retryFrame:Destroy(); _retryFrame = nil end
 		if isContextError(res) then
-			Toast.show("History trimmed", "Context too long — retrying with less history", "warn", 3)
-			res = requestWithRetry(buildUrl(), "POST", buildHeaders, buildBody(trimHistory(Agt.history)))
+			Toast.show("Compacting", "Context too long — compacting conversation…", "warn", 5)
+			local compacted = compactHistory(Agt.history)
+			if compacted then
+				Agt.history = compacted
+				Toast.show("Compacted", "Conversation compacted — retrying", "ok", 3)
+				res = requestWithRetry(buildUrl(), "POST", buildHeaders, buildBody(), onRateLimit)
+			else
+				Toast.show("History trimmed", "Compact failed — trimming instead", "warn", 3)
+				res = requestWithRetry(buildUrl(), "POST", buildHeaders, buildBody(trimHistory(Agt.history)))
+			end
 		end
 		if not res or res.StatusCode ~= 200 then
 			if generatingFrame then generatingFrame:Destroy(); generatingFrame = nil end
@@ -3285,6 +3599,36 @@ local function runAgentLoop(userText)
 		local toolCalls = msg.tool_calls
 		if not toolCalls or #toolCalls == 0 then
 			local rawContent = msg.content or ""
+
+			-- Some models (DeepSeek-V4-Flash, etc.) silently return empty content
+			-- after tool calls. Detect that exact case and re-request with a nudge
+			-- so the model produces a real text reply. Tokens from the retry are
+			-- accumulated into `usage` so the UI shows the true total.
+			if rawContent == "" and not isOllamaFormat() then
+				local hasToolResult = false
+				for i = #Agt.history, 1, -1 do
+					if Agt.history[i].role == "tool" then hasToolResult = true; break end
+					if Agt.history[i].role == "user" then break end
+				end
+				if hasToolResult then
+					local nudged = {}
+					for _, m in ipairs(Agt.history) do nudged[#nudged+1] = m end
+					nudged[#nudged+1] = { role = "user", content = "Reply now with your final answer in plain text, based on the tool results above. Do not call any more tools." }
+					local r2 = requestWithRetry(buildUrl(), "POST", buildHeaders, buildBody(nudged))
+					if r2 and r2.StatusCode == 200 then
+						local m2, u2 = parseMessage(r2.Body)
+						if m2 and type(m2.content) == "string" and m2.content ~= "" then
+							rawContent = m2.content
+							if u2 then
+								usage = usage or { prompt_tokens = 0, completion_tokens = 0 }
+								usage.prompt_tokens     = (usage.prompt_tokens or 0)     + (u2.prompt_tokens or 0)
+								usage.completion_tokens = (usage.completion_tokens or 0) + (u2.completion_tokens or 0)
+							end
+						end
+					end
+				end
+			end
+
 			local lbl = genLabel()
 			if lbl and rawContent ~= "" then
 				lbl.RichText = true
@@ -3295,6 +3639,7 @@ local function runAgentLoop(userText)
 						tokenLabel.Text    = Config.model .. "  ↑ " .. (usage.prompt_tokens or 0) .. "  ↓ " .. (usage.completion_tokens or 0)
 						tokenLabel.Visible = true
 					end
+					addTokens(usage.prompt_tokens, usage.completion_tokens)
 				end
 				local copyBtn = generatingFrame:FindFirstChild("CopyButton", true)
 				if copyBtn then
@@ -3306,7 +3651,9 @@ local function runAgentLoop(userText)
 				recordRender({t = "ai", text = rawContent})
 			else
 				if generatingFrame then generatingFrame:Destroy(); generatingFrame = nil end
-				addResponse(rawContent, usage)
+				if rawContent ~= "" then
+					addResponse(rawContent, usage)
+				end
 			end
 			generatingFrame = nil
 			local finalEntry = { role = "assistant", content = Prompt.stripMarkdown(rawContent) }
@@ -3348,9 +3695,12 @@ local function runAgentLoop(userText)
 			if seenCalls[callKey] then continue end
 			seenCalls[callKey] = true
 			if seenGlobal[callKey] then
-				local toolEntry = Config.host == "Ollama"
-					and { role = "tool", tool_name = fnName, content = "Already executed. Call done() with your final response." }
-					or  { role = "tool", tool_call_id = call.id or fnName, name = fnName, content = "Already executed. Call done() with your final response." }
+				local dupMsg = isOllamaFormat()
+					and "Already executed. Call done() with your final response."
+					or  "Already executed. Reply with your final answer in plain text."
+				local toolEntry = isOllamaFormat()
+					and { role = "tool", tool_name = fnName, content = dupMsg }
+					or  { role = "tool", tool_call_id = call.id or fnName, name = fnName, content = dupMsg }
 				table.insert(Agt.history, toolEntry)
 				continue
 			end
@@ -3367,11 +3717,12 @@ local function runAgentLoop(userText)
 						lbl.RichText = true
 						typewriteInto(lbl, markdownToRichText(message) .. (usage and "\n" or ""))
 						if usage then
-						 local tokenLabel = generatingFrame:FindFirstChild("TokenCount", true)
-						 if tokenLabel then
-						  tokenLabel.Text    = Config.model .. "  ↑ " .. (usage.prompt_tokens or 0) .. "  ↓ " .. (usage.completion_tokens or 0)
-						 tokenLabel.Visible = true
-						end
+							local tokenLabel = generatingFrame:FindFirstChild("TokenCount", true)
+							if tokenLabel then
+								tokenLabel.Text    = Config.model .. "  ↑ " .. (usage.prompt_tokens or 0) .. "  ↓ " .. (usage.completion_tokens or 0)
+								tokenLabel.Visible = true
+							end
+							addTokens(usage.prompt_tokens, usage.completion_tokens)
 						end
 						local copyBtn = generatingFrame:FindFirstChild("CopyButton", true)
 						if copyBtn then
@@ -3382,11 +3733,11 @@ local function runAgentLoop(userText)
 						end
 						recordRender({t = "ai", text = message})
 						generatingFrame = nil
-						else
+					else
 						addResponse(message, usage)
-						end
-						table.insert(Agt.history, { role = "assistant", content = message })
-						bridgePost("/roblox/result", { type = "chat", text = message })
+					end
+					table.insert(Agt.history, { role = "assistant", content = message })
+					bridgePost("/roblox/result", { type = "chat", text = message })
 				end
 				if generatingFrame then generatingFrame:Destroy(); generatingFrame = nil end
 				agentDone = true
@@ -3407,7 +3758,7 @@ local function runAgentLoop(userText)
 			if not failed and CODE_WRITE_TOOLS[fnName] then
 				addPostAction("View Code →", function() UI.CurrentPage.Value = "Code" end)
 			end
-			local toolEntry = Config.host == "Ollama"
+			local toolEntry = isOllamaFormat()
 				and { role = "tool", tool_name = fnName, content = result }
 				or  { role = "tool", tool_call_id = call.id or fnName, name = fnName, content = result }
 			table.insert(Agt.history, toolEntry)
@@ -3885,24 +4236,24 @@ end)
 UI.OpenBrowserLogsButton.MouseButton1Click:Connect(function()
 	if UI.ModalTitleLabel then UI.ModalTitleLabel.Text = "Bridge Logs" end
 	UI.ModalInner.Visible          = true
-	UI.ConfirmationFrame.Visible   = false
-	UI.SearchModelModal.Visible    = false
-	UI.ToolResultViewModal.Visible = false
-	UI.SystemPromptModal.Visible   = false
-	UI.BrowserLogsModal.Visible    = true
-	UI.BrowserLogsTextBox.Text     = #Br.logs > 0 and table.concat(Br.logs, "\n") or "(no logs yet)"
-	UI.ModalFrame.Visible          = true
+	showInnerModal(UI.BrowserLogsModal)
+	UI.BrowserLogsTextBox.Text = #Br.logs > 0 and table.concat(Br.logs, "\n") or "(no logs yet)"
 end)
 
 UI.ConnectToBrowserButton.MouseButton1Click:Connect(function()
 	UI.CurrentPage.Value = "Browser"
 end)
 
--- ── Drag ──────────────────────────────────────────────────────────────────────
+-- ── Drag & Resize ─────────────────────────────────────────────────────────────
 
-local dragging  = false
-local dragStart = nil
-local startPos  = nil
+local dragging    = false
+local dragStart   = nil
+local startPos    = nil
+
+local MIN_W, MIN_H = 320, 240
+local resizing    = false
+local resizeStart = nil
+local startSize   = nil
 
 UI.TopBar.InputBegan:Connect(function(input)
 	if input.UserInputType == Enum.UserInputType.MouseButton1 then
@@ -3912,16 +4263,36 @@ UI.TopBar.InputBegan:Connect(function(input)
 	end
 end)
 
+if UI.ResizeLabel then
+	UI.ResizeLabel.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 then
+			resizing    = true
+			resizeStart = input.Position
+			startSize   = UI.IYAI.Size
+		end
+	end)
+end
+
 _uisChanged = UIS.InputChanged:Connect(function(input)
-	if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-		local delta   = input.Position - dragStart
+	if input.UserInputType ~= Enum.UserInputType.MouseMovement then return end
+	if dragging then
+		local delta = input.Position - dragStart
 		UI.IYAI.Position = UDim2.new(
 			startPos.X.Scale, startPos.X.Offset + delta.X,
 			startPos.Y.Scale, startPos.Y.Offset + delta.Y
 		)
+	elseif resizing then
+		local delta = input.Position - resizeStart
+		local newW  = math.max(MIN_W, startSize.X.Offset + delta.X)
+		local newH  = math.max(MIN_H, startSize.Y.Offset + delta.Y)
+		UI.IYAI.Size    = UDim2.new(startSize.X.Scale, newW, startSize.Y.Scale, newH)
+		DefaultIYAISize = UI.IYAI.Size
 	end
 end)
 
 _uisEnded = UIS.InputEnded:Connect(function(input)
-	if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = false end
+	if input.UserInputType == Enum.UserInputType.MouseButton1 then
+		dragging = false
+		resizing = false
+	end
 end)

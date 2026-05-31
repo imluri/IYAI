@@ -16,7 +16,7 @@ return function(githubBaseUrl)
 	local useRemote = githubBaseUrl ~= ""
 
 	local GUI_REMOTE = useRemote and (githubBaseUrl .. "/IYAI_GUI.lua") or ""
-	local GUI_LOCAL  = "IYAI/IYAI_GUI.lua"
+	local GUI_LOCAL  = "iyai_data/IYAI_GUI.lua"
 
 	local Players = game:GetService("Players")
 	local LP      = Players.LocalPlayer
@@ -62,24 +62,33 @@ return function(githubBaseUrl)
 		-- Try GitHub first
 		if useRemote then
 			src, err = httpGet(GUI_REMOTE)
-			if not src then
+			if src then
+				-- Cache to local filesystem so the IYAI folder exists for offline use
+				if writefile then
+					if isfolder and makefolder and not isfolder("iyai_data") then
+						pcall(makefolder, "iyai_data")
+					end
+					pcall(writefile, GUI_LOCAL, src)
+				end
+			else
 				warn("[IYAI] Remote GUI fetch failed (" .. err .. "), trying local.")
 			end
 		end
 
-		-- Fall back to local
+		-- Fall back to local (core folder first, then iyai_data cache)
 		if not src then
 			if not readfile or not isfile then
 				return nil, "readfile not available and no remote source"
 			end
-			if not isfile(GUI_LOCAL) then
-				return nil, "Local file not found: " .. GUI_LOCAL
+			for _, path in ipairs({"IYAI/IYAI_GUI.lua", "iyai_data/IYAI_GUI.lua"}) do
+				if isfile(path) then
+					local ok, raw = pcall(readfile, path)
+					if ok and raw and raw ~= "" then src = raw; break end
+				end
 			end
-			local ok, raw = pcall(readfile, GUI_LOCAL)
-			if not ok or not raw or raw == "" then
-				return nil, "Could not read: " .. GUI_LOCAL
+			if not src then
+				return nil, "Local file not found (tried IYAI/ and iyai_data/)"
 			end
-			src = raw
 		end
 
 		_cachedSrc = src
