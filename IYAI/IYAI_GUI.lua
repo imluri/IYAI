@@ -4253,53 +4253,55 @@ UI.ConnectToBrowserButton.MouseButton1Click:Connect(function()
 end)
 
 -- ── Drag & Resize ─────────────────────────────────────────────────────────────
--- Wrapped in a do-block so the locals here don't count against the module's
--- 200-local register limit. The InputChanged/InputEnded connections capture
--- the locals as upvalues, so they stay alive for the lifetime of the script.
+-- All state collapsed into a single `s` table so we only consume one register
+-- slot instead of 8. The closures capture `s` by reference, so reads/writes
+-- through it work the same as before.
 do
-	local dragging, dragStart, startPos     = false, nil, nil
-	local resizing, resizeStart, startSize  = false, nil, nil
-	local MIN_W, MIN_H                      = 320, 240
+	local s = {
+		dragging = false, dragStart = nil, startPos  = nil,
+		resizing = false, resizeStart = nil, startSize = nil,
+		MIN_W = 320, MIN_H = 240,
+	}
 
 	UI.TopBar.InputBegan:Connect(function(input)
 		if input.UserInputType == Enum.UserInputType.MouseButton1 then
-			dragging  = true
-			dragStart = input.Position
-			startPos  = UI.IYAI.Position
+			s.dragging  = true
+			s.dragStart = input.Position
+			s.startPos  = UI.IYAI.Position
 		end
 	end)
 
 	if UI.ResizeLabel then
 		UI.ResizeLabel.InputBegan:Connect(function(input)
 			if input.UserInputType == Enum.UserInputType.MouseButton1 then
-				resizing    = true
-				resizeStart = input.Position
-				startSize   = UI.IYAI.Size
+				s.resizing    = true
+				s.resizeStart = input.Position
+				s.startSize   = UI.IYAI.Size
 			end
 		end)
 	end
 
 	_uisChanged = UIS.InputChanged:Connect(function(input)
 		if input.UserInputType ~= Enum.UserInputType.MouseMovement then return end
-		if dragging then
-			local delta = input.Position - dragStart
+		if s.dragging then
+			local delta = input.Position - s.dragStart
 			UI.IYAI.Position = UDim2.new(
-				startPos.X.Scale, startPos.X.Offset + delta.X,
-				startPos.Y.Scale, startPos.Y.Offset + delta.Y
+				s.startPos.X.Scale, s.startPos.X.Offset + delta.X,
+				s.startPos.Y.Scale, s.startPos.Y.Offset + delta.Y
 			)
-		elseif resizing then
-			local delta = input.Position - resizeStart
-			local newW  = math.max(MIN_W, startSize.X.Offset + delta.X)
-			local newH  = math.max(MIN_H, startSize.Y.Offset + delta.Y)
-			UI.IYAI.Size    = UDim2.new(startSize.X.Scale, newW, startSize.Y.Scale, newH)
+		elseif s.resizing then
+			local delta = input.Position - s.resizeStart
+			local newW  = math.max(s.MIN_W, s.startSize.X.Offset + delta.X)
+			local newH  = math.max(s.MIN_H, s.startSize.Y.Offset + delta.Y)
+			UI.IYAI.Size    = UDim2.new(s.startSize.X.Scale, newW, s.startSize.Y.Scale, newH)
 			DefaultIYAISize = UI.IYAI.Size
 		end
 	end)
 
 	_uisEnded = UIS.InputEnded:Connect(function(input)
 		if input.UserInputType == Enum.UserInputType.MouseButton1 then
-			dragging = false
-			resizing = false
+			s.dragging = false
+			s.resizing = false
 		end
 	end)
 end
