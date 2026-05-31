@@ -170,9 +170,14 @@ local function markdownToRichText(text, baseSize)
 	return table.concat(out, "\n")
 end
 
-local TS  = game:GetService("TweenService")
-local UIS = game:GetService("UserInputService")
-local HS  = game:GetService("HttpService")
+-- cloneref wraps service handles so the running game can't detect us via
+-- service reference comparison (Infinite Yield uses the same pattern).
+-- Falls back to identity when cloneref isn't exposed (Studio, weak executors).
+local clone = (typeof and typeof(cloneref) == "function") and cloneref or function(x) return x end
+
+local TS  = clone(game:GetService("TweenService"))
+local UIS = clone(game:GetService("UserInputService"))
+local HS  = clone(game:GetService("HttpService"))
 
 -- ── Build GUI ─────────────────────────────────────────────────────────────────
 
@@ -191,11 +196,9 @@ if G2L["2"] then G2L["2"].GroupTransparency = 1 end
 -- Parent to a hidden container to avoid detection
 local function getHiddenContainer()
 	if gethui then return gethui() end
-	local ok, cg = pcall(function() return cloneref(game:GetService("CoreGui")) end)
+	local ok, cg = pcall(function() return clone(game:GetService("CoreGui")) end)
 	if ok and cg then return cg end
-	local ok2, cg2 = pcall(function() return game:GetService("CoreGui") end)
-	if ok2 and cg2 then return cg2 end
-	return game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
+	return clone(game:GetService("Players")).LocalPlayer:WaitForChild("PlayerGui")
 end
 local _container = getHiddenContainer()
 if syn and syn.protect_gui then pcall(syn.protect_gui, G2L["1"]) end
@@ -1014,9 +1017,14 @@ UI.CodeBox:GetPropertyChangedSignal("Text"):Connect(function()
 	end
 end)
 
--- ── Custom caret (CodeBox has TextTransparency=1 so native caret is invisible) ──
+-- ── Custom caret + selection highlight ───────────────────────────────────────
+-- Wrapped in a do-block — 10 internal locals (caret state, selection helpers)
+-- are only used by the connect closures defined in this block. Frees ~10 slots.
+do
 
-local _TXS         = game:GetService("TextService")
+local updateSelection  -- forward-declared; was previously an implicit global
+
+local _TXS         = clone(game:GetService("TextService"))
 local _caretTI     = TweenInfo.new(0.07, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
 local _caretTween  = nil
 
@@ -1148,6 +1156,8 @@ end
 UI.CodeBox:GetPropertyChangedSignal("SelectionStart"):Connect(function()
 	task.defer(updateSelection)
 end)
+
+end  -- /Custom caret + selection highlight do-block
 
 UI.CodeClearButton.MouseButton1Click:Connect(function()
 	UI.CodeBox.Text = ""
@@ -1731,8 +1741,14 @@ UI.CurrentPage.Changed:Connect(function(page)
 end)
 
 -- ── Settings page ─────────────────────────────────────────────────────────────
+-- Wrapped in a do-block to free ~13 register slots. Only `Set`, `saveSettings`,
+-- `_onSettingsSaved`, and `_uisBegan` need module-scope access; everything else
+-- (helper functions, credential handlers, UI populators) stays inside the
+-- block and is captured by the closures it wires up.
 
 local _onSettingsSaved  -- forward-declared; wired to sendSyncState after bridge section loads
+local saveSettings       -- forward-declared so CloseButton handler can call it
+local _uisBegan          -- forward-declared so CloseButton can disconnect it
 
 local Set = {
 	host      = Config.host,
@@ -1743,6 +1759,8 @@ local Set = {
 	allHosts  = (function() local t = {} for _, p in ipairs(Providers.list) do t[#t+1] = p.name end return t end)(),
 	cache     = {},
 }
+
+do
 
 UI.UnsavedChanges.Visible = false
 UI.DropdownList.Visible   = false
@@ -1965,7 +1983,7 @@ UI.ModelBox.FocusLost:Connect(function()
 	closeDropdown()
 end)
 
-local _uisBegan = UIS.InputBegan:Connect(function(input)
+_uisBegan = UIS.InputBegan:Connect(function(input)
 	if input.UserInputType ~= Enum.UserInputType.MouseButton1 then return end
 	if not Set.ddOpen then return end
 	local mousePos = UIS:GetMouseLocation()
@@ -2133,7 +2151,7 @@ UI.CredentialButton.MouseButton1Click:Connect(function()
 	handler(p or { name = Set.host, credUrl = nil, modelsUrl = nil }, key)
 end)
 
-local function saveSettings()
+function saveSettings()  -- assigns to outer forward-declared local
 	Set.cache[Set.host] = { key = UI.APIKeyBox.Text, model = UI.ModelBox.Text, mode = Config.apiKeyMode }
 	Config.apiKey       = UI.APIKeyBox.Text
 	Config.model        = UI.ModelBox.Text
@@ -2198,6 +2216,8 @@ UI.LoadFreeButton.MouseButton1Click:Connect(function()
 	UI.UnsavedChanges.Visible = true
 	Toast.show("Free Setup", "Set to qwen3-coder:480b-cloud via Ollama Cloud — add your API key from ollama.com/settings/keys", "ok", 6)
 end)
+
+end  -- /Settings page do-block
 
 -- ── Model Select Modal ────────────────────────────────────────────────────────
 
@@ -4324,6 +4344,10 @@ UI.TextBoxInput.FocusLost:Connect(function(enterPressed)
 end)
 
 -- ── Browser page ──────────────────────────────────────────────────────────────
+-- Wrapped in a do-block: bridgeLog / shimmerTI / setDotState / setShimmer /
+-- checkBridgeStatus are only referenced inside this section, so they don't
+-- need module-scope register slots. Saves 5 slots toward the 200-cap.
+do
 
 local function bridgeLog(msg)
 	table.insert(Br.logs, os.date("[%H:%M:%S] ") .. msg)
@@ -4431,6 +4455,8 @@ end)
 UI.ConnectToBrowserButton.MouseButton1Click:Connect(function()
 	UI.CurrentPage.Value = "Browser"
 end)
+
+end  -- /Browser page do-block
 
 -- ── Drag & Resize ─────────────────────────────────────────────────────────────
 -- All state collapsed into a single `s` table so we only consume one register

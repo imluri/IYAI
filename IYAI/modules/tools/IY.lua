@@ -5,7 +5,8 @@
 -- These only function in executor context where IY globals exist.
 return function(Tools)
 
-	local Players = game:GetService("Players")
+	local clone   = (typeof and typeof(cloneref) == "function") and cloneref or function(x) return x end
+	local Players = clone(game:GetService("Players"))
 
 	-- iy_status: detect whether IY is present
 	Tools.register({

@@ -5,7 +5,8 @@
 --   loadMod("modules/tools/Explorer.lua")(Tools)
 --   loadMod("modules/tools/Script.lua")(Tools)
 
-local HS = game:GetService("HttpService")
+local clone = (typeof and typeof(cloneref) == "function") and cloneref or function(x) return x end
+local HS = clone(game:GetService("HttpService"))
 
 local _registry = {}
 local Tools     = {}

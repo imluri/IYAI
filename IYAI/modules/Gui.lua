@@ -11,8 +11,11 @@
 --   win:separator()
 --   win:section("Advanced")
 
-local UIS     = game:GetService("UserInputService")
-local Players = game:GetService("Players")
+-- cloneref hides service handles from game-side detection. Critical here
+-- because Gui.lua runs inside the game's environment (executor context).
+local clone   = (typeof and typeof(cloneref) == "function") and cloneref or function(x) return x end
+local UIS     = clone(game:GetService("UserInputService"))
+local Players = clone(game:GetService("Players"))
 
 -- ── Theme ─────────────────────────────────────────────────────────────────────
 local T = {

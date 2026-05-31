@@ -1,7 +1,8 @@
 -- Config.lua  |  Persistent settings (API key, model, host, maxSteps)
 -- Usage: local Config = loadMod("modules/Config.lua")
 
-local HS = game:GetService("HttpService")
+local clone = (typeof and typeof(cloneref) == "function") and cloneref or function(x) return x end
+local HS = clone(game:GetService("HttpService"))
 
 local Config = {
 	apiKey           = "",

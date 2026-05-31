@@ -4,7 +4,8 @@
 --   Toast.init(templateClone, containerFrame)
 --   Toast.show("Title", "Description", "ok"|"warn"|"err"|"info", seconds)
 
-local TS = game:GetService("TweenService")
+local clone = (typeof and typeof(cloneref) == "function") and cloneref or function(x) return x end
+local TS = clone(game:GetService("TweenService"))
 
 local KIND_COLOR = {
 	ok   = Color3.fromRGB(34,  197, 94),

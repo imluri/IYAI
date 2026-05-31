@@ -18,9 +18,11 @@ return function(githubBaseUrl)
 	local GUI_REMOTE = useRemote and (githubBaseUrl .. "/IYAI_GUI.lua") or ""
 	local GUI_LOCAL  = "iyai_data/IYAI_GUI.lua"
 
-	local Players = game:GetService("Players")
-	local LP      = Players.LocalPlayer
-	local SG      = game:GetService("StarterGui")
+	-- Use cloneref when available so anti-cheats can't fingerprint our service handles
+	local clone   = (typeof and typeof(cloneref) == "function") and cloneref or function(x) return x end
+	local Players = clone(game:GetService("Players"))
+	local LP      = clone(Players.LocalPlayer)
+	local SG      = clone(game:GetService("StarterGui"))
 
 	local function notify(text)
 		task.spawn(function()
