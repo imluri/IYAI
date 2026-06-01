@@ -2651,6 +2651,40 @@ end
 local RETRY_ATTEMPTS = 3
 local RETRY_DELAY    = 4
 
+-- Status codes that mean "this API key is exhausted/invalid — try the next one"
+-- 429: rate limit (per minute/second)
+-- 402: out of credits / payment required
+-- 401: invalid or revoked key
+-- 403: quota exceeded or key blocked
+local KEY_EXHAUSTED_STATUS = { [401] = true, [402] = true, [403] = true, [429] = true }
+
+-- Body fragments that indicate credit/quota issues even on 200 responses
+-- (some providers wrap errors in 200 OK with the error in the JSON body)
+local function bodyIndicatesKeyExhaustion(body)
+	if type(body) ~= "string" or body == "" then return false end
+	local lower = body:lower()
+	return lower:find("insufficient credit", 1, true)
+		or lower:find("insufficient balance", 1, true)
+		or lower:find("quota exceeded", 1, true)
+		or lower:find("rate limit exceeded", 1, true)
+		or lower:find("you are out of credits", 1, true)
+		or false
+end
+
+local function classifyExhaustion(res)
+	if not res then return nil end
+	if KEY_EXHAUSTED_STATUS[res.StatusCode] then
+		if res.StatusCode == 429 then return "rate-limited" end
+		if res.StatusCode == 402 then return "out of credits" end
+		if res.StatusCode == 401 then return "invalid key" end
+		if res.StatusCode == 403 then return "quota exceeded" end
+	end
+	if res.StatusCode == 200 and bodyIndicatesKeyExhaustion(res.Body) then
+		return "credit/quota issue"
+	end
+	return nil
+end
+
 local function requestWithRetry(url, method, headersOrFn, body, onRetry)
 	local res
 	local function getHeaders()
@@ -2667,7 +2701,10 @@ local function requestWithRetry(url, method, headersOrFn, body, onRetry)
 		end)
 		res = Http.request(url, method, getHeaders(), body)
 		done = true
-		if res and res.StatusCode ~= 429 then break end
+
+		local reason = classifyExhaustion(res)
+		if not reason then break end  -- success or non-key-related failure
+
 		if attempt < RETRY_ATTEMPTS then
 			-- In multi-key mode, the next call to Config.getActiveKey() (via
 			-- buildHeaders on the next iteration) auto-advances to the next
@@ -2675,7 +2712,15 @@ local function requestWithRetry(url, method, headersOrFn, body, onRetry)
 			if onRetry then
 				onRetry(attempt, RETRY_ATTEMPTS - 1)
 			else
-				Toast.show("Rate limited", "Retrying in " .. RETRY_DELAY .. "s… (" .. attempt .. "/" .. (RETRY_ATTEMPTS - 1) .. ")", "warn", RETRY_DELAY)
+				local nKeys = #(Config.openrouterKeys or {})
+				local title = (reason == "rate-limited") and "Rate limited" or "Key exhausted"
+				local msg
+				if (Config.apiKeyMode or "single") == "multi" and nKeys > 1 then
+					msg = reason .. " — trying next key (" .. attempt .. "/" .. (RETRY_ATTEMPTS - 1) .. ")"
+				else
+					msg = reason .. " — retrying in " .. RETRY_DELAY .. "s (" .. attempt .. "/" .. (RETRY_ATTEMPTS - 1) .. ")"
+				end
+				Toast.show(title, msg, "warn", RETRY_DELAY)
 			end
 			task.wait(RETRY_DELAY)
 		end
@@ -2999,7 +3044,36 @@ local function buildMessages(history)
 			if m.tool_calls then copy.tool_calls = m.tool_calls end
 			table.insert(msgs, copy)
 		else
-			table.insert(msgs, m)
+			-- OpenAI/OpenRouter: every tool_call needs `type="function"` and an
+			-- `id`. History from a prior Ollama session won't have those, so
+			-- normalize before sending — otherwise the API rejects with
+			-- "Missing required parameter: messages[N].tool_calls[0].type".
+			if m.tool_calls and #m.tool_calls > 0 then
+				local fixed = { role = m.role, content = m.content }
+				local newCalls = {}
+				for i, tc in ipairs(m.tool_calls) do
+					local fn = tc["function"] or {}
+					local args = fn.arguments
+					if type(args) == "table" then args = HS:JSONEncode(args) end
+					newCalls[i] = {
+						id   = tc.id or ("call_" .. tostring(i) .. "_" .. tostring(fn.name or "")),
+						type = tc.type or "function",
+						["function"] = { name = fn.name, arguments = args or "{}" },
+					}
+				end
+				fixed.tool_calls = newCalls
+				table.insert(msgs, fixed)
+			elseif m.role == "tool" and not m.tool_call_id then
+				-- Tool response missing the id — synthesize one matching the
+				-- name so the API doesn't reject. Best-effort; ID won't match
+				-- the assistant's call id but most providers accept by name.
+				local copy = {}
+				for k, v in pairs(m) do copy[k] = v end
+				copy.tool_call_id = "call_" .. tostring(m.name or "unknown")
+				table.insert(msgs, copy)
+			else
+				table.insert(msgs, m)
+			end
 		end
 	end
 	return sanitizeToolPairs(msgs)
@@ -3935,6 +4009,10 @@ local function runAgentLoop(userText)
 			if generatingFrame then generatingFrame:Destroy(); generatingFrame = nil end
 			addResponse(msg.content)
 			bridgePost("/roblox/result", { type = "chat", text = msg.content })
+			-- Give the user a moment to read the commentary before the next
+			-- tool frame appears below it. Otherwise the text and tool result
+			-- stack instantly and the explanation gets lost in the scroll.
+			task.wait(0.5)
 		end
 
 		-- Keep generating frame below the step about to be added
