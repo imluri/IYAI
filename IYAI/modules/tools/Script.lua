@@ -100,19 +100,30 @@ return function(Tools, Http)
 		handler = function(args)
 			local code = (args.code or ""):match("^```[%w]*\n?(.-)\n?```$") or (args.code or "")
 			if code == "" then return "No code provided." end
-			local fn, compErr = loadstring(code)
-			if not fn then return "Compile error: " .. tostring(compErr) end
+
+			-- Capture print() AND warn() output by injecting hooks as LOCALS
+			-- via a prepended `local print, warn = ...` line. Loaded code's
+			-- env lookups for executor globals still resolve via the host
+			-- script's real environment, while print/warn become shadowed.
 			local captured = {}
-			local origPrint = print
-			print = function(...)
+			local function record(...)
 				local parts = {}
 				for i = 1, select("#", ...) do parts[i] = tostring(select(i, ...)) end
 				captured[#captured + 1] = table.concat(parts, "\t")
-				origPrint(...)
 			end
-			local ok, runErr = pcall(fn)
-			print = origPrint
-			if not ok then return "Runtime error: " .. tostring(runErr) end
+			local origPrint, origWarn = print, warn
+			local hookedPrint = function(...) record(...) origPrint(...) end
+			local hookedWarn  = function(...) record(...) origWarn(...)  end
+
+			local fn, compErr = loadstring("local print, warn = ...\n" .. code)
+			if not fn then return "Compile error: " .. tostring(compErr) end
+
+			-- Surface bare-expression returns (e.g. 'return type(X)') too
+			local ok, result = pcall(fn, hookedPrint, hookedWarn)
+			if not ok then return "Runtime error: " .. tostring(result) end
+			if result ~= nil and #captured == 0 then
+				return tostring(result)
+			end
 			return #captured > 0 and table.concat(captured, "\n") or "Done. (no output)"
 		end
 	})

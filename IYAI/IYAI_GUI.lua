@@ -62,7 +62,7 @@ loadMod("modules/tools/Explorer.lua")(Tools, propFns.getProperties, propFns.getM
 loadMod("modules/tools/Script.lua")(Tools, Http)
 loadMod("modules/tools/IY.lua")(Tools)
 loadMod("modules/tools/Web.lua")(Tools, Http)
-loadMod("modules/tools/SynapseDocs.lua")(Tools, Http)
+loadMod("modules/tools/ExecutorDocs.lua")(Tools, Http)
 
 local Prompt = loadMod("modules/Prompt.lua")(Http)
 local Memory = loadMod("modules/Memory.lua")()
@@ -1405,6 +1405,69 @@ Tools.register({
 		end
 		local n = Memory.forget(parsed.query)
 		return "Forgot " .. n .. " line(s) matching: " .. parsed.query
+	end
+})
+
+Tools.register({
+	group = "Memory",
+	definition = {
+		type = "function",
+		["function"] = {
+			name        = "recall",
+			description = "Retrieve persisted facts about this specific game (current PlaceId). Call this at the start of any substantive task — there may be game-specific quirks, user preferences, or discovered values worth knowing before you act. Pass no args to get all facts, or pass a query string to filter to matching lines.",
+			parameters  = {
+				type = "object",
+				properties = {
+					query = { type = "string", description = "Optional substring filter; returns only lines containing it (case-insensitive)." }
+				},
+				required = {}
+			}
+		}
+	},
+	handler = function(args)
+		local query
+		if args and args ~= "" then
+			local ok, parsed = pcall(HS.JSONDecode, HS, args)
+			if ok and type(parsed) == "table" and type(parsed.query) == "string" then
+				query = parsed.query:lower()
+			end
+		end
+		local mem = Memory.read()
+		if mem == "" then return "No facts remembered for this game yet (PlaceId " .. tostring(game.PlaceId) .. ")." end
+		if not query or query == "" then return mem end
+		local kept = {}
+		for line in (mem .. "\n"):gmatch("([^\n]*)\n") do
+			if line ~= "" and line:lower():find(query, 1, true) then
+				kept[#kept+1] = line
+			end
+		end
+		return #kept > 0
+			and table.concat(kept, "\n")
+			or  "No facts matching '" .. query .. "' for this game."
+	end
+})
+
+Tools.register({
+	group = "Skills",
+	definition = {
+		type = "function",
+		["function"] = {
+			name        = "list_skills",
+			description = "List all enabled skill guides (name + one-line description). Call this when starting any non-trivial task to discover which guides exist before deciding whether to load one with get_skill(name).",
+			parameters  = { type = "object", properties = {}, required = {} }
+		}
+	},
+	handler = function()
+		if not M.Sk or #M.Sk.loaded == 0 then return "No skills loaded." end
+		local lines = {}
+		for _, s in ipairs(M.Sk.loaded) do
+			if M.Sk.enabled[s.file] ~= false then
+				local desc = (s.desc and s.desc ~= "") and s.desc or "(no description)"
+				lines[#lines+1] = "- " .. s.name .. ": " .. desc
+			end
+		end
+		if #lines == 0 then return "No skills currently enabled." end
+		return table.concat(lines, "\n")
 	end
 })
 
@@ -2924,16 +2987,10 @@ end
 
 local function buildMessages(history)
 	local custom = type(Config.userSystemPrompt) == "string" and Config.userSystemPrompt:match("^%s*(.-)%s*$") or ""
-	local sysContent = custom ~= "" and custom or Prompt.build(true, nil, isOllamaFormat())
-	local skillsCtx  = getEnabledSkillsContext()
-	if skillsCtx then sysContent = sysContent .. "\n\n" .. skillsCtx end
-	local memContent = Memory.read()
-	if memContent ~= "" then
-		sysContent = sysContent
-			.. "\n\n## Game Memory (PlaceId " .. tostring(game.PlaceId) .. ")"
-			.. "\nFacts you've remembered about this specific game across sessions. Use these as ground truth."
-			.. "\n\n" .. memContent
-	end
+	-- Lean prompt: no game context, no skills index, no memory dump. The AI
+	-- pulls those on demand via tree()/local_player(), list_skills/get_skill,
+	-- and recall(). This keeps per-turn token cost low for trivial queries.
+	local sysContent = custom ~= "" and custom or Prompt.build(false, nil, isOllamaFormat())
 	local msgs = {{ role = "system", content = sysContent }}
 	for _, m in ipairs(history or Agt.history) do
 		if isOllamaFormat() then
