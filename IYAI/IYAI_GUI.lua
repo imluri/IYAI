@@ -2706,23 +2706,23 @@ local function requestWithRetry(url, method, headersOrFn, body, onRetry)
 		if not reason then break end  -- success or non-key-related failure
 
 		if attempt < RETRY_ATTEMPTS then
-			-- In multi-key mode, the next call to Config.getActiveKey() (via
-			-- buildHeaders on the next iteration) auto-advances to the next
-			-- key. No explicit rotation call needed.
+			-- Multi-key: skip the wait and swap straight to the next key.
+			-- The next buildHeaders() call auto-advances the index.
+			-- Single-key: wait then retry (transient 429s often resolve).
+			local nKeys     = #(Config.openrouterKeys or {})
+			local multiMode = (Config.apiKeyMode or "single") == "multi" and nKeys > 1
+
 			if onRetry then
 				onRetry(attempt, RETRY_ATTEMPTS - 1)
 			else
-				local nKeys = #(Config.openrouterKeys or {})
 				local title = (reason == "rate-limited") and "Rate limited" or "Key exhausted"
-				local msg
-				if (Config.apiKeyMode or "single") == "multi" and nKeys > 1 then
-					msg = reason .. " — trying next key (" .. attempt .. "/" .. (RETRY_ATTEMPTS - 1) .. ")"
-				else
-					msg = reason .. " — retrying in " .. RETRY_DELAY .. "s (" .. attempt .. "/" .. (RETRY_ATTEMPTS - 1) .. ")"
-				end
-				Toast.show(title, msg, "warn", RETRY_DELAY)
+				local msg = multiMode
+					and (reason .. " — swapping key (" .. attempt .. "/" .. (RETRY_ATTEMPTS - 1) .. ")")
+					or  (reason .. " — retrying in " .. RETRY_DELAY .. "s (" .. attempt .. "/" .. (RETRY_ATTEMPTS - 1) .. ")")
+				Toast.show(title, msg, "warn", multiMode and 2 or RETRY_DELAY)
 			end
-			task.wait(RETRY_DELAY)
+
+			if not multiMode then task.wait(RETRY_DELAY) end
 		end
 	end
 	return res
