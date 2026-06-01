@@ -2706,11 +2706,12 @@ local function requestWithRetry(url, method, headersOrFn, body, onRetry)
 		if not reason then break end  -- success or non-key-related failure
 
 		if attempt < RETRY_ATTEMPTS then
-			-- Multi-key: skip the wait and swap straight to the next key.
-			-- The next buildHeaders() call auto-advances the index.
+			-- Multi-key: explicitly rotate to next key, no wait.
 			-- Single-key: wait then retry (transient 429s often resolve).
 			local nKeys     = #(Config.openrouterKeys or {})
 			local multiMode = (Config.apiKeyMode or "single") == "multi" and nKeys > 1
+
+			if multiMode then Config.rotateKey() end
 
 			if onRetry then
 				onRetry(attempt, RETRY_ATTEMPTS - 1)
