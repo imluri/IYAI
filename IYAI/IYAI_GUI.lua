@@ -1371,12 +1371,12 @@ Tools.register({
 		}
 	},
 	handler = function(args)
-		local ok, parsed = pcall(HS.JSONDecode, HS, args)
-		if not ok or type(parsed) ~= "table" or type(parsed.fact) ~= "string" then
+		-- Tools.run already JSON-decodes; args is a table here.
+		if type(args) ~= "table" or type(args.fact) ~= "string" then
 			return "Error: invalid arguments. Pass { fact = \"...\" }."
 		end
-		if Memory.remember(parsed.fact) then
-			return "Remembered for PlaceId " .. tostring(game.PlaceId) .. ": " .. parsed.fact
+		if Memory.remember(args.fact) then
+			return "Remembered for PlaceId " .. tostring(game.PlaceId) .. ": " .. args.fact
 		end
 		return "Error: writefile unavailable — cannot persist memory."
 	end
@@ -1399,12 +1399,11 @@ Tools.register({
 		}
 	},
 	handler = function(args)
-		local ok, parsed = pcall(HS.JSONDecode, HS, args)
-		if not ok or type(parsed) ~= "table" or type(parsed.query) ~= "string" then
+		if type(args) ~= "table" or type(args.query) ~= "string" then
 			return "Error: invalid arguments. Pass { query = \"...\" }."
 		end
-		local n = Memory.forget(parsed.query)
-		return "Forgot " .. n .. " line(s) matching: " .. parsed.query
+		local n = Memory.forget(args.query)
+		return "Forgot " .. n .. " line(s) matching: " .. args.query
 	end
 })
 
@@ -1426,11 +1425,8 @@ Tools.register({
 	},
 	handler = function(args)
 		local query
-		if args and args ~= "" then
-			local ok, parsed = pcall(HS.JSONDecode, HS, args)
-			if ok and type(parsed) == "table" and type(parsed.query) == "string" then
-				query = parsed.query:lower()
-			end
+		if type(args) == "table" and type(args.query) == "string" then
+			query = args.query:lower()
 		end
 		local mem = Memory.read()
 		if mem == "" then return "No facts remembered for this game yet (PlaceId " .. tostring(game.PlaceId) .. ")." end
@@ -2970,11 +2966,10 @@ Tools.register({
 		}
 	},
 	handler = function(args)
-		local ok, parsed = pcall(HS.JSONDecode, HS, args)
-		if not ok or type(parsed) ~= "table" then
+		if type(args) ~= "table" then
 			return "Error: invalid arguments. Pass { name = \"skill name\" }."
 		end
-		local skill = findEnabledSkill(parsed.name)
+		local skill = findEnabledSkill(args.name)
 		if not skill then
 			local available = {}
 			for _, s in ipairs(getEnabledSkills()) do available[#available+1] = s.name end
