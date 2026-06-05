@@ -3,8 +3,7 @@
 
 return function(Tools, Http)
 
-	local clone = (typeof and typeof(cloneref) == "function") and cloneref or function(x) return x end
-	local HS = clone(game:GetService("HttpService"))
+	local HS = game:GetService("HttpService")
 
 
 	local function urlencode(s)

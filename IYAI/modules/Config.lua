@@ -1,8 +1,7 @@
 -- Config.lua  |  Persistent settings (API key, model, host, maxSteps)
 -- Usage: local Config = loadMod("modules/Config.lua")
 
-local clone = (typeof and typeof(cloneref) == "function") and cloneref or function(x) return x end
-local HS = clone(game:GetService("HttpService"))
+local HS = game:GetService("HttpService")
 
 local Config = {
 	apiKey           = "",
@@ -117,26 +116,14 @@ function Config.load()
 	end
 end
 
--- Returns the CURRENT key in the multi-key pool without advancing the index.
--- The pool stays on the last-known-good key until Config.rotateKey() is
--- explicitly called (which the retry loop does when a key gets exhausted).
 function Config.getActiveKey()
 	if (Config.apiKeyMode or "single") == "multi" and #(Config.openrouterKeys or {}) > 0 then
 		local keys = Config.openrouterKeys
 		local idx  = ((Config.openrouterKeyIndex - 1) % #keys) + 1
+		Config.openrouterKeyIndex = (idx % #keys) + 1
 		return keys[idx]
 	end
 	return Config.apiKey
-end
-
--- Advance to the next key in the rotation. Call this after a key has been
--- exhausted (429, 402, 401, 403, etc.) — NOT on every request.
-function Config.rotateKey()
-	if (Config.apiKeyMode or "single") == "multi" and #(Config.openrouterKeys or {}) > 0 then
-		local keys = Config.openrouterKeys
-		local idx  = ((Config.openrouterKeyIndex - 1) % #keys) + 1
-		Config.openrouterKeyIndex = (idx % #keys) + 1
-	end
 end
 
 -- Migrate config from old root location to iyai_data/

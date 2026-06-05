@@ -1,40 +1,7 @@
 -- tools/Script.lua  |  Script-related tools
--- Returns function(Tools, Http) — call it to register source and run.
+-- Returns function(Tools) — call it to register source and run.
 
-return function(Tools, Http)
-
-	local UNC_URL   = "https://raw.githubusercontent.com/imluri/IYAI/refs/heads/main/IYAI/modules/integrations/unc_test.lua"
-	local UNC_CACHE = "iyai_data/cache/unc_test.lua"
-
-	local function fetchUncSrc()
-		-- 1. Try the local module path (when installed from full repo clone)
-		if isfile and isfile("IYAI/modules/integrations/unc_test.lua") then
-			local ok, src = pcall(readfile, "IYAI/modules/integrations/unc_test.lua")
-			if ok and src and src ~= "" then return src end
-		end
-		-- 2. Try the cached download
-		if isfile and isfile(UNC_CACHE) then
-			local ok, src = pcall(readfile, UNC_CACHE)
-			if ok and src and src ~= "" then return src end
-		end
-		-- 3. Fetch from GitHub
-		if not (Http and Http.request) then return nil, "No local copy and no Http available." end
-		local res = Http.request(UNC_URL, "GET", { ["User-Agent"] = "IYAI" }, nil)
-		if not res or res.StatusCode ~= 200 then
-			return nil, "Fetch failed: " .. tostring(res and res.StatusCode or "no response")
-		end
-		local src = res.Body or ""
-		if src == "" then return nil, "Fetched empty body." end
-		-- 4. Cache for next time
-		if writefile and isfolder and makefolder then
-			pcall(function()
-				if not isfolder("iyai_data")       then makefolder("iyai_data")       end
-				if not isfolder("iyai_data/cache") then makefolder("iyai_data/cache") end
-				writefile(UNC_CACHE, src)
-			end)
-		end
-		return src
-	end
+return function(Tools)
 
 	local function resolvePath(path)
 		if not path or path == "" or path == "game" then return game end
@@ -100,30 +67,19 @@ return function(Tools, Http)
 		handler = function(args)
 			local code = (args.code or ""):match("^```[%w]*\n?(.-)\n?```$") or (args.code or "")
 			if code == "" then return "No code provided." end
-
-			-- Capture print() AND warn() output by injecting hooks as LOCALS
-			-- via a prepended `local print, warn = ...` line. Loaded code's
-			-- env lookups for executor globals still resolve via the host
-			-- script's real environment, while print/warn become shadowed.
+			local fn, compErr = loadstring(code)
+			if not fn then return "Compile error: " .. tostring(compErr) end
 			local captured = {}
-			local function record(...)
+			local origPrint = print
+			print = function(...)
 				local parts = {}
 				for i = 1, select("#", ...) do parts[i] = tostring(select(i, ...)) end
 				captured[#captured + 1] = table.concat(parts, "\t")
+				origPrint(...)
 			end
-			local origPrint, origWarn = print, warn
-			local hookedPrint = function(...) record(...) origPrint(...) end
-			local hookedWarn  = function(...) record(...) origWarn(...)  end
-
-			local fn, compErr = loadstring("local print, warn = ...\n" .. code)
-			if not fn then return "Compile error: " .. tostring(compErr) end
-
-			-- Surface bare-expression returns (e.g. 'return type(X)') too
-			local ok, result = pcall(fn, hookedPrint, hookedWarn)
-			if not ok then return "Runtime error: " .. tostring(result) end
-			if result ~= nil and #captured == 0 then
-				return tostring(result)
-			end
+			local ok, runErr = pcall(fn)
+			print = origPrint
+			if not ok then return "Runtime error: " .. tostring(runErr) end
 			return #captured > 0 and table.concat(captured, "\n") or "Done. (no output)"
 		end
 	})
@@ -139,9 +95,9 @@ return function(Tools, Http)
 			}
 		},
 		handler = function(_args)
-			local src, fetchErr = fetchUncSrc()
-			if not src then
-				return "Error: couldn't get unc_test.lua. " .. tostring(fetchErr or "unknown")
+			local ok, src = pcall(readfile, "IYAI/modules/integrations/unc_test.lua")
+			if not ok or not src or src == "" then
+				return "Error: IYAI/modules/integrations/unc_test.lua not found in workspace."
 			end
 
 			_G.__unc_running_ref = nil

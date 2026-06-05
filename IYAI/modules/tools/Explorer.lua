@@ -3,8 +3,7 @@
 
 return function(Tools, getProperties, getMethods)
 
-	local clone   = (typeof and typeof(cloneref) == "function") and cloneref or function(x) return x end
-	local Players = clone(game:GetService("Players"))
+	local Players = game:GetService("Players")
 
 	local function resolvePath(path)
 		if not path or path == "" or path == "game" then return game end
