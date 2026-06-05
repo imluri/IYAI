@@ -125,9 +125,9 @@ On first run, IYAI creates an `iyai_data/` folder in your executor's `workspace/
 - Toast notifications appear top-right for saves, errors, rate limits, and connection tests
 
 ## Best Free Models
+- **Qwen3 Coder 480B** via Ollama Cloud — `qwen3-coder:480b-cloud` (free tier, strong tool use)
 - **Owl Alpha** via OpenRouter — `openrouter/owl-alpha` (free, good at handling complex tasks)
 - **GLM-4.5 Air** via OpenRouter — `z-ai/glm-4.5-air:free` (free, good reasoning, 20 req/min limit)
-- **Qwen3 Coder 480B** via OpenRouter — `qwen/qwen3-coder:480b-cloud` (free tier, strong tool use)
 
 ## Recommended Models
 - **DeepSeek V3** via OpenRouter — `deepseek/deepseek-chat-v3` (paid, extremely strong tool use, best value)
