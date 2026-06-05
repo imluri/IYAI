@@ -1,4 +1,4 @@
-# IYAI v1.0.9
+# IYAI v1.1.0
 
 
 https://github.com/user-attachments/assets/7d229f47-b360-4af5-ab7b-2a4b6289966d
@@ -66,7 +66,7 @@ Set your API key, pick a provider, and choose a model. There's a live model pick
 
 Buttons let you test your connection and validate credentials.
 
-**Providers:** OpenRouter · Mistral · Groq · Google AI Studio · Pollinations · HuggingFace · Ollama · 9router · OpenCode
+**Providers:** OpenRouter · Ollama · Ollama Cloud · Mistral · Groq · Pollinations · HuggingFace · Google AI Studio · 9router · OpenCode · Bluesminds
 
 **Custom providers:** Add your own OpenAI-compatible endpoints by editing `iyai_data/custom_providers.json`. Entries follow the same schema as built-ins (name, baseUrl, modelsUrl, modelsFormat, apiKey-style header) and appear alongside them in the picker.
 
