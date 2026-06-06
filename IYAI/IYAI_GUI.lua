@@ -1913,7 +1913,11 @@ local function updateHostLabel(host)
 	if UI.HostSelectTextBox then
 		local url = p and p.displayUrl
 		if url == nil then
-			url = Config.ollamaUrl or "http://localhost:11434"
+			if host == "Custom" then
+				url = Config.customUrl or "http://localhost:11434/v1"
+			else
+				url = Config.ollamaUrl or "http://localhost:11434"
+			end
 		end
 		if url and url ~= "" then
 			UI.HostSelectTextBox.Text = url
@@ -2286,6 +2290,14 @@ function saveSettings()  -- assigns to outer forward-declared local
 	Config.providerData = {}
 	for h, data in pairs(Set.cache) do
 		Config.providerData[h] = { apiKey = data.key, model = data.model, mode = data.mode }
+	end
+	-- Persist the typed endpoint for the dynamic-URL hosts (their URL lives in the
+	-- textbox, not in a provider entry). Without this the custom/Ollama URL is lost
+	-- on reload and falls back to the localhost default.
+	if Set.host == "Custom" then
+		Config.customUrl = UI.HostSelectTextBox.Text
+	elseif Set.host == "Ollama" then
+		Config.ollamaUrl = UI.HostSelectTextBox.Text
 	end
 	UI.MaxStepBox.Text      = tostring(Config.maxSteps)
 	UI.TemperatureBox.Text  = tostring(Config.temperature)

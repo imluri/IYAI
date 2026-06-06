@@ -48,6 +48,7 @@ function Config.save()
 			model              = Config.model,
 			host               = Config.host,
 			ollamaUrl          = Config.ollamaUrl,
+			customUrl          = Config.customUrl,
 			maxSteps           = Config.maxSteps,
 			temperature        = Config.temperature,
 			userSystemPrompt   = Config.userSystemPrompt,
@@ -106,6 +107,7 @@ function Config.load()
 		if type(cfg.model)            == "string" and cfg.model            ~= "" then Config.model            = cfg.model            end
 		if type(cfg.host)             == "string" and cfg.host             ~= "" then Config.host             = cfg.host             end
 		if type(cfg.ollamaUrl)        == "string" and cfg.ollamaUrl        ~= "" then Config.ollamaUrl        = cfg.ollamaUrl        end
+		if type(cfg.customUrl)        == "string" and cfg.customUrl        ~= "" then Config.customUrl        = cfg.customUrl        end
 		if type(cfg.maxSteps)         == "number" and cfg.maxSteps         >  0  then Config.maxSteps         = cfg.maxSteps         end
 		if type(cfg.temperature)      == "number"                                 then Config.temperature      = cfg.temperature      end
 		if type(cfg.userSystemPrompt) == "string"                                 then Config.userSystemPrompt = cfg.userSystemPrompt end
