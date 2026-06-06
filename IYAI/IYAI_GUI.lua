@@ -63,6 +63,7 @@ loadMod("modules/tools/Script.lua")(Tools, Http)
 loadMod("modules/tools/IY.lua")(Tools)
 loadMod("modules/tools/Web.lua")(Tools, Http)
 loadMod("modules/tools/ExecutorDocs.lua")(Tools, Http)
+loadMod("modules/tools/Upvalue.lua")(Tools)
 
 local Prompt = loadMod("modules/Prompt.lua")(Http)
 local Memory = loadMod("modules/Memory.lua")()
