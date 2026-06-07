@@ -1592,6 +1592,30 @@ local function unescapeCode(s)
 	return (s:gsub("\\n", "\n"):gsub("\\t", "\t"):gsub("\\r", ""))
 end
 
+-- Heuristic guard for run(): a non-yielding infinite loop (e.g. `while true do end`)
+-- blocks the single-threaded Luau VM forever — the whole UI freezes and the Stop
+-- button can never run. Such a loop cannot be interrupted from inside Luau, so the
+-- only defense is to refuse it before it executes. Returns an error string (so the
+-- agent surfaces it and continues) or nil when the code looks safe to run.
+local function unboundedLoopError(code)
+	local lower = code:lower()
+	local infinite =
+		lower:find("while%s+true%f[%A]")
+		or lower:find("while%s*%(%s*true%s*%)")
+		or lower:find("while%s+1%f[%A]")
+		or (lower:find("repeat%f[%A]") and lower:find("until%s+false%f[%A]"))
+	if not infinite then return nil end
+	-- A yield (wait / task.wait / :Wait / coroutine.yield) lets the VM and the Stop
+	-- button get a turn; a break gives the loop a way out. Either makes it safe-ish.
+	if lower:find("wait") or lower:find("coroutine%.yield") or lower:find("%f[%a]break%f[%A]") then
+		return nil
+	end
+	return "Refused: this code has an infinite loop (while true / repeat-until false) with no "
+		.. "task.wait() and no break. A non-yielding infinite loop freezes the whole executor and "
+		.. "cannot be stopped. Add task.wait() inside the loop, give it an exit condition, or use "
+		.. "write_code() to save a persistent script instead of running it here."
+end
+
 Tools.register({
 	group = CODE_TOOL_GROUP,
 	definition = {
@@ -1605,6 +1629,8 @@ Tools.register({
 	handler = function(_args)
 		local code = Tabs.active and Tabs.active.code or UI.CodeBox.Text
 		if code == "" then return "Code editor is empty. Use write_code() first." end
+		local loopErr = unboundedLoopError(code)
+		if loopErr then return loopErr end
 		local fn, compErr = loadstring(code)
 		if not fn then return "Compile error: " .. tostring(compErr) end
 		local captured = {}
